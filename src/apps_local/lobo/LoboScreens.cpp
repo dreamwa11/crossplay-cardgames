@@ -132,7 +132,7 @@ void drawCard(toybox::Screen& screen, const fui::Rect& r, const uint8_t card, co
   } else {
     say(screen, rect(r.right() - 8 - 64, r.y + 4, 64, 34), value, Face::Value, fui::TextAlign::Right);
   }
-  const int art = r.height >= 160 ? 96 : r.height >= 112 ? 64 : 48;
+  const int art = r.height >= 160 ? 64 : 48;
   const int nameH = sf::kSmallCut.lineHeight;
   const int nameTop = r.bottom() - nameH - 4;
   const int room = nameTop - r.y - 36;
@@ -337,8 +337,8 @@ void scoreBar(toybox::Screen& screen, const l::Match& m) {
     say(screen, rect(x + 28, 0, tw + 4, kTopBarH), line, Face::Large, fui::TextAlign::Left);
     x += 28 + tw + 14;
   };
-  counter(icon_lobo_you_24, m.youScore);
   counter(icon_lobo_wolf_24, m.wolfScore);
+  counter(icon_lobo_you_24, m.youScore);
   std::snprintf(line, sizeof(line), "Hand %d", m.hand);
   say(screen, rect(0, 0, w, kTopBarH), line, Face::Value);
   fui::ButtonProps menu;
@@ -378,11 +378,14 @@ void wolfScene(toybox::Screen& screen, const int top, const int tableBottom, con
   }
 }
 
+// The deck, face up, halfway between the two rows. The played pile is not
+// shown; the deck's tally says how many cards have gone.
+constexpr int kDeckY = (kWolfRowY + kYouRowY) / 2;
+
 void piles(toybox::Screen& screen, const l::Match& m) {
   char line[8];
-  const fui::Rect deck = rect(kPileX, kWolfRowY, kPileW, kCardH);
+  const fui::Rect deck = rect(kPileX, kDeckY, kPileW, kCardH);
   if (m.deckLen > 0) {
-    // The top card is always face up: you can see what comes next.
     if (m.deckLen > 1) drawBack(screen, rect(deck.x + 3, deck.y - 3, deck.width, deck.height));
     drawCard(screen, deck, m.deck[m.deckLen - 1]);
     std::snprintf(line, sizeof(line), "%d", m.deckLen);
@@ -390,16 +393,6 @@ void piles(toybox::Screen& screen, const l::Match& m) {
   } else {
     cardart::drawCardSlot(screen, deck);
     say(screen, deck, "EMPTY", Face::Small);
-  }
-  const fui::Rect pile = rect(kPileX, kYouRowY, kPileW, kCardH);
-  if (m.playedLen > 0) {
-    if (m.playedLen > 1) drawBack(screen, rect(pile.x + 3, pile.y - 3, pile.width, pile.height));
-    drawBack(screen, pile);
-    std::snprintf(line, sizeof(line), "%d", m.playedLen);
-    badge(screen, pile, line);
-  } else {
-    cardart::drawCardSlot(screen, pile);
-    say(screen, pile, "PLAYED", Face::Small);
   }
 }
 
@@ -547,7 +540,7 @@ int cardAt(const fui::DeviceContext&, const TableModel& model, const int x, cons
 }
 
 bool pilesAt(const fui::DeviceContext&, const int x, const int y) {
-  return x >= kPileX && x < kPileX + kPileW && y >= kWolfRowY - 4 && y < kYouRowY + kCardH;
+  return x >= kPileX && x < kPileX + kPileW && y >= kDeckY - 4 && y < kDeckY + kCardH + 18;
 }
 
 void buildTable(toybox::Screen& screen, const TableModel& model) {
