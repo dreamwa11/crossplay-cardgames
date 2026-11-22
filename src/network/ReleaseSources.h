@@ -23,7 +23,7 @@
 namespace release_sources {
 
 constexpr const char* const kUrls[] = {
-    "https://api.github.com/repos/dreamwa11/crossplay-scoundrel/releases/latest",
+    "https://api.github.com/repos/dreamwa11/crossplay-cardgames/releases/latest",
 };
 constexpr int kCount = static_cast<int>(sizeof(kUrls) / sizeof(kUrls[0]));
 

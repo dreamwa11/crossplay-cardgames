@@ -1,10 +1,11 @@
-> **crossplay-scoundrel** is a copy of [CrossPlay](https://github.com/ma-r-s/crossplay)
+> **crossplay-cardgames** is a copy of [CrossPlay](https://github.com/ma-r-s/crossplay)
 > with two games added: **Scoundrel** (`src/apps_local/scoundrel/`) and **Lobo**
 > (`src/apps_local/lobo/`). They build into every CrossPlay device; GitHub Actions builds the M5Stack
 > PaperMono firmware (`.github/workflows/papermono.yml`). Tagged versions are
-> published as releases,
-> and the device's *Check for updates* reads this repository's releases, not
-> upstream's. Everything below is CrossPlay's own README.
+> published as releases, and the device's *Check for updates* reads this
+> repository's releases, not upstream's. The phone versions of both games,
+> black and white like the panel, are in `web/` and are published to
+> https://dreamwa11.github.io/crossplay-cardgames/ (`.github/workflows/pages.yml`). Everything below is CrossPlay's own README.
 
 <h1 align="center">
   <img src="site/assets/logo.svg#gh-light-mode-only" width="72" alt="CrossPlay"><img src="site/assets/logo-dark.svg#gh-dark-mode-only" width="72" alt="CrossPlay"><br>

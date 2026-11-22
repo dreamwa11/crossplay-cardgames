@@ -54,13 +54,13 @@ jobs:
           VERSION=$(sed -n '/^\[crossplay\]/{n;s/^version = //p}' platformio.ini)
           mkdir -p dist
           ~/.platformio/penv/bin/python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip esp32s3 \
-            merge-bin --format raw -o "dist/crossplay-scoundrel-$VERSION-papermono-full.bin" \
+            merge-bin --format raw -o "dist/crossplay-cardgames-$VERSION-papermono-full.bin" \
             -fm keep -fs keep -ff keep \
             0x0 $IMG/bootloader.bin 0x8000 $IMG/partitions.bin 0x10000 $IMG/firmware.bin
           cp $IMG/firmware.bin dist/firmware-papermono.bin
-          cp $IMG/firmware.elf "dist/crossplay-scoundrel-$VERSION-papermono.elf"
+          cp $IMG/firmware.elf "dist/crossplay-cardgames-$VERSION-papermono.elf"
           # A merged image that is not merged looks exactly like the app image.
-          python3 - "dist/crossplay-scoundrel-$VERSION-papermono-full.bin" <<'PY'
+          python3 - "dist/crossplay-cardgames-$VERSION-papermono-full.bin" <<'PY'
           import sys
           d = open(sys.argv[1], 'rb').read()
           for off, want, what in [(0, 'e903', 'bootloader'), (0x8000, 'aa50', 'partition table'), (0x10000, 'e907', 'app')]:
