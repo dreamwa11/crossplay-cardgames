@@ -618,7 +618,7 @@ void buildMenu(toybox::Screen& screen, const MenuModel& model) {
   title(screen, "Lobo");
   char record[64];
   if (model.canContinue) {
-    std::snprintf(record, sizeof(record), "You %d    Wolf %d    playing to %d", model.youScore, model.wolfScore,
+    std::snprintf(record, sizeof(record), "Wolf %d    You %d    playing to %d", model.wolfScore, model.youScore,
                   model.target);
   } else {
     std::snprintf(record, sizeof(record), "%d matches    %d won", model.matches, model.won);
@@ -634,10 +634,6 @@ void buildMenu(toybox::Screen& screen, const MenuModel& model) {
   }
   rows[count].label = "New match";
   rows[count++].actionValue = static_cast<int16_t>(MenuRow::NewMatch);
-  if (model.canContinue) {
-    rows[count].label = "What is left in the deck";
-    rows[count++].actionValue = static_cast<int16_t>(MenuRow::Deck);
-  }
   rows[count].label = "How to play";
   rows[count++].actionValue = static_cast<int16_t>(MenuRow::HowTo);
   fui::ListProps list;
@@ -783,7 +779,7 @@ void endPicture(toybox::Screen& screen, const int top, const bool wolfThere) {
 
 void scoresLine(toybox::Screen& screen, const int y, const l::Match& m) {
   char line[48];
-  std::snprintf(line, sizeof(line), "You %d    Wolf %d", m.youScore, m.wolfScore);
+  std::snprintf(line, sizeof(line), "Wolf %d    You %d", m.wolfScore, m.youScore);
   say(screen, rect(0, y, screen.device().width, 32), line, Face::Large);
 }
 
