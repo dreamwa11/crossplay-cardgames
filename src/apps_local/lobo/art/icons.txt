@@ -1,0 +1,7 @@
+# Lobo's suits and interface icons: game-icons.net (Lorc, Delapouite and
+# contributors), CC BY 3.0, the same ones the phone version uses.
+lobo_moon    = moon
+lobo_paw     = paw
+lobo_fang    = fang
+lobo_pine    = pine
+lobo_bone    = bone

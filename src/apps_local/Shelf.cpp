@@ -28,6 +28,8 @@
 #include "instapaper/InstapaperActivity.h"
 #include "jaipur/JaipurActivity.h"
 #include "knucklebones/KnucklebonesActivity.h"
+#include "lobo/LoboActivity.h"
+#include "lobo/LoboShelfIcon.h"
 #include "minesweeper/MinesweeperActivity.h"
 #include "murdle/MurdleActivity.h"
 #include "notes/NotesActivity.h"
@@ -61,6 +63,7 @@ constexpr shelf::Item kGames[] = {
     {"CONNECTIONS", &icon_connections_32, &ConnectionsActivity::create},
     {"SOLITAIRE", &icon_solitaire_32, &SolitaireActivity::create},
     {"SCOUNDREL", &icon_scoundrel_32, &ScoundrelActivity::create},
+    {"LOBO", &icon_lobo_32, &LoboActivity::create},
     {"HEARTS", &icon_hearts_32, &HeartsActivity::create},
     {"D&DIAGRAMS", &icon_dungeon_32, &DungeonActivity::create},
     {"INSIDER", &icon_insider_32, &InsiderActivity::create},

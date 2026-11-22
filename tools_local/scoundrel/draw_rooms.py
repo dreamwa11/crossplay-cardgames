@@ -8,11 +8,13 @@
 #   cellar   low beams overhead, candles on the wall, barrels and a ladder
 #   crypt    arches receding down a pillared vault to a small lit window
 #
-# usage: draw_rooms.py <kind> <out.svg>
+# usage: draw_rooms.py <kind> <out.svg> [height]
 import math, random, sys
 
-W, H = 480, 178
+W = 480
 kind, out = sys.argv[1], sys.argv[2]
+# An optional third argument draws the room taller (Lobo's backdrop).
+H = int(sys.argv[3]) if len(sys.argv) > 3 else 178
 rnd = random.Random({"hall": 7, "window": 3, "cellar": 5, "crypt": 9}.get(kind, 1))
 o = []
 add = o.append

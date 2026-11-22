@@ -40,6 +40,13 @@ Beltrán, thinned and renamed as its licence's Reserved Font Name requires. Scou
 `src/apps_local/scoundrel/fonts/`; the fonts and their licence texts are in
 `src/apps_local/scoundrel/fonts/source/`.
 
+**Lobo's art**: suit and interface icons from game-icons.net, CC BY 3.0, by
+Lorc, Delapouite and other contributors; the Wolf is the phone version's
+portrait (generated with FLUX.1 Krea), converted to black and white. Both are
+rasterised into `src/apps_local/lobo/LoboArt.h`; sources and details in
+`src/apps_local/lobo/art/`. Lobo itself is a solitaire game by James Ernest,
+Crab Fragment Labs (2022); this is an unofficial fan version.
+
 **"celtic" chess pieces**, MIT, Copyright (c) Maurizio Monge, from
 [maurimo/chess-art](https://github.com/maurimo/chess-art). Chess's board art is
 rasterised from them into `src/apps_local/chess/ChessPieces.h` at authoring

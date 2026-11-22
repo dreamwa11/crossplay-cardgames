@@ -1,0 +1,8 @@
+# Small marks for the score bar and buttons (game-icons.net, CC BY 3.0).
+lobo_wolf    = wolf
+lobo_you     = you
+lobo_howl    = howl
+lobo_cards   = cards
+lobo_menu    = menu
+lobo_forearm = forearm
+lobo_discard = discard

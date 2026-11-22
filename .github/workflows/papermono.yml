@@ -41,8 +41,8 @@ jobs:
           path: ~/.platformio
           key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
 
-      - name: Scoundrel rules tests
-        run: ./host-tests/scoundrel/run.sh
+      - name: Scoundrel and Lobo rules tests
+        run: ./host-tests/scoundrel/run.sh && ./host-tests/lobo/run.sh
 
       - name: Build the PaperMono release image
         run: pio run -e gh_release_papermono
