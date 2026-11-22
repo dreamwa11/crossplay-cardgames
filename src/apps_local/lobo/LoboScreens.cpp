@@ -330,15 +330,19 @@ void scoreBar(toybox::Screen& screen, const l::Match& m) {
   char line[24];
   int x = 12;
   const int midY = kTopBarH / 2;
+  // The scores, and under them what they are racing to.
+  constexpr int kScoreH = 36;
   auto counter = [&](const freeink::Icon& art, const int n) {
-    icon(screen, rect(x, midY - 12, 24, 24), art);
+    icon(screen, rect(x, kScoreH / 2 - 10, 24, 24), art);
     std::snprintf(line, sizeof(line), "%d", n);
     const int tw = widthOf(screen, line, Face::Large);
-    say(screen, rect(x + 28, 0, tw + 4, kTopBarH), line, Face::Large, fui::TextAlign::Left);
+    say(screen, rect(x + 28, 2, tw + 4, kScoreH), line, Face::Large, fui::TextAlign::Left);
     x += 28 + tw + 14;
   };
   counter(icon_lobo_wolf_24, m.wolfScore);
   counter(icon_lobo_you_24, m.youScore);
+  std::snprintf(line, sizeof(line), "PLAYING TO %d", m.target);
+  say(screen, rect(12, kScoreH, 160, 18), line, Face::Small, fui::TextAlign::Left);
   std::snprintf(line, sizeof(line), "Hand %d", m.hand);
   say(screen, rect(0, 0, w, kTopBarH), line, Face::Value);
   fui::ButtonProps menu;
@@ -587,12 +591,6 @@ void buildTable(toybox::Screen& screen, const TableModel& model) {
   char msg[160];
   messageText(model, msg, sizeof(msg));
   prose(screen, rect(12, strip.y + 4, w - 24, strip.height - 8), msg, Face::Body, 2, true);
-
-  // What the deck holds, for the players who count cards.
-  char status[64];
-  const int after = l::reshuffleAfter(m);
-  std::snprintf(status, sizeof(status), "PLAYING TO %d    RESHUFFLE AFTER HAND %d", m.target, after);
-  say(screen, rect(0, kStripTop + kStripH + 8, w, 24), status, Face::Small);
 
   // FOLD and the move.
   const int side = 12;
