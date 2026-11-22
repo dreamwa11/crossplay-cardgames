@@ -135,8 +135,9 @@ if kind == "window":
     # A corner: the back wall runs from the left side wall across to the right edge.
     BX, FY = 120, 132
     bricks(BX, 0, W, FY)
-    side_wall(BX, 0, FY, 0, -40, H)
     floor(FY, 300, 40)
+    # the side wall after the floor, so the floor stops at its foot
+    side_wall(BX, 0, FY, 0, -40, H)
     # the window, right of centre, and its light on the floor
     cx, top, w, h = 330, 22, 74, 86
     arch_window(cx, top, w, h)
@@ -162,9 +163,10 @@ if kind == "window":
 elif kind == "cellar":
     BX0, BX1, FY = 70, 410, 130
     bricks(BX0, 24, BX1, FY)
+    floor(FY, 240, 60)
+    # the side walls after the floor, so the floor stops at their feet
     side_wall(BX0, 24, FY, 0, 0, H)
     side_wall(BX1, 24, FY, W, 0, H)
-    floor(FY, 240, 60)
     # beams overhead: one across the front, joists running back
     poly([(0, 0), (W, 0), (BX1, 24), (BX0, 24)], "#fff", 2)
     for i in range(-3, 4):

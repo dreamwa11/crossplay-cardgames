@@ -215,7 +215,7 @@ void headline(toybox::Screen& screen, const char* text) {
 
 constexpr int kTopBarH = 58;
 constexpr int kBackdropTop = kTopBarH + 2;   // the cellar, 230 tall
-constexpr int kEdgeY = 288;                  // the table's back edge
+constexpr int kEdgeY = 266;                  // the table's back edge, at his waist
 constexpr int kWolfBottom = 318;             // his paws rest on the table
 constexpr int kCardW = 86;
 constexpr int kCardH = 124;
@@ -666,7 +666,7 @@ void buildMenu(toybox::Screen& screen, const MenuModel& model) {
   if (room >= ink.h) {
     const int16_t w = screen.device().width;
     const int y = areaTop + (room - ink.h) / 2;
-    const int edge = y + ink.h * 88 / 100;
+    const int edge = y + ink.h * 79 / 100;  // his waist
     screen.target().fill(rect(24, edge, w - 48, 2), kBlack);
     figure(screen, (w - ink.w) / 2, y, mask, ink);
   }
