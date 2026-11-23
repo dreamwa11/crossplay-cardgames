@@ -267,7 +267,7 @@ function earlier(deck, tarot, top) {
 function die(x, y, k, text) {
   iconAt(`d${SIDES[k]}_96`, x + 48, y);
   // The triangle's middle sits low and narrow: a smaller number, lower down.
-  say(x, y + (k === 0 ? 11 : 0), 96, 96, text, (k === 1 || k === 2) ? 'display' : 'ui');
+  say(x, y + (k === 0 ? 11 : 0), 96, 96, text, 'ui');
 }
 
 function drawMenu() {

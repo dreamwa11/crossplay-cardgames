@@ -399,9 +399,8 @@ void die(toybox::Screen& screen, const int x, const int y, const int kind, const
   icon(screen, rect(x, y, art.w, art.h), art);
   // The triangle's middle sits low and narrow: a smaller number, lower down.
   const int drop = kind == 0 ? 11 : 0;
-  // One size per die, so every number on it matches: the big cut where every
-  // face is a single digit and the die is wide enough, the UI cut otherwise.
-  const Face f = (kind == 1 || kind == 2) ? Face::Display : Face::Ui;
+  // One size for every number on every die.
+  const Face f = Face::Ui;
   say(screen, rect(x, y + drop, art.w, art.h), text, f);
 }
 
