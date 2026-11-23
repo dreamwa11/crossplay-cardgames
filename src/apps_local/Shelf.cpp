@@ -12,18 +12,11 @@
 #include "ShelfFolderActivity.h"
 #include "ShelfHidden.h"
 #include "ShelfState.h"
-#include "battleship/BattleshipActivity.h"
 #include "calculator/CalculatorActivity.h"
-#include "checkers/CheckersActivity.h"
 #include "chess/ChessActivity.h"
-#include "connectfour/ConnectFourActivity.h"
-#include "connections/ConnectionsActivity.h"
 #include "dungeon/DungeonActivity.h"
-#include "forehead/ForeheadActivity.h"
 #include "hackernews/HackerNewsActivity.h"
 #include "hearts/HeartsActivity.h"
-#include "hex/HexActivity.h"
-#include "insider/InsiderActivity.h"
 #include "instapaper/InstapaperActivity.h"
 #include "jaipur/JaipurActivity.h"
 #include "knucklebones/KnucklebonesActivity.h"
@@ -31,18 +24,14 @@
 #include "lobo/LoboShelfIcon.h"
 #include "murdle/MurdleActivity.h"
 #include "notes/NotesActivity.h"
-#include "picross/PicrossActivity.h"
 #include "player/PlayerActivity.h"
 #include "scoundrel/ScoundrelActivity.h"
 #include "scoundrel/ScoundrelShelfIcon.h"
 #include "seasalt/SeaSaltActivity.h"
 #include "solitaire/SolitaireActivity.h"
-#include "sudoku/SudokuActivity.h"
-#include "toybattle/ToyBattleActivity.h"
 #include "ui/ToyboxIcons.h"
 #include "underhand/UnderhandActivity.h"
 #include "wallpapers/WallpapersActivity.h"
-#include "wavelength/WavelengthActivity.h"
 #include "wikipedia/WikipediaActivity.h"
 #include "yahtzee/YahtzeeActivity.h"
 
@@ -53,27 +42,16 @@ namespace {
 // shape, so a row is scannable before the label is read.
 constexpr shelf::Item kGames[] = {
     {"CHESS", &icon_chess_32, &ChessActivity::create},
-    {"BATTLESHIP", &icon_battleship_32, &BattleshipActivity::create},
-    {"CONNECTIONS", &icon_connections_32, &ConnectionsActivity::create},
     {"SOLITAIRE", &icon_solitaire_32, &SolitaireActivity::create},
     {"SCOUNDREL", &icon_scoundrel_32, &ScoundrelActivity::create},
     {"LOBO", &icon_lobo_32, &LoboActivity::create},
     {"HEARTS", &icon_hearts_32, &HeartsActivity::create},
     {"D&DIAGRAMS", &icon_dungeon_32, &DungeonActivity::create},
-    {"INSIDER", &icon_insider_32, &InsiderActivity::create},
     {"JAIPUR", &icon_jaipur_32, &JaipurActivity::create},
     {"SEA SALT", &icon_seasalt_32, &SeaSaltActivity::create},
     {"MURDLE", &icon_murdle_32, &MurdleActivity::create},
-    {"CHECKERS", &icon_checkers_32, &CheckersActivity::create},
-    {"CONNECT FOUR", &icon_connectfour_32, &ConnectFourActivity::create},
     {"YAHTZEE", &icon_yahtzee_32, &YahtzeeActivity::create},
     {"KNUCKLEBONES", &icon_knucklebones_32, &KnucklebonesActivity::create},
-    {"SUDOKU", &icon_sudoku_32, &SudokuActivity::create},
-    {"PICROSS", &icon_picross_32, &PicrossActivity::create},
-    {"TOY BATTLE", &icon_toybattle_32, &ToyBattleActivity::create},
-    {"FOREHEAD", &icon_forehead_32, &ForeheadActivity::create},
-    {"WAVELENGTH", &icon_wavelength_32, &WavelengthActivity::create},
-    {"HEX", &icon_hex_32, &HexActivity::create},
     {"UNDERHAND", &icon_underhand_32, &UnderhandActivity::create},
 };
 constexpr shelf::Item kApps[] = {

@@ -6,8 +6,9 @@
 > repository's releases, not upstream's. The phone versions of both games,
 > black and white like the panel, are in `web/` and are published to
 > https://dreamwa11.github.io/crossplay-cardgames/ (`.github/workflows/pages.yml`).
-> To make room for more card games this build leaves out Study, Go, xkcd,
-> Trivia, Wordle and Minesweeper (see `build_src_filter` in `platformio.ini`). Everything below is CrossPlay's own README.
+> This build keeps card games, dice games, Chess and Murdle; the other games
+> and Study, xkcd and Trivia are left out (see `build_src_filter` in
+> `platformio.ini`). Everything below is CrossPlay's own README.
 
 <h1 align="center">
   <img src="site/assets/logo.svg#gh-light-mode-only" width="72" alt="CrossPlay"><img src="site/assets/logo-dark.svg#gh-dark-mode-only" width="72" alt="CrossPlay"><br>
@@ -37,7 +38,7 @@ devices with an 800x480 panel, capacitive touch and two physical buttons
 (three on the Sticky; the design uses the two shared buttons), and
 [CrossPoint](https://crosspointreader.com/) already makes them good at reading.
 CrossPlay is firmware that keeps all of that and adds the other things a screen
-that holds still is good at: **23 games and 6 apps**,
+that holds still is good at: **12 games and 6 apps**,
 spaced-repetition flashcards, comics, a read-later queue, and two devices that
 play together with nothing to set up.
 
@@ -62,27 +63,16 @@ the import lands a real pack instead of failing on an unreachable host.
 |                  |                                                                              |
 | ---------------- | ---------------------------------------------------------------------------- |
 | **Chess**        | A full engine on the device, or a board between two of them.                 |
-| **Battleship**   | Lay out a fleet, then hunt someone else's.                                   |
-| **Connections**  | The daily word grid, with an archive of past boards.                         |
 | **Solitaire**    | Klondike, turned sideways because that is the shape of a tableau.            |
 | **Scoundrel**    | The solo dungeon crawl from a deck of cards. Fight, equip, drink or flee.    |
 | **Lobo**         | Clear the Wolf's hand across the table. Every move you make has a price.     |
 | **Hearts**       | Duck the tricks. Every heart costs one and the queen of spades costs 13.     |
 | **D&Diagrams**   | A nonogram whose clues are a dungeon. 64 of them.                            |
-| **Insider**      | A party game for a table and one device.                                     |
 | **Jaipur**       | The two-player trading game, solo or nearby.                                 |
 | **Murdle**       | A logic grid built through the solver, so you never have to guess.           |
-| **Checkers**     | English draughts, where taking is compulsory and the board says so.          |
-| **Connect Four** | Drop a disc, get four in a line. Seven columns, one tap each.                |
 | **Yahtzee**      | Thirteen boxes, three rolls a turn, and the Joker rules in full.             |
 | **Knucklebones** | Cult of the Lamb's dice game. Matching dice multiply; yours destroy theirs.  |
-| **Sudoku**       | Generated on the device and graded by the technique it needs, not the clues. |
-| **Picross**     | Fill the grid from the clues and a picture appears. Wrong fills lock in.     |
 | **Sea Salt**     | Sea Salt & Paper: collect duos, bet on STOP or LAST CHANCE.                  |
-| **Toy Battle**   | Nine boards of bases and paths. Hold regions, take medals, solo or nearby.   |
-| **Forehead**     | Screen against your forehead, the room shouts clues, sixty seconds.          |
-| **Wavelength**   | A hidden point on a spectrum, one clue, and the whole table arguing.         |
-| **Hex**          | Join your two edges before they join theirs. No captures, and no draws.      |
 | **Underhand**    | The 2017 cult card game: bribe, sacrifice, dodge the police, summon a god.   |
 
 ### Apps
