@@ -181,38 +181,59 @@ void cardFrame(toybox::Screen& screen, const fui::Rect& r, const int edge = 3) {
   screen.target().stroke(r, kBlack, edge, 12);
 }
 
-void cardBack(toybox::Screen& screen, const fui::Rect& r) {
+// A card back: a diamond lattice inside a double frame, and the deck's mark in
+// a white disc in the middle.
+void cardBack(toybox::Screen& screen, const fui::Rect& r, const freeink::Icon& mark) {
+  auto& target = screen.target();
   cardFrame(screen, r);
-  const fui::Rect inner = rect(r.x + 10, r.y + 10, r.width - 20, r.height - 20);
-  screen.target().fill(inner, kGrey, 8);
-  screen.target().stroke(inner, kBlack, 2, 8);
+  const fui::Rect inner = rect(r.x + 9, r.y + 9, r.width - 18, r.height - 18);
+  target.stroke(inner, kBlack, 2, 8);
+  const fui::Rect field = rect(inner.x + 6, inner.y + 6, inner.width - 12, inner.height - 12);
+  // Both diagonals, one row at a time: where each family of lines crosses
+  // the row, a two-pixel dash.
+  const int step = field.width >= 150 ? 18 : 12;
+  for (int y = 0; y < field.height; ++y) {
+    for (int x = (step - y % step) % step; x < field.width; x += step) {
+      target.fill(rect(field.x + x, field.y + y, x + 2 <= field.width ? 2 : 1, 1), kBlack);
+    }
+    for (int x = y % step; x < field.width; x += step) {
+      target.fill(rect(field.x + x, field.y + y, x + 2 <= field.width ? 2 : 1, 1), kBlack);
+    }
+  }
+  target.stroke(field, kBlack, 1, 4);
+  const int16_t radius = static_cast<int16_t>((mark.w > mark.h ? mark.w : mark.h) / 2 + 12);
+  const int16_t cx = static_cast<int16_t>(r.x + r.width / 2);
+  const int16_t cy = static_cast<int16_t>(r.y + r.height / 2);
+  toybox::disc(screen, cx, cy, static_cast<int16_t>(radius + 3), fui::Color::Black);
+  toybox::disc(screen, cx, cy, radius, fui::Color::White);
+  icon(screen, rect(cx - mark.w / 2, cy - mark.h / 2, mark.w, mark.h), mark);
 }
 
 void bigPlaying(toybox::Screen& screen, const fui::Rect& r, const uint8_t id) {
   cardFrame(screen, r);
   if (tt::isJoker(id)) {
-    say(screen, rect(r.x, r.y + 14, r.width, 40), "JOKER", Face::Display);
+    say(screen, rect(r.x, r.y + 14, r.width, 40), "JOKER", Face::Ui);
     iconAt(screen, r.x + r.width / 2, r.y + (r.height - 96) / 2 + 10, icon_tt_joker_96);
     return;
   }
   const char* rank = tt::rankShort(tt::playingRank(id));
   const int suit = tt::playingSuit(id);
   // Corners: the rank over a small suit, top left and bottom right.
-  say(screen, rect(r.x + 10, r.y + 8, 72, 60), rank, Face::Large);
-  iconAt(screen, r.x + 46, r.y + 70, playingSuitArt(suit, 40));
-  say(screen, rect(r.right() - 82, r.bottom() - 68, 72, 60), rank, Face::Large);
-  iconAt(screen, r.right() - 46, r.bottom() - 112, playingSuitArt(suit, 40));
+  say(screen, rect(r.x + 10, r.y + 10, 60, 44), rank, Face::Display);
+  iconAt(screen, r.x + 40, r.y + 58, playingSuitArt(suit, 40));
+  say(screen, rect(r.right() - 70, r.bottom() - 54, 60, 44), rank, Face::Display);
+  iconAt(screen, r.right() - 40, r.bottom() - 98, playingSuitArt(suit, 40));
   iconAt(screen, r.x + r.width / 2, r.y + (r.height - 96) / 2, playingSuitArt(suit, 96));
 }
 
 void miniPlaying(toybox::Screen& screen, const fui::Rect& r, const uint8_t id) {
   cardFrame(screen, r, 2);
   if (tt::isJoker(id)) {
-    say(screen, rect(r.x, r.y + 6, r.width, 26), "JK", Face::Ui);
+    say(screen, rect(r.x, r.y + 6, r.width, 26), "JK", Face::Button);
     iconAt(screen, r.x + r.width / 2, r.bottom() - 52, icon_tt_joker_40);
     return;
   }
-  say(screen, rect(r.x + 4, r.y + 6, r.width - 8, 30), tt::rankShort(tt::playingRank(id)), Face::Display);
+  say(screen, rect(r.x + 4, r.y + 8, r.width - 8, 28), tt::rankShort(tt::playingRank(id)), Face::Ui);
   iconAt(screen, r.x + r.width / 2, r.bottom() - 52, playingSuitArt(tt::playingSuit(id), 40));
 }
 
@@ -391,7 +412,7 @@ void buildMenu(toybox::Screen& screen, const tt::Table& t) {
     say(screen, rect(text.x, r.y + 48, text.width, 48), title, Face::Display, fui::TextAlign::Left);
     if (i == 0) {
       // Two cards, one behind the other.
-      cardBack(screen, rect(r.x + 26, r.y + 28, 82, 116));
+      cardBack(screen, rect(r.x + 26, r.y + 28, 82, 116), icon_tt_spades_24);
       cardFrame(screen, rect(r.x + 62, r.y + 52, 82, 116));
       say(screen, rect(r.x + 66, r.y + 58, 40, 34), "A", Face::Display);
       iconAt(screen, r.x + 103, r.y + 100, icon_tt_spades_40);
@@ -445,11 +466,11 @@ void buildCards(toybox::Screen& screen, const tt::Table& t) {
   if (deck.shown) {
     bigPlaying(screen, card, deck.current[0].id);
     tt::cardName(deck.current[0].id, false, line, sizeof(line));
-    say(screen, rect(0, card.bottom() + 8, w, 36), line, Face::Ui);
+    say(screen, rect(0, card.bottom() + 8, w, 30), line, Face::Button);
   } else {
-    cardBack(screen, card);
-    say(screen, rect(0, card.bottom() + 8, w, 36), deck.left ? "Shuffled. Tap DRAW." : "The deck is empty.",
-        Face::Ui);
+    cardBack(screen, card, icon_tt_spades_40);
+    say(screen, rect(0, card.bottom() + 8, w, 30), deck.left ? "Shuffled. Tap DRAW." : "The deck is empty.",
+        Face::Button);
   }
   earlier(screen, deck, false, 540);
   bottomBar(screen, "SHUFFLE", ActionShuffle, deck.left ? "DRAW" : "EMPTY", ActionDraw, deck.left > 0);
@@ -471,14 +492,13 @@ void buildTarot(toybox::Screen& screen, const tt::Table& t) {
 
   if (deck.shown == 0) {
     const fui::Rect card = rect((w - 236) / 2, 156, 236, 360);
-    cardBack(screen, card);
-    iconAt(screen, card.x + card.width / 2, card.y + (card.height - 88) / 2, icon_tt_major_10_88);
+    cardBack(screen, card, icon_tt_major_10_88);
     say(screen, rect(0, card.bottom() + 6, w, 30), deck.left ? "Shuffled. Tap DRAW." : "The deck is empty.",
-        Face::Ui);
+        Face::Button);
   } else if (deck.shown == 1) {
     const fui::Rect card = rect((w - 236) / 2, 156, 236, 360);
     tarotCard(screen, card, deck.current[0], true);
-    if (deck.current[0].reversed) say(screen, rect(0, card.bottom() + 6, w, 30), "REVERSED", Face::Ui);
+    if (deck.current[0].reversed) say(screen, rect(0, card.bottom() + 6, w, 30), "REVERSED", Face::Button);
   } else {
     const char* const places[3] = {"PAST", "PRESENT", "FUTURE"};
     constexpr int kW = 140;

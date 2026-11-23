@@ -190,26 +190,40 @@ function bottomBar(middle, middleFn, last, lastFn, enabled) {
   else { stroke(lx, BUTTONS_Y, lw, PILL_H, grey(), 2, 10); say(lx, BUTTONS_Y, lw, PILL_H, last, 'ui'); }
 }
 function cardFrame(x, y, w, h, edge = 3) { fill(x, y, w, h, '#fff', 12); stroke(x, y, w, h, '#000', edge, 12); }
-function cardBack(x, y, w, h) {
+function cardBack(x, y, w, h, mark) {
   cardFrame(x, y, w, h);
-  fill(x + 10, y + 10, w - 20, h - 20, grey(), 8); stroke(x + 10, y + 10, w - 20, h - 20, '#000', 2, 8);
+  const ix = x + 9, iy = y + 9, iw = w - 18, ih = h - 18;
+  stroke(ix, iy, iw, ih, '#000', 2, 8);
+  const fx = ix + 6, fy = iy + 6, fw = iw - 12, fh = ih - 12;
+  const step = fw >= 150 ? 18 : 12;
+  ctx.fillStyle = '#000';
+  for (let yy = 0; yy < fh; ++yy) {
+    for (let xx = (step - yy % step) % step; xx < fw; xx += step) ctx.fillRect(fx + xx, fy + yy, xx + 2 <= fw ? 2 : 1, 1);
+    for (let xx = yy % step; xx < fw; xx += step) ctx.fillRect(fx + xx, fy + yy, xx + 2 <= fw ? 2 : 1, 1);
+  }
+  stroke(fx, fy, fw, fh, '#000', 1, 4);
+  const im = img[mark]; if (!im) return;
+  const r = Math.max(im.width, im.height) / 2 + 12, cx = x + Math.floor(w / 2), cy = y + Math.floor(h / 2);
+  ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(cx, cy, r + 3, 0, 7); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
+  icon(mark, cx - im.width / 2, cy - im.height / 2);
 }
 const suitIcon = (s, size) => `${['spades', 'hearts', 'diamonds', 'clubs'][s]}_${size}`;
 
 function bigPlaying(x, y, w, h, id) {
   cardFrame(x, y, w, h);
-  if (id >= 52) { say(x, y + 14, w, 40, 'JOKER', 'display'); iconAt('joker_96', x + w / 2, y + (h - 96) / 2 + 10); return; }
+  if (id >= 52) { say(x, y + 14, w, 40, 'JOKER', 'ui'); iconAt('joker_96', x + w / 2, y + (h - 96) / 2 + 10); return; }
   const r = RANK_SHORT[id % 13], s = Math.floor(id / 13);
-  say(x + 10, y + 8, 72, 60, r, 'large');
-  iconAt(suitIcon(s, 40), x + 46, y + 70);
-  say(x + w - 82, y + h - 68, 72, 60, r, 'large');
-  iconAt(suitIcon(s, 40), x + w - 46, y + h - 112);
+  say(x + 10, y + 10, 60, 44, r, 'display');
+  iconAt(suitIcon(s, 40), x + 40, y + 58);
+  say(x + w - 70, y + h - 54, 60, 44, r, 'display');
+  iconAt(suitIcon(s, 40), x + w - 40, y + h - 98);
   iconAt(suitIcon(s, 96), x + w / 2, y + (h - 96) / 2);
 }
 function miniPlaying(x, y, w, h, id) {
   cardFrame(x, y, w, h, 2);
-  if (id >= 52) { say(x, y + 6, w, 26, 'JK', 'ui'); iconAt('joker_40', x + w / 2, y + h - 52); return; }
-  say(x + 4, y + 6, w - 8, 30, RANK_SHORT[id % 13], 'display');
+  if (id >= 52) { say(x, y + 6, w, 26, 'JK', 'button'); iconAt('joker_40', x + w / 2, y + h - 52); return; }
+  say(x + 4, y + 8, w - 8, 28, RANK_SHORT[id % 13], 'ui');
   iconAt(suitIcon(Math.floor(id / 13), 40), x + w / 2, y + h - 52);
 }
 const two = n => String(n).padStart(2, '0');
@@ -265,7 +279,7 @@ function drawMenu() {
     say(tx, y + 48, tww, 48, ['CARDS', 'TAROT', 'DICE'][i], 'display', 'left');
     let a, b;
     if (i === 0) {
-      cardBack(x + 26, y + 28, 82, 116); cardFrame(x + 62, y + 52, 82, 116);
+      cardBack(x + 26, y + 28, 82, 116, 'spades_24'); cardFrame(x + 62, y + 52, 82, 116);
       say(x + 66, y + 58, 40, 34, 'A', 'display'); iconAt('spades_40', x + 103, y + 100);
       a = `${t.cards.order.length} of ${t.cards.size} left`; b = t.jokers ? 'With jokers' : 'No jokers';
     } else if (i === 1) {
@@ -292,10 +306,10 @@ function drawCards() {
   const cx = (W - 236) / 2, cy = 156;
   if (d.current.length) {
     bigPlaying(cx, cy, 236, 330, d.current[0].id);
-    say(0, cy + 338, W, 36, cardName(d.current[0].id, false), 'ui');
+    say(0, cy + 338, W, 30, cardName(d.current[0].id, false), 'button');
   } else {
-    cardBack(cx, cy, 236, 330);
-    say(0, cy + 338, W, 36, d.order.length ? 'Shuffled. Tap DRAW.' : 'The deck is empty.', 'ui');
+    cardBack(cx, cy, 236, 330, 'spades_40');
+    say(0, cy + 338, W, 30, d.order.length ? 'Shuffled. Tap DRAW.' : 'The deck is empty.', 'button');
   }
   earlier(d, false, 540);
   bottomBar('SHUFFLE', act(() => shuffle('cards')), d.order.length ? 'DRAW' : 'EMPTY', act(() => draw('cards', 1)), d.order.length > 0);
@@ -309,12 +323,12 @@ function drawTarot() {
     act(() => { t.reversals = !t.reversals; }));
   if (!d.current.length) {
     const x = (W - 236) / 2, y = 156;
-    cardBack(x, y, 236, 360); iconAt('major_10_88', x + 118, y + (360 - 88) / 2);
-    say(0, y + 366, W, 30, d.order.length ? 'Shuffled. Tap DRAW.' : 'The deck is empty.', 'ui');
+    cardBack(x, y, 236, 360, 'major_10_88');
+    say(0, y + 366, W, 30, d.order.length ? 'Shuffled. Tap DRAW.' : 'The deck is empty.', 'button');
   } else if (d.current.length === 1) {
     const x = (W - 236) / 2, y = 156;
     tarotCard(x, y, 236, 360, d.current[0], true);
-    if (d.current[0].rev) say(0, y + 366, W, 30, 'REVERSED', 'ui');
+    if (d.current[0].rev) say(0, y + 366, W, 30, 'REVERSED', 'button');
   } else {
     const kw = 140, gap = (W - 3 * kw - 2 * M) / 2;
     d.current.forEach((c, i) => {
