@@ -7,7 +7,7 @@
 > black and white like the panel, are in `web/` and are published to
 > https://dreamwa11.github.io/crossplay-cardgames/ (`.github/workflows/pages.yml`).
 > This build keeps card games, dice games, Chess and Murdle; the other games
-> and Study, xkcd and Trivia are left out (see `build_src_filter` in
+> and Study, xkcd, Trivia and Hacker News are left out (see `build_src_filter` in
 > `platformio.ini`). Everything below is CrossPlay's own README.
 
 <h1 align="center">
@@ -38,7 +38,7 @@ devices with an 800x480 panel, capacitive touch and two physical buttons
 (three on the Sticky; the design uses the two shared buttons), and
 [CrossPoint](https://crosspointreader.com/) already makes them good at reading.
 CrossPlay is firmware that keeps all of that and adds the other things a screen
-that holds still is good at: **12 games and 6 apps**,
+that holds still is good at: **12 games and 5 apps**,
 spaced-repetition flashcards, comics, a read-later queue, and two devices that
 play together with nothing to set up.
 
@@ -79,7 +79,6 @@ the import lands a real pack instead of failing on an unreachable host.
 
 |                 |                                                                          |
 | --------------- | ------------------------------------------------------------------------ |
-| **Hacker News** | The front page in a reading serif, articles kept on the card.            |
 | **Instapaper**  | Your read-later queue, synced both ways: reading position and archiving. |
 | **Wallpapers**  | Pick an image on the card as the sleep screen, one tap to set it.        |
 | **Wikipedia**   | Fifty thousand articles on the card, read like a book, no internet.      |

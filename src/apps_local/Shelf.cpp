@@ -15,7 +15,6 @@
 #include "calculator/CalculatorActivity.h"
 #include "chess/ChessActivity.h"
 #include "dungeon/DungeonActivity.h"
-#include "hackernews/HackerNewsActivity.h"
 #include "hearts/HeartsActivity.h"
 #include "instapaper/InstapaperActivity.h"
 #include "jaipur/JaipurActivity.h"
@@ -55,7 +54,6 @@ constexpr shelf::Item kGames[] = {
     {"UNDERHAND", &icon_underhand_32, &UnderhandActivity::create},
 };
 constexpr shelf::Item kApps[] = {
-    {"HACKER NEWS", &icon_hackernews_32, &HackerNewsActivity::create},
     {"INSTAPAPER", &icon_instapaper_32, &InstapaperActivity::create},
     {"WALLPAPERS", &icon_wallpapers_32, &WallpapersActivity::create},
     {"WIKIPEDIA", &icon_wikipedia_32, &WikipediaActivity::create},
