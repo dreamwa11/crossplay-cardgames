@@ -1,6 +1,6 @@
 > **crossplay-cardgames** is a copy of [CrossPlay](https://github.com/ma-r-s/crossplay)
-> with two games added, **Scoundrel** (`src/apps_local/scoundrel/`) and **Lobo**
-> (`src/apps_local/lobo/`), and **Tabletop** (`src/apps_local/tabletop/`): playing
+> with three games added, **Scoundrel** (`src/apps_local/scoundrel/`), **Lobo**
+> (`src/apps_local/lobo/`) and **Severance** (`src/apps_local/severance/`), and **Tabletop** (`src/apps_local/tabletop/`): playing
 > cards, tarot and dice. They build into every CrossPlay device; GitHub Actions builds the M5Stack
 > PaperMono firmware (`.github/workflows/papermono.yml`). Tagged versions are
 > published as releases, and the device's *Check for updates* reads this
@@ -39,7 +39,7 @@ devices with an 800x480 panel, capacitive touch and two physical buttons
 (three on the Sticky; the design uses the two shared buttons), and
 [CrossPoint](https://crosspointreader.com/) already makes them good at reading.
 CrossPlay is firmware that keeps all of that and adds the other things a screen
-that holds still is good at: **12 games and 6 apps**,
+that holds still is good at: **13 games and 6 apps**,
 spaced-repetition flashcards, comics, a read-later queue, and two devices that
 play together with nothing to set up.
 
@@ -67,6 +67,7 @@ the import lands a real pack instead of failing on an unreachable host.
 | **Solitaire**    | Klondike, turned sideways because that is the shape of a tableau.            |
 | **Scoundrel**    | The solo dungeon crawl from a deck of cards. Fight, equip, drink or flee.    |
 | **Lobo**         | Clear the Wolf's hand across the table. Every move you make has a price.     |
+| **Severance**    | Refine green against blue to reunite every innie with their outie. V2 rules. |
 | **Hearts**       | Duck the tricks. Every heart costs one and the queen of spades costs 13.     |
 | **D&Diagrams**   | A nonogram whose clues are a dungeon. 64 of them.                            |
 | **Jaipur**       | The two-player trading game, solo or nearby.                                 |

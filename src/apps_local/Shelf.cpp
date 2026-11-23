@@ -21,6 +21,8 @@
 #include "knucklebones/KnucklebonesActivity.h"
 #include "lobo/LoboActivity.h"
 #include "lobo/LoboShelfIcon.h"
+#include "severance/SeveranceActivity.h"
+#include "severance/SeveranceShelfIcon.h"
 #include "tabletop/TabletopActivity.h"
 #include "tabletop/TabletopShelfIcon.h"
 #include "murdle/MurdleActivity.h"
@@ -46,6 +48,7 @@ constexpr shelf::Item kGames[] = {
     {"SOLITAIRE", &icon_solitaire_32, &SolitaireActivity::create},
     {"SCOUNDREL", &icon_scoundrel_32, &ScoundrelActivity::create},
     {"LOBO", &icon_lobo_32, &LoboActivity::create},
+    {"SEVERANCE", &icon_severance_32, &SeveranceActivity::create},
     {"HEARTS", &icon_hearts_32, &HeartsActivity::create},
     {"D&DIAGRAMS", &icon_dungeon_32, &DungeonActivity::create},
     {"JAIPUR", &icon_jaipur_32, &JaipurActivity::create},

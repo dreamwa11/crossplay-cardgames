@@ -47,6 +47,12 @@ rasterised into `src/apps_local/lobo/LoboArt.h`; sources and details in
 `src/apps_local/lobo/art/`. Lobo itself is a solitaire game by James Ernest,
 Crab Fragment Labs (2022); this is an unofficial fan version.
 
+**Severance: The Card Game** is designed by u/DREAMWALL and shared under
+CC BY-NC-SA 4.0; `src/apps_local/severance/` is an unofficial fan
+implementation of its Version 2 rules under the same licence.
+`host-tests/severance/phone_engine.js` is the phone version's rules engine,
+kept to check the port against.
+
 **Tabletop's art**: the major arcana are Pamela Colman Smith's 1909
 Rider-Waite-Smith drawings (public domain), in `TabletopRws.h`; the suits and
 joker are by Lorc, Skoll and Delapouite from game-icons.net, CC BY 3.0, in
