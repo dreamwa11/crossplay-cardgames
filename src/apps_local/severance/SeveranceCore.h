@@ -148,7 +148,11 @@ void newGame(Game& g, uint32_t seed, bool lenient);
 // Queries for the screens.
 int topOf(const Game& g, int stack);
 bool inLockedZone(const Game& g, int stack);
-int usableNums(const Game& g, uint8_t* out);  // grid numbers in use, then the hand
+int usableNums(const Game& g, uint8_t* out);  // grid numbers in use, then the playable hand
+// Drawn number cards stay in hand: Dieter's are all playable, the rest form a
+// pile whose top card is playable.
+int playableHand(const Game& g, uint8_t* out);
+int wasteDepth(const Game& g);
 bool isUsable(const Game& g, int id);
 bool hasValidPair(const Game& g);
 bool canDraw(const Game& g);

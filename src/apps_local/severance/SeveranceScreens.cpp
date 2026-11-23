@@ -526,15 +526,21 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
   } else {
     dashed(screen, pile, 1);
   }
-  const int handLeft = handRect(0, g.hand.n ? g.hand.n : 1).x;
-  if (!g.hand.n) dashed(screen, handRect(0, 1), 1);
-  for (int k = 0; k < g.hand.n; ++k) {
-    const int id = g.hand.c[k];
+  uint8_t hand[s::kCards];
+  const int nh = s::playableHand(g, hand);
+  const int handLeft = handRect(0, nh ? nh : 1).x;
+  if (!nh) dashed(screen, handRect(0, 1), 1);
+  for (int k = 0; k < nh; ++k) {
+    const int id = hand[k];
     Look look;
     look.selected = selected(m, id);
     look.goatGreen = g.card[id].red;
     for (int q = 0; q < nCand; ++q) look.candidate |= cand[q] == id;
-    const fui::Rect r = handRect(k, g.hand.n);
+    const fui::Rect r = handRect(k, nh);
+    // Earlier draws wait under the top one: show them as a card's edge behind it.
+    if (!g.card[id].keep && s::wasteDepth(g) > 1) {
+      t.fill(rect(r.x + 4, r.y + 4, r.width, r.height), kBlack, 4);
+    }
     cardFace(screen, r, g, id, look, true);
   }
   // The selection's totals on the left: round over square, or what a chosen
@@ -656,8 +662,8 @@ const RulesPage kRules[] = {
     {"Refining",
      "Tap face-up numbers so the round total equals the square total (7 + 3 round with 10 square), then REFINE.\n\nWhen "
      "identical cards are free, the one in the earliest position (Zone 1 first, left to right) must be used.\n\n"
-     "Removing a card turns over the one beneath it. Tap the draw pile when you like; only the latest draw can be "
-     "used."},
+     "Removing a card turns over the one beneath it. Tap the draw pile when you like. Unused draws pile up "
+     "beside it; only the top one can be used, and once it is, the one under it can."},
     {"Pairing",
      "Tap an employee's innie and outie when both are on the grid and they pair at once. If one half already waits "
      "aside, one tap on the other half pairs them.\n\nWhen the draw pile runs out while Zone 3 still hides cards, "
@@ -670,7 +676,8 @@ const RulesPage kRules[] = {
     {"Special figures",
      "Kier: move up to two numbers away. Dieter: draws two; his numbers stay in hand. Ms. Casey and Gemma: set an "
      "unmatched employee aside, or move a number away. Helly leaves her stack on her own and can cancel Milchick or "
-     "Cobel once. Drummond locks his zone until your next pair and reverses the pile and Zone 4."},
+     "Cobel once. Drummond reverses the pile and Zone 4, and locks his zone until your next pair if another open "
+     "zone has a face-up number (never Zone 1)."},
     {"More figures",
      "Graner sends a revealed employee to the bottom of the last Zone 4 stack. Jame cancels Helly's Defiance, pauses "
      "her, and replays Milchick and Cobel. Reghabi searches stacks you choose for hidden employees. Milchick returns "
@@ -698,8 +705,10 @@ Hit hitTest(const s::Game& g, const int x, const int y) {
   for (int ch = 0; ch < s::kChars; ++ch)
     for (int half = 0; half < 2; ++half)
       if (inside(miniRect(ch, half == 1), x, y)) return Hit{HitKind::Mini, ch * 2 + half};
-  for (int k = g.hand.n - 1; k >= 0; --k)
-    if (inside(handRect(k, g.hand.n), x, y)) return Hit{HitKind::Hand, k};
+  uint8_t hand[s::kCards];
+  const int nh = s::playableHand(g, hand);
+  for (int k = nh - 1; k >= 0; --k)
+    if (inside(handRect(k, nh), x, y)) return Hit{HitKind::Hand, k};
   if (inside(drawRect(), x, y)) return Hit{HitKind::Draw, 0};
   return h;
 }

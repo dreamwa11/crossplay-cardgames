@@ -113,6 +113,14 @@ int gridTops(const Game& g, Top* out) {
     if (zoneOf(all[k].i) != g.lockZone) out[m++] = all[k];
   return m;
 }
+// A face-up number card in an open zone other than z.
+bool numsOutside(const Game& g, const int z) {
+  Top all[kStacks];
+  const int n = rawTops(g, all);
+  for (int k = 0; k < n; ++k)
+    if (isNum(all[k].c) && g.unlocked[zoneOf(all[k].i)] && zoneOf(all[k].i) != z) return true;
+  return false;
+}
 int gridNums(const Game& g, Top* out) {
   Top all[kStacks];
   const int n = gridTops(g, all);
@@ -421,17 +429,15 @@ void applySpecial(Game& g, const int id, const int at) {
           if (g.stacks[s].n) return true;
         return false;
       };
-      int inUse = 0;
-      for (int q = 0; q < 4; ++q)
-        if (g.unlocked[q] && zoneHasCards(q)) ++inUse;
-      const bool lock = z > 0 && inUse > 1 && zoneHasCards(z);
+      // A zone is "in use" when it is open and has a face-up number card to refine with.
+      const bool lock = z > 0 && zoneHasCards(z) && numsOutside(g, z);
       Text t(text, sizeof(text));
       if (lock) {
         t.add("Zone %d is locked until your next refined pair. ", z + 1);
       } else if (z == 0) {
         t.add("He cannot lock Zone 1. ");
       } else if (z > 0) {
-        t.add("He cannot lock the only zone in use. ");
+        t.add("He cannot lock Zone %d, as no other zone has a face-up number card to refine with. ", z + 1);
       }
       t.add("The order of the draw pile and of every Zone 4 stack is reversed.");
       say(g, id, "Workplace Reforms", text, Kind::Bad);
@@ -671,8 +677,10 @@ void drawOne(Game& g, const int dieter) {
       g.card[c].keep = true;
       logLine(g, Kind::Good, "%s is %s. It stays in your hand until you refine it.", dt, lab(g, c));
     } else {
-      logLine(g, Kind::Plain, "You drew %s.%s", lab(g, c),
-              g.hand.n > 1 ? " It can be used together with Dieter's cards." : " Only this most recent draw can be used.");
+      bool dieterHeld = false;
+      for (int k = 0; k < g.hand.n; ++k) dieterHeld |= g.card[g.hand.c[k]].keep;
+      logLine(g, Kind::Plain, "You drew %s.%s%s", lab(g, c), dieterHeld ? " It can be used together with Dieter's cards." : "",
+              wasteDepth(g) > 1 ? " It goes on top of your earlier draws." : "");
     }
     return;
   }
@@ -691,6 +699,13 @@ void settle(Game& g) {
   for (;;) {
     if (g.over != Over::No) return;
     if (g.pending.type != Pend::None) return;
+    if (g.lockZone != kNone && !numsOutside(g, g.lockZone)) {
+      // Safety net: the lock may never leave the grid without a usable number card.
+      logLine(g, Kind::Good, "No face-up number card is left outside Zone %d, so Drummond's lock is lifted.",
+              g.lockZone + 1);
+      g.lockZone = kNone;
+      continue;
+    }
     if (revealOne(g)) continue;
     if (!g.draw.n && canReshuffle(g)) {
       reshuffle(g);
@@ -954,8 +969,24 @@ int usableNums(const Game& g, uint8_t* out) {
   const int n = gridNums(g, t);
   int m = 0;
   for (int k = 0; k < n; ++k) out[m++] = t[k].c;
-  for (int k = 0; k < g.hand.n; ++k) out[m++] = g.hand.c[k];
+  m += playableHand(g, out + m);
   return m;
+}
+
+int playableHand(const Game& g, uint8_t* out) {
+  int top = kNone;
+  for (int k = 0; k < g.hand.n; ++k)
+    if (!g.card[g.hand.c[k]].keep) top = g.hand.c[k];
+  int m = 0;
+  for (int k = 0; k < g.hand.n; ++k)
+    if (g.card[g.hand.c[k]].keep || g.hand.c[k] == top) out[m++] = g.hand.c[k];
+  return m;
+}
+
+int wasteDepth(const Game& g) {
+  int n = 0;
+  for (int k = 0; k < g.hand.n; ++k) n += !g.card[g.hand.c[k]].keep;
+  return n;
 }
 
 bool isUsable(const Game& g, const int id) {
@@ -1155,20 +1186,6 @@ bool actPair(Game& g, const int ch) {
 bool actDraw(Game& g) {
   if (!canDraw(g)) return false;
   begin(g);
-  uint8_t drop[kCards];
-  int nd = 0;
-  for (int k = 0; k < g.hand.n; ++k)
-    if (!g.card[g.hand.c[k]].keep) drop[nd++] = g.hand.c[k];
-  if (nd) {
-    char text[kLogLen];
-    Text t(text, sizeof(text));
-    for (int k = 0; k < nd; ++k) t.add("%s%s", k ? ", " : "", lab(g, drop[k]));
-    logLine(g, Kind::Plain, "The unused draw (%s) is discarded.", text);
-    for (int k = 0; k < nd; ++k) {
-      g.hand.remove(drop[k]);
-      g.gone.push(drop[k]);
-    }
-  }
   drawOne(g, 0);
   settle(g);
   return true;

@@ -289,7 +289,10 @@ void SeveranceActivity::tapBoard(const int x, const int y) {
       return;
     }
     case ui::HitKind::Hand:
-      if (hit.index < g.hand.n) tapCard(g.hand.c[hit.index], false);
+      {
+        uint8_t hand[sev::kCards];
+        if (hit.index < sev::playableHand(g, hand)) tapCard(hand[hit.index], false);
+      }
       return;
     case ui::HitKind::Mini: {
       const int ch = hit.index / 2;
@@ -315,7 +318,9 @@ uint32_t SeveranceActivity::surfaceMeaning() const {
   if (!game) return m;
   // Where each stack's top card sits is fixed; what changes the board's
   // tappable shape is the hand, the panels and Reghabi's stack picking.
-  m = paintclock::mixMeaning(m, game->hand.n);
+  uint8_t hand[sev::kCards];
+  m = paintclock::mixMeaning(m, static_cast<uint32_t>(sev::playableHand(*game, hand)));
+  m = paintclock::mixMeaning(m, static_cast<uint32_t>(sev::wasteDepth(*game) > 1));
   m = paintclock::mixMeaning(m, static_cast<uint32_t>(game->pending.type));
   m = paintclock::mixMeaning(m, static_cast<uint32_t>(annIndex + 1));
   return paintclock::mixMeaning(m, showEnd ? 1u : 0u);

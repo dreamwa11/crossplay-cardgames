@@ -1,5 +1,5 @@
-// The phone version's rules engine (Severance: The Card Game, Version 2), copied
-// verbatim from the web build so the port can be checked against it.
+// The phone version's rules engine (Severance: The Card Game, Version 2), copied from the
+// web build so the port can be checked against it; CrossPlay keeps unused draws in a pile.
 
 /* ===================== ENGINE (no DOM) — Version 2 rules ===================== */
 var CHARS = {K:'Mark S.',Q:'Helly R.',J:'Dylan G.',A:'Irving B.'};
@@ -58,7 +58,10 @@ function rawTops(){var out=[];for(var i=0;i<16;i++){var c=topOf(i);if(c&&c.faceU
 function gridTops(){return rawTops().filter(function(o){return zoneOf(o.i)!==G.lockZone;});}   // Drummond's locked zone is out of use
 function gridNums(){return gridTops().filter(function(o){return o.c.type==='num'&&o.c.id!==G.blocked;});}
 function gridMains(){return gridTops().filter(function(o){return o.c.type==='main';});}
-function usableNums(){return gridNums().map(function(o){return o.c;}).concat(G.hand);}
+// Drawn number cards stay in hand: Dieter's are all playable, the rest form a pile whose top is playable.
+function playableHand(){var top=null;G.hand.forEach(function(c){if(!c.keep)top=c;});return G.hand.filter(function(c){return c.keep||c===top;});}
+function wasteDepth(){return G.hand.filter(function(c){return !c.keep;}).length;}
+function usableNums(){return gridNums().map(function(o){return o.c;}).concat(playableHand());}
 function sums(cards){var s={0:1};cards.forEach(function(c){Object.keys(s).forEach(function(k){s[+k+c.val]=1;});});delete s[0];return s;}
 function hasValidPair(){
   var u=usableNums(),w=u.filter(function(c){return c.wild;})[0],opts=w?[true,false]:[null];
@@ -203,10 +206,10 @@ function applySpecial(c,at){
     else if(n2.length){G.pending={type:'casey',mode:'num',max:1,who:c.name,ann:say(c,'Wellness Session','No unmatched character is on the grid, so '+c.name+' can move one numerical card away.','good',{spots:ids(n2),choice:true})};}
     else say(c,'Wellness Session',c.name+' finds nobody to help. No effect.','');
   }else if(c.fx==='drummond'){
-    var z=at===undefined?-1:zoneOf(at),inUse=0;
-    for(var q=0;q<4;q++)if(G.unlocked[q]&&G.stacks.slice(q*4,q*4+4).some(function(s){return s.length;}))inUse++;
-    var lock=z>0&&inUse>1&&G.stacks.slice(z*4,z*4+4).some(function(s){return s.length;});
-    say(c,'Workplace Reforms',(lock?'Zone '+(z+1)+' is locked until your next refined pair. ':z===0?'He cannot lock Zone 1. ':z>0?'He cannot lock the only zone in use. ':'')+
+    var z=at===undefined?-1:zoneOf(at);
+    // a zone is "in use" when it is unlocked and has a face-up number card to refine with
+    var lock=z>0&&G.stacks.slice(z*4,z*4+4).some(function(s){return s.length;})&&numsOutside(z);
+    say(c,'Workplace Reforms',(lock?'Zone '+(z+1)+' is locked until your next refined pair. ':z===0?'He cannot lock Zone 1. ':z>0?'He cannot lock Zone '+(z+1)+', as no other zone has a face-up number card to refine with. ':'')+
       'The order of the draw pile and of every Zone 4 stack is reversed.','bad',{stacks:[12,13,14,15],draw:true});
     if(lock)G.lockZone=z;
     G.draw.reverse();
@@ -298,15 +301,23 @@ function drawOne(q){
   if(c.type==='num'){
     G.hand.push(c);
     if(dt){c.keep=true;log(dt+' is '+lab(c)+'. It stays in your hand until you refine it.','good');}
-    else log('You drew '+lab(c)+'.'+(G.hand.length>1?' It can be used together with Dieter\'s cards.':' Only this most recent draw can be used.'));
+    else log('You drew '+lab(c)+'.'+(G.hand.some(function(h){return h.keep;})?' It can be used together with Dieter\'s cards.':'')+(wasteDepth()>1?' It goes on top of your earlier draws.':''));
     snap('draw');}
   else{log(dt?dt+' is '+lab(c)+', so its ability applies instead of a number card.':'You drew '+lab(c)+'.',c.fx==='cobel'||c.fx==='milchick'||c.fx==='jame'?'bad':'good');
     G.gone.push(c);snap('effect',null,applySpecial(c));}
+}
+function numsOutside(z){
+  return rawTops().some(function(o){return o.c.type==='num'&&G.unlocked[zoneOf(o.i)]&&zoneOf(o.i)!==z;});
 }
 function settle(){
   for(;;){
     if(G.over)return;
     if(G.pending)return;
+    if(G.lockZone!==null&&!numsOutside(G.lockZone)){
+      // safety net: the lock may never leave the grid without a usable number card
+      log('No face-up number card is left outside Zone '+(G.lockZone+1)+', so Drummond\'s lock is lifted.','good');
+      G.lockZone=null;snap('unlock');continue;
+    }
     if(revealOne())continue;
     if(!G.draw.length&&canReshuffle()){reshuffle();continue;}
     if(G.queue.length){drawOne(G.queue.shift());continue;}
@@ -329,8 +340,6 @@ function pairIds(){var ids=[];pairable().forEach(function(ch){mainCards(ch).forE
 function actDraw(){
   if(!canDraw())return false;
   beginTurn();
-  var drop=G.hand.filter(function(c){return !c.keep;});
-  if(drop.length){log('The unused draw ('+drop.map(lab).join(', ')+') is discarded.');drop.forEach(function(c){G.gone.push(c);});G.hand=G.hand.filter(function(c){return c.keep;});}
   drawOne();settle();return true;
 }
 function actRefine(ids){
