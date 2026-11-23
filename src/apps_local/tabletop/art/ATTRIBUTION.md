@@ -1,7 +1,10 @@
 # Tabletop artwork
 
-- **Major arcana** (`major_00` .. `major_21`): game-icons.net, by Caro Asercion,
-  CC BY 3.0.
+- **Major arcana** (`rws/`): Pamela Colman Smith's drawings for the
+  Rider-Waite-Smith deck (Rider, 1909), public domain (US: published 1909;
+  UK/EU: Smith died 1951). From Steve P.'s restored scans of a 1909 Pam-A
+  deck, via github.com/mixvlad/TarotCards; reduced to line art by the
+  generator.
 - **Tarot suits** (`wands`, `cups`, `swords`, `pentacles`), **playing suits**
   and the **joker**: game-icons.net, by Lorc, Skoll and Delapouite,
   CC BY 3.0.

@@ -6,7 +6,12 @@
 #include <cstring>
 #include <initializer_list>
 
+#include <InflateStream.h>
+#include <Logging.h>
+#include <Memory.h>
+
 #include "TabletopArt.h"
+#include "TabletopRws.h"
 
 namespace tabletopui {
 
@@ -56,6 +61,16 @@ fui::Rect rect(const int x, const int y, const int w, const int h) {
 void say(toybox::Screen& screen, const fui::Rect& box, const char* text, const Face f,
          const fui::TextAlign align = fui::TextAlign::Center, const bool paper = false) {
   screen.target().text(toybox::inkCentred(box, cutOf(f)), text, face(f, align, paper));
+}
+
+// Grey words on paper: black type with every other pixel knocked back to
+// white. The renderer has no dithered text, and a checkerboard over the ink
+// is what a grey glyph would be anyway. `box` must hold nothing but the words.
+void sayGrey(toybox::Screen& screen, const fui::Rect& box, const char* text, const Face f) {
+  say(screen, box, text, f);
+  for (int y = box.y; y < box.bottom(); ++y) {
+    for (int x = box.x + (y & 1); x < box.right(); x += 2) screen.target().fill(rect(x, y, 1, 1), kWhite);
+  }
 }
 
 int widthOf(toybox::Screen& screen, const char* text, const Face f) {
@@ -233,39 +248,49 @@ void miniPlaying(toybox::Screen& screen, const fui::Rect& r, const uint8_t id) {
 
 // ---- tarot ----------------------------------------------------------------------
 
-const freeink::Icon* const kMajor128[tt::kMajors] = {
-    &icon_tt_major_00_128, &icon_tt_major_01_128, &icon_tt_major_02_128, &icon_tt_major_03_128,
-    &icon_tt_major_04_128, &icon_tt_major_05_128, &icon_tt_major_06_128, &icon_tt_major_07_128,
-    &icon_tt_major_08_128, &icon_tt_major_09_128, &icon_tt_major_10_128, &icon_tt_major_11_128,
-    &icon_tt_major_12_128, &icon_tt_major_13_128, &icon_tt_major_14_128, &icon_tt_major_15_128,
-    &icon_tt_major_16_128, &icon_tt_major_17_128, &icon_tt_major_18_128, &icon_tt_major_19_128,
-    &icon_tt_major_20_128, &icon_tt_major_21_128};
-const freeink::Icon* const kMajor128r[tt::kMajors] = {
-    &icon_tt_major_00_128_r, &icon_tt_major_01_128_r, &icon_tt_major_02_128_r, &icon_tt_major_03_128_r,
-    &icon_tt_major_04_128_r, &icon_tt_major_05_128_r, &icon_tt_major_06_128_r, &icon_tt_major_07_128_r,
-    &icon_tt_major_08_128_r, &icon_tt_major_09_128_r, &icon_tt_major_10_128_r, &icon_tt_major_11_128_r,
-    &icon_tt_major_12_128_r, &icon_tt_major_13_128_r, &icon_tt_major_14_128_r, &icon_tt_major_15_128_r,
-    &icon_tt_major_16_128_r, &icon_tt_major_17_128_r, &icon_tt_major_18_128_r, &icon_tt_major_19_128_r,
-    &icon_tt_major_20_128_r, &icon_tt_major_21_128_r};
-const freeink::Icon* const kMajor88[tt::kMajors] = {
-    &icon_tt_major_00_88, &icon_tt_major_01_88, &icon_tt_major_02_88, &icon_tt_major_03_88, &icon_tt_major_04_88,
-    &icon_tt_major_05_88, &icon_tt_major_06_88, &icon_tt_major_07_88, &icon_tt_major_08_88, &icon_tt_major_09_88,
-    &icon_tt_major_10_88, &icon_tt_major_11_88, &icon_tt_major_12_88, &icon_tt_major_13_88, &icon_tt_major_14_88,
-    &icon_tt_major_15_88, &icon_tt_major_16_88, &icon_tt_major_17_88, &icon_tt_major_18_88, &icon_tt_major_19_88,
-    &icon_tt_major_20_88, &icon_tt_major_21_88};
-const freeink::Icon* const kMajor88r[tt::kMajors] = {
-    &icon_tt_major_00_88_r, &icon_tt_major_01_88_r, &icon_tt_major_02_88_r, &icon_tt_major_03_88_r,
-    &icon_tt_major_04_88_r, &icon_tt_major_05_88_r, &icon_tt_major_06_88_r, &icon_tt_major_07_88_r,
-    &icon_tt_major_08_88_r, &icon_tt_major_09_88_r, &icon_tt_major_10_88_r, &icon_tt_major_11_88_r,
-    &icon_tt_major_12_88_r, &icon_tt_major_13_88_r, &icon_tt_major_14_88_r, &icon_tt_major_15_88_r,
-    &icon_tt_major_16_88_r, &icon_tt_major_17_88_r, &icon_tt_major_18_88_r, &icon_tt_major_19_88_r,
-    &icon_tt_major_20_88_r, &icon_tt_major_21_88_r};
-const freeink::Icon* const kMajor48[tt::kMajors] = {
-    &icon_tt_major_00_48, &icon_tt_major_01_48, &icon_tt_major_02_48, &icon_tt_major_03_48, &icon_tt_major_04_48,
-    &icon_tt_major_05_48, &icon_tt_major_06_48, &icon_tt_major_07_48, &icon_tt_major_08_48, &icon_tt_major_09_48,
-    &icon_tt_major_10_48, &icon_tt_major_11_48, &icon_tt_major_12_48, &icon_tt_major_13_48, &icon_tt_major_14_48,
-    &icon_tt_major_15_48, &icon_tt_major_16_48, &icon_tt_major_17_48, &icon_tt_major_18_48, &icon_tt_major_19_48,
-    &icon_tt_major_20_48, &icon_tt_major_21_48};
+// A major arcanum: Pamela Colman Smith's drawing, inflated from flash into a
+// buffer for the one draw, and turned there when the card came up reversed.
+// The drawing carries its own number and title, as the printed card does.
+void drawRws(toybox::Screen& screen, const int x, const int y, const tabletopart::Packed& p, const bool turned) {
+  const int stride = (p.w + 7) / 8;
+  const size_t bytes = static_cast<size_t>(stride) * p.h;
+  auto ink = makeUniqueNoThrow<uint8_t[]>(bytes);
+  auto bits = makeUniqueNoThrow<uint8_t[]>(bytes);
+  if (!ink || !bits) {
+    LOG_ERR("TABLETOP", "OOM: %d bytes for a card", static_cast<int>(bytes * 2));
+    return;
+  }
+  InflateStream inflate;
+  if (!inflate.init(false)) {
+    LOG_ERR("TABLETOP", "OOM: inflate state");
+    return;
+  }
+  inflate.setSource(p.data, p.size);
+  inflate.setZlibWrapped();
+  if (!inflate.read(ink.get(), bytes)) {
+    LOG_ERR("TABLETOP", "Card art did not inflate");
+    return;
+  }
+  // freeink::Icon is 1 for paper, MSB first; the packed art is 1 for ink.
+  if (!turned) {
+    for (size_t i = 0; i < bytes; ++i) bits[i] = static_cast<uint8_t>(~ink[i]);
+  } else {
+    std::memset(bits.get(), 0xFF, bytes);
+    for (int yy = 0; yy < p.h; ++yy) {
+      const uint8_t* row = ink.get() + yy * stride;
+      uint8_t* out = bits.get() + (p.h - 1 - yy) * stride;
+      for (int xx = 0; xx < p.w; ++xx) {
+        if (row[xx >> 3] & (0x80 >> (xx & 7))) {
+          const int tx = p.w - 1 - xx;
+          out[tx >> 3] = static_cast<uint8_t>(out[tx >> 3] & ~(0x80 >> (tx & 7)));
+        }
+      }
+    }
+  }
+  const freeink::Icon art = {static_cast<uint16_t>(p.w), static_cast<uint16_t>(p.h), static_cast<uint16_t>(p.h / 2),
+                             bits.get()};
+  icon(screen, rect(x, y, p.w, p.h), art);
+}
 
 const freeink::Icon& tarotSuitArt(const int suit, const int size, const bool turned) {
 #define SUIT(n) \
@@ -288,19 +313,21 @@ const freeink::Icon& tarotSuitArt(const int suit, const int size, const bool tur
 // the top, the picture, the name at the foot. Reversed turns the picture.
 void tarotCard(toybox::Screen& screen, const fui::Rect& r, const tt::Drawn& d, const bool big) {
   cardFrame(screen, r);
+  if (tt::isMajor(d.id)) {
+    const tabletopart::Packed& p = (big ? tabletopart::kRws_big : tabletopart::kRws_spread)[d.id];
+    drawRws(screen, r.x + (r.width - p.w) / 2, r.y + (r.height - p.h) / 2, p, d.reversed);
+    return;
+  }
   const fui::Rect inner = rect(r.x + 7, r.y + 7, r.width - 14, r.height - 14);
   screen.target().stroke(inner, kBlack, 1, 8);
   const Face top = big ? Face::Ui : Face::Button;
   const int topH = big ? 40 : 30;
   char name[32];
   tt::cardName(d.id, true, name, sizeof(name));
-  const char* label = tt::isMajor(d.id) ? tt::roman(d.id) : tt::rankWord(tt::tarotRank(d.id));
-  say(screen, rect(inner.x, inner.y + 4, inner.width, topH), label, top);
+  say(screen, rect(inner.x, inner.y + 4, inner.width, topH), tt::rankWord(tt::tarotRank(d.id)), top);
   const int nameH = big ? 56 : 44;
   const int nameTop = inner.bottom() - nameH - 2;
-  const freeink::Icon& art = tt::isMajor(d.id)
-                                 ? *(big ? (d.reversed ? kMajor128r : kMajor128) : (d.reversed ? kMajor88r : kMajor88))[d.id]
-                                 : tarotSuitArt(tt::tarotSuit(d.id), big ? 128 : 64, d.reversed);
+  const freeink::Icon& art = tarotSuitArt(tt::tarotSuit(d.id), big ? 128 : 64, d.reversed);
   const int artTop = inner.y + 4 + topH;
   const int room = nameTop - artTop;
   iconAt(screen, r.x + r.width / 2, artTop + (room - art.h) / 2, art);
@@ -310,10 +337,17 @@ void tarotCard(toybox::Screen& screen, const fui::Rect& r, const tt::Drawn& d, c
 
 void miniTarot(toybox::Screen& screen, const fui::Rect& r, const tt::Drawn& d) {
   cardFrame(screen, r, 2);
-  const char* label = tt::isMajor(d.id) ? tt::roman(d.id) : tt::rankWord(tt::tarotRank(d.id));
-  say(screen, rect(r.x + 2, r.y + 4, r.width - 4, 22), label, Face::Tile);
-  const freeink::Icon& art = tt::isMajor(d.id) ? *kMajor48[d.id] : tarotSuitArt(tt::tarotSuit(d.id), 40, false);
-  iconAt(screen, r.x + r.width / 2, r.y + 30, art);
+  if (tt::isMajor(d.id)) {
+    say(screen, rect(r.x + 2, r.y + 8, r.width - 4, 28), tt::roman(d.id),
+        fit(screen, tt::roman(d.id), r.width - 8, {Face::Ui, Face::Button}));
+    char name[32];
+    tt::cardName(d.id, true, name, sizeof(name));
+    const char* shortName = std::strncmp(name, "THE ", 4) == 0 ? name + 4 : name;
+    prose(screen, rect(r.x + 3, r.y + 40, r.width - 6, 44), shortName, Face::Tile, 3);
+  } else {
+    say(screen, rect(r.x + 2, r.y + 4, r.width - 4, 22), tt::rankWord(tt::tarotRank(d.id)), Face::Tile);
+    iconAt(screen, r.x + r.width / 2, r.y + 30, tarotSuitArt(tt::tarotSuit(d.id), 40, false));
+  }
   if (d.reversed) say(screen, rect(r.x + 2, r.bottom() - 26, r.width - 4, 22), "REV", Face::Tile);
 }
 
@@ -420,9 +454,8 @@ void buildMenu(toybox::Screen& screen, const tt::Table& t) {
     } else if (i == 1) {
       const fui::Rect c = rect(r.x + 36, r.y + 18, 108, 160);
       cardFrame(screen, c);
-      say(screen, rect(c.x, c.y + 6, c.width, 26), "0", Face::Button);
-      iconAt(screen, c.x + c.width / 2, c.y + 40, icon_tt_major_00_88);
-      say(screen, rect(c.x, c.bottom() - 30, c.width, 24), "THE FOOL", Face::Tile);
+      const tabletopart::Packed& fool = tabletopart::kRws_menu[0];
+      drawRws(screen, c.x + (c.width - fool.w) / 2, c.y + (c.height - fool.h) / 2, fool, false);
       std::snprintf(line, sizeof(line), "%d of %d left", t.tarot.left, t.tarot.size);
       say(screen, rect(text.x, r.y + 100, text.width, 30), line, Face::Ui, fui::TextAlign::Left);
       say(screen, rect(text.x, r.y + 132, text.width, 26), t.spread ? "Three-card spread" : "One card at a time",
@@ -499,13 +532,14 @@ void buildTarot(toybox::Screen& screen, const tt::Table& t) {
   } else {
     const char* const places[3] = {"PAST", "PRESENT", "FUTURE"};
     constexpr int kW = 140;
+    constexpr int kH = 226;
     const int gap = (w - 3 * kW - 2 * m) / 2;
     for (int i = 0; i < deck.shown; ++i) {
       const int x = m + i * (kW + gap);
-      say(screen, rect(x, 150, kW, 28), places[i], Face::Button);
-      const fui::Rect card = rect(x, 182, kW, 262);
+      const fui::Rect card = rect(x, 160, kW, kH);
       tarotCard(screen, card, deck.current[i], false);
-      if (deck.current[i].reversed) say(screen, rect(x, card.bottom() + 6, kW, 26), "REVERSED", Face::Tile);
+      sayGrey(screen, rect(x, card.bottom() + 8, kW, 26), places[i], Face::Button);
+      if (deck.current[i].reversed) say(screen, rect(x, card.bottom() + 36, kW, 22), "REVERSED", Face::Tile);
     }
   }
   earlier(screen, deck, true, 556);
