@@ -588,9 +588,9 @@ void announcement(toybox::Screen& screen, const s::Game& g, const s::Ann& a) {
   t.stroke(card, kBlack, 2, 4);
   const int tx = card.x + card.width + 14;
   const int tw = kW - kM - tx;
-  // The ability's title small and grey, the figure's name large.
-  sayGrey(screen, rect(tx, kPanelY + 12, tw, 18), a.title, Face::Tile, fui::TextAlign::Left);
-  say(screen, rect(tx, kPanelY + 30, tw, 32), s::cardName(a.card), fit(screen, s::cardName(a.card), tw, {Face::Ui, Face::Button}),
+  // The figure's name large, the ability's title small and grey under it.
+  sayGrey(screen, rect(tx, kPanelY + 44, tw, 18), a.title, Face::Tile, fui::TextAlign::Left);
+  say(screen, rect(tx, kPanelY + 12, tw, 32), s::cardName(a.card), fit(screen, s::cardName(a.card), tw, {Face::Ui, Face::Button}),
       fui::TextAlign::Left);
   t.fill(rect(tx, kPanelY + 64, tw, 1), kBlack);
   prose(screen, rect(tx, kPanelY + 70, tw, 130), a.text, Face::Tile, 6);

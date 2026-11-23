@@ -717,8 +717,8 @@ function announcement(a) {
   const cx = M, cy = PANEL_Y + 18, cw = 112, ch = 132;
   fill(cx, cy, cw, ch, '#fff', 4); specialFace(a.card, cx, cy, cw, ch); stroke(cx, cy, cw, ch, '#000', 2, 4);
   const tx = cx + cw + 14, tw = W - M - tx;
-  sayGrey(tx, PANEL_Y + 12, tw, 18, a.title, 'tile', 'left');
-  txt(tx, PANEL_Y + 30, tw, 32, a.card.name, fitFace(a.card.name, tw, ['ui', 'button']), 'left');
+  sayGrey(tx, PANEL_Y + 44, tw, 18, a.title, 'tile', 'left');
+  txt(tx, PANEL_Y + 12, tw, 32, a.card.name, fitFace(a.card.name, tw, ['ui', 'button']), 'left');
   fill(tx, PANEL_Y + 64, tw, 1, '#000');
   wrap(tx, PANEL_Y + 70, tw, a.text, 'tile', 6);
   button(W - M - 200, BUTTONS_Y, 200, BUTTON_H, 'CONTINUE', () => {
