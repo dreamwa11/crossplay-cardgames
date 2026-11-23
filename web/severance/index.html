@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Severance">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-severance-180.png">
+<title>Severance for CrossPlay</title>
+<style>
+@font-face { font-family: 'Rubik'; src: url(data:font/woff2;base64,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) format('woff2'); }
+html, body { margin: 0; height: 100%; background: #2b2b2e; }
+body { display: flex; align-items: center; justify-content: center; font-family: system-ui, sans-serif; overflow: hidden; }
+.device { background: #e8e6e1; border-radius: 26px; padding: 16px 16px 30px; box-shadow: 0 20px 50px #0008, inset 0 0 0 2px #fff6; position: relative; }
+.device::after { content: 'M5Stack PaperMono · CrossPlay'; position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-size: 11px; letter-spacing: .08em; color: #8a877f; }
+canvas { display: block; image-rendering: pixelated; background: #fff; border-radius: 4px; touch-action: manipulation; cursor: pointer; }
+/* On a phone the phone is the device: the panel fills the screen, no frame. */
+@media (max-width: 600px), (display-mode: standalone) {
+  html, body { background: #fff; }
+  body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .device { background: none; box-shadow: none; padding: 0; border-radius: 0; }
+  .device::after { display: none; }
+  canvas { border-radius: 0; }
+}
+</style>
+</head>
+<body>
+<div class="device"><canvas id="screen" width="480" height="800"></canvas></div>
+<script>
+// The phone version's rules engine (Severance: The Card Game, Version 2), copied
+// verbatim from the web build so the port can be checked against it.
+
+/* ===================== ENGINE (no DOM) — Version 2 rules ===================== */
+var CHARS = {K:'Mark S.',Q:'Helly R.',J:'Dylan G.',A:'Irving B.'};
+var CHAR_ORDER = ['K','Q','J','A'];
+var LAYERS = [1,3,4,4];
+var ADMIN = {1:2,2:2,3:2,4:4,5:4,6:4,7:2,8:2,9:2,10:2};
+var SPECIALS = {kier:'Kier Eagan',dieter:'Dieter Eagan',casey:'Ms. Casey',drummond:'Mr. Drummond',graner:'Doug Graner',
+  milchick:'Seth Milchick',cobel:'Harmony Cobel',reghabi:'Reghabi',jame:'Jame Eagan',gemma:'Gemma'};
+var G = null;
+var onSnap = null;
+function snap(kind,spot,extra){if(onSnap)onSnap(kind,spot||null,extra||null);}
+
+function rnd(n){return Math.floor(Math.random()*n);}
+function pick(a){return a[rnd(a.length)];}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=rnd(i+1),t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function zoneOf(i){return Math.floor(i/4);}
+
+function mkSpecial(fx,id,adm){return {id:id,type:'special',fx:fx,name:SPECIALS[fx],faceUp:false,adm:!!adm};}
+function lab(c){
+  if(c.wild)return 'Emile the Goat'+(c.faceUp&&c.val?' (worth '+c.val+')':'');
+  if(c.type==='num')return c.val+' '+(c.red?'green':'blue');
+  if(c.type==='main')return c.name+' ('+(c.red?'innie':'outie')+')';
+  return c.name;
+}
+function log(text,kind){G.log.push({t:G.turn,x:text,k:kind||''});if(G.log.length>80)G.log.shift();}
+
+function newGame(opts){
+  var n=0,gridNumsAll=[],admin=[],v,k,mains=[];
+  for(v=2;v<=10;v++)for(k=0;k<4;k++)gridNumsAll.push({id:'n'+(n++),type:'num',val:v,red:k<2,faceUp:false});
+  for(v=1;v<=10;v++)for(k=0;k<ADMIN[v];k++)admin.push({id:'n'+(n++),type:'num',val:v,red:k%2===0,faceUp:false,adm:true});
+  CHAR_ORDER.forEach(function(ch){
+    mains.push({id:ch+'D',type:'main',ch:ch,red:true,name:CHARS[ch],faceUp:false});
+    mains.push({id:ch+'S',type:'main',ch:ch,red:false,name:ch==='Q'?'Helena':CHARS[ch],faceUp:false});
+  });
+  var goat={id:'GT',type:'num',wild:true,val:0,red:true,name:'Emile',faceUp:false};
+  var gemma=mkSpecial('casey','GM',1);gemma.name='Gemma';              // same ability as Ms. Casey, but lives in the pile
+  var draw=shuffle(admin.concat([mkSpecial('dieter','KC',1),gemma,mkSpecial('graner','JC',1),mkSpecial('milchick','BJ',1),
+    mkSpecial('cobel','RJ',1),mkSpecial('reghabi','RG',1),mkSpecial('jame','JE',1)]));
+  var rest=shuffle(gridNumsAll.concat(mains,[goat,mkSpecial('drummond','JH'),mkSpecial('casey','QH')]));
+  var stacks=[];for(var i=0;i<16;i++)stacks.push([]);
+  stacks[9].push(mkSpecial('kier','KH'));                      // Kier placed first, position 10
+  for(i=0;i<16;i++){while(stacks[i].length<LAYERS[zoneOf(i)])stacks[i].push(rest.pop());}
+  G={v:2,stacks:stacks,unlocked:[true,false,false,false],draw:draw,hand:[],waiting:[],paired:[],gone:[],total:81,
+     lastPair:null,blocked:null,lockZone:null,hellyPause:false,hallPending:false,hallPass:false,defianceUsed:false,
+     reshuffled:false,seen:{},pending:null,queue:[],over:null,turn:0,log:[],ann:null,dealing:true,opts:opts||{lenient:false}};
+  log('A new quarter begins. Zone 1 is open; Zones 2, 3 and 4 are locked.','');
+  snap('deal');
+  settle();
+  G.dealing=false;
+  return G;
+}
+
+/* ---- queries ---- */
+function topOf(i){var s=G.stacks[i];return s.length?s[s.length-1]:null;}
+function rawTops(){var out=[];for(var i=0;i<16;i++){var c=topOf(i);if(c&&c.faceUp)out.push({c:c,i:i});}return out;}
+function gridTops(){return rawTops().filter(function(o){return zoneOf(o.i)!==G.lockZone;});}   // Drummond's locked zone is out of use
+function gridNums(){return gridTops().filter(function(o){return o.c.type==='num'&&o.c.id!==G.blocked;});}
+function gridMains(){return gridTops().filter(function(o){return o.c.type==='main';});}
+function usableNums(){return gridNums().map(function(o){return o.c;}).concat(G.hand);}
+function sums(cards){var s={0:1};cards.forEach(function(c){Object.keys(s).forEach(function(k){s[+k+c.val]=1;});});delete s[0];return s;}
+function hasValidPair(){
+  var u=usableNums(),w=u.filter(function(c){return c.wild;})[0],opts=w?[true,false]:[null];
+  for(var n=0;n<opts.length;n++){
+    var side=function(c){return c.wild?opts[n]:c.red;};
+    var r=sums(u.filter(function(c){return side(c);})),b=sums(u.filter(function(c){return !side(c);}));
+    for(var k in r)if(b[k])return true;
+  }
+  return false;
+}
+function canReshuffle(){return !G.reshuffled&&G.stacks.slice(8,12).some(function(s){return s.some(function(c){return !c.faceUp;});});}
+function canDraw(){return !G.over&&!G.pending&&G.draw.length>0;}   // drawing is allowed even if a pair was missed
+function isPaired(ch){return G.paired.some(function(p){return p.ch===ch;});}
+function selectionTotals(ids){
+  var r=0,b=0,nr=0,nb=0;usableNums().forEach(function(c){if(ids.indexOf(c.id)>=0){if(c.red){r+=c.val;nr++;}else{b+=c.val;nb++;}}});
+  return {r:r,b:b,ok:nr>0&&nb>0&&r===b};
+}
+// Priority rule: among identical usable grid cards, the one in the earliest position must be used first.
+function priorityFix(ids){
+  var gn=gridNums(),out=ids.slice(),changed=false;
+  gn.forEach(function(o){
+    if(o.c.wild||out.indexOf(o.c.id)<0)return;
+    var first=gn.filter(function(q){return !q.c.wild&&q.c.val===o.c.val&&q.c.red===o.c.red&&out.indexOf(q.c.id)<0&&q.i<o.i;})[0];
+    if(first){out[out.indexOf(o.c.id)]=first.c.id;changed=true;}
+  });
+  return {ids:out,changed:changed};
+}
+function findCard(id){
+  for(var i=0;i<16;i++)for(var j=0;j<G.stacks[i].length;j++)if(G.stacks[i][j].id===id)return {c:G.stacks[i][j],i:i,j:j};
+  return null;
+}
+
+/* ---- mutations ---- */
+function takeFromGrid(id){var f=findCard(id);if(f)G.stacks[f.i].splice(f.j,1);return f;}
+function pickStack(){
+  var idx=[];for(var i=0;i<16;i++)if(G.stacks[i].length)idx.push(i);
+  if(!idx.length)for(i=0;i<16;i++)idx.push(i);
+  return pick(idx);
+}
+function insertHidden(card,k){
+  card.faceUp=false;var st=G.stacks[k];
+  if(G.unlocked[zoneOf(k)]&&st.length&&st[st.length-1].faceUp)st.splice(st.length-1,0,card);else st.push(card);
+}
+function stackList(ks){
+  if(ks.length>1&&ks[0]===ks[1])return 'the same stack in Zone '+(zoneOf(ks[0])+1);
+  var z=[];ks.forEach(function(k){if(z.indexOf(zoneOf(k)+1)<0)z.push(zoneOf(k)+1);});z.sort();
+  return (ks.length>1?'stacks':'a stack')+' in Zone'+(z.length>1?'s ':' ')+z.join(' and ');
+}
+// Log an ability and hold it on screen (with the cards and stacks it touches) before it is carried out.
+function say(c,title,text,kind,o){
+  o=o||{};
+  log(title+(/[!?]$/.test(title)?' ':': ')+text,kind);
+  G.ann={card:c,title:title,text:text,spots:o.spots||[],stacks:o.stacks||[],limbo:o.limbo||[],draw:!!o.draw,choice:!!o.choice};
+  snap('announce');var a=G.ann;G.ann=null;return a;
+}
+function toWaiting(card,why){
+  takeFromGrid(card.id);card.faceUp=true;G.waiting.push(card);
+  log(lab(card)+' '+why+' and waits aside for '+(card.red?'the outie':'the innie')+'.','good');
+}
+function mainCards(ch){
+  var found=[];
+  gridMains().forEach(function(o){if(o.c.ch===ch)found.push(o.c);});
+  G.waiting.forEach(function(c){if(c.ch===ch)found.push(c);});
+  return found;
+}
+function mateWaiting(ch){return G.waiting.some(function(w){return w.ch===ch;});}
+function caseyMains(){return gridMains().filter(function(o){return !mateWaiting(o.c.ch);});}
+function pairable(){return CHAR_ORDER.filter(function(ch){return !isPaired(ch)&&!(ch==='Q'&&G.hellyPause)&&mainCards(ch).length===2;});}
+function actPair(ch){
+  if(G.over||G.pending||pairable().indexOf(ch)<0)return false;
+  beginTurn();
+  var found=mainCards(ch);
+  found.forEach(function(c){takeFromGrid(c.id);G.waiting=G.waiting.filter(function(w){return w.id!==c.id;});c.faceUp=true;});
+  G.paired.push({ch:ch,cards:found});
+  log(CHARS[ch]+' is paired: innie and outie are reunited ('+G.paired.length+' of 4).','good');snap('pair');
+  if(G.paired.length===4){G.over='win';G.queue=[];log('You hit quota! All main characters are paired.','good');snap('end');return true;}
+  settle();return true;
+}
+function updateUnlocks(){
+  var ch=false,z1=0,i,z;
+  for(i=0;i<4;i++)z1+=G.stacks[i].filter(function(c){return c.type==='num';}).length;
+  if(!G.unlocked[1]&&z1<=2){G.unlocked[1]=true;ch=true;log('Zone 2 unlocked: two number cards or fewer remain in Zone 1.','good');snap('unlock');}
+  for(z=2;z<4;z++){
+    if(G.unlocked[z]||!G.unlocked[z-1])continue;
+    var n=0;for(i=(z-1)*4;i<z*4;i++)if(G.stacks[i].some(function(c){return !c.faceUp;}))n++;
+    if(n<=1){G.unlocked[z]=true;ch=true;log('Zone '+(z+1)+' unlocked: at most one stack in Zone '+z+' still hides a card.','good');snap('unlock');}
+  }
+  // No number card is face up anywhere on the grid: the next locked zone opens so play can go on.
+  if(!ch&&!G.dealing){
+    var pendingFlip=false;
+    for(i=0;i<16;i++){var c=topOf(i);if(c&&!c.faceUp&&G.unlocked[zoneOf(i)])pendingFlip=true;}
+    z=G.unlocked.indexOf(false);
+    if(!pendingFlip&&z>0&&!rawTops().some(function(o){return o.c.type==='num';})){
+      G.unlocked[z]=true;ch=true;log('Zone '+(z+1)+' unlocked: no number card is left face up on the grid.','good');snap('unlock');
+    }
+  }
+  return ch;
+}
+function revealOne(){
+  for(var i=0;i<16;i++){
+    var c=topOf(i);
+    if(c&&!c.faceUp&&G.unlocked[zoneOf(i)]){c.faceUp=true;onReveal(c,i);return true;}
+  }
+  return updateUnlocks();
+}
+function rollGoat(c){
+  var d=G.gone.filter(function(x){return x.type==='num'&&!x.wild;});
+  if(d.length){var s=pick(d);c.val=s.val;return 'a random card from the discard pile ('+lab(s)+')';}
+  c.val=1+rnd(6);return 'a die roll, as the discard pile is empty';
+}
+function onReveal(c,i){
+  var pos='Zone '+(zoneOf(i)+1);
+  if(c.wild){var how=rollGoat(c);log('Emile the Goat is revealed in '+pos+'. He is worth '+c.val+', set by '+how+', and counts as green or blue, whichever you choose.','good');snap('reveal',c.id);return;}
+  if(c.type==='num'){if(!G.dealing)log('Revealed '+lab(c)+' in '+pos+'.');snap('reveal');return;}
+  if(c.type==='main'){
+    log(lab(c)+' is revealed in '+pos+'.');snap('reveal',c.id);
+    if(mateWaiting(c.ch))return;            // stays on the grid; the player taps it to pair
+    if(c.ch==='Q'){toWaiting(c,'exits the stack by Free Will');snap('move');}
+    else if(G.hallPass){toWaiting(c,'uses the Hall Pass');snap('move');}
+    return;
+  }
+  log(lab(c)+' is revealed in '+pos+'.',c.fx==='kier'||c.fx==='casey'?'good':'bad');
+  snap('special',c.id);
+  G.stacks[i].pop();G.gone.push(c);
+  snap('effect',null,applySpecial(c,i));
+}
+function revealedMains(){return gridMains().map(function(o){return o.c;}).concat(G.waiting);}
+function applySpecial(c,at){
+  var ids=function(a){return a.map(function(o){return o.c.id;});};
+  if(c.fx==='kier'){
+    var ns=gridNums();
+    if(ns.length){G.pending={type:'kier',max:2,ann:say(c,'Lumon always provides!','You may move up to two numerical cards away from their stacks.','good',{spots:ids(ns),choice:true})};}
+    else say(c,'Lumon always provides!','But no numerical card is face up. No effect.','');
+  }else if(c.fx==='casey'){
+    var ms=caseyMains(),n2=gridNums();
+    if(ms.length===1){
+      var m=ms[0].c;
+      say(c,'Wellness Session',c.name+' escorts '+lab(m)+' out of the grid to wait for '+(m.red?'the outie':'the innie')+'.','good',{spots:[m.id]});
+      toWaiting(m,'is escorted out by '+c.name);
+    }
+    else if(ms.length){G.pending={type:'casey',mode:'main',max:1,who:c.name,ann:say(c,'Wellness Session',c.name+' can set one unmatched character aside to wait for their pair.','good',{spots:ids(ms),choice:true})};}
+    else if(n2.length){G.pending={type:'casey',mode:'num',max:1,who:c.name,ann:say(c,'Wellness Session','No unmatched character is on the grid, so '+c.name+' can move one numerical card away.','good',{spots:ids(n2),choice:true})};}
+    else say(c,'Wellness Session',c.name+' finds nobody to help. No effect.','');
+  }else if(c.fx==='drummond'){
+    var z=at===undefined?-1:zoneOf(at),inUse=0;
+    for(var q=0;q<4;q++)if(G.unlocked[q]&&G.stacks.slice(q*4,q*4+4).some(function(s){return s.length;}))inUse++;
+    var lock=z>0&&inUse>1&&G.stacks.slice(z*4,z*4+4).some(function(s){return s.length;});
+    say(c,'Workplace Reforms',(lock?'Zone '+(z+1)+' is locked until your next refined pair. ':z===0?'He cannot lock Zone 1. ':z>0?'He cannot lock the only zone in use. ':'')+
+      'The order of the draw pile and of every Zone 4 stack is reversed.','bad',{stacks:[12,13,14,15],draw:true});
+    if(lock)G.lockZone=z;
+    G.draw.reverse();
+    for(var i=12;i<16;i++){var st=G.stacks[i];if(st.length>1){st.reverse();st.forEach(function(x){x.faceUp=false;});}}
+    return {stacks:[12,13,14,15],draw:true};
+  }else if(c.fx==='graner'){
+    var cand=revealedMains();
+    G.paired.forEach(function(p){cand=cand.concat(p.cards);});
+    if(!cand.length){say(c,'Break Room','No main character has been revealed yet. No effect.','');return null;}
+    var v=pick(cand),wasPaired=isPaired(v.ch),k=15;
+    say(c,'Break Room','Graner sends '+lab(v)+' face down to the bottom of the last stack in Zone 4.'+(wasPaired?' The '+CHARS[v.ch]+' pair is broken; the other half waits aside.':''),'bad',{spots:[v.id],stacks:[k]});
+    if(wasPaired){
+      var p=G.paired.filter(function(q){return q.ch===v.ch;})[0];
+      G.paired=G.paired.filter(function(q){return q!==p;});
+      p.cards.forEach(function(x){if(x.id!==v.id)G.waiting.push(x);});
+    }else{takeFromGrid(v.id);G.waiting=G.waiting.filter(function(w){return w.id!==v.id;});}
+    v.faceUp=false;G.stacks[k].unshift(v);
+    return {stacks:[k]};
+  }else if(c.fx==='dieter'){
+    say(c,'Dieter Eagan','Two cards are drawn from the draw pile. Number cards he draws stay in your hand until you refine them.','good',{draw:true});
+    G.queue.unshift({t:'draw',dieter:1},{t:'draw',dieter:2});
+  }else if(c.fx==='jame'){
+    var rep=['milchick','cobel'].filter(function(f){return G.seen[f];});
+    say(c,'Jame Eagan','Helly\'s Defiance is cancelled for the rest of the quarter, and she cannot be paired until your next refined pair.'+
+      (rep.length?' '+rep.map(function(f){return SPECIALS[f];}).join(' and ')+' ha'+(rep.length>1?'ve':'s')+' already appeared, so their abilit'+(rep.length>1?'ies play':'y plays')+' again.':''),'bad');
+    G.defianceUsed=true;G.hellyPause=true;
+    rep.forEach(function(f){
+      if(G.over||G.pending)return;
+      snap('effect',null,applySpecial({id:f==='milchick'?'BJ':'RJ',type:'special',fx:f,name:SPECIALS[f],faceUp:true}));
+    });
+  }else if(c.fx==='reghabi'){
+    var hid=[];G.stacks.forEach(function(s,n){if(s.some(function(x){return !x.faceUp;}))hid.push(n);});
+    var rv=revealedMains().length;
+    if(!hid.length){say(c,'Reintegration','No stack hides a card for Reghabi to search. No effect.','');return null;}
+    G.pending={type:'reghabi',max:rv?2:4,ann:say(c,'Reintegration',rv
+      ?'Choose up to two stacks. Reghabi searches their hidden cards and frees any match of a revealed main character.'
+      :'No main character is revealed, so choose up to four stacks. Reghabi frees the first hidden main character she finds.','good',{stacks:hid,choice:true})};
+  }else if(c.fx==='cobel'||c.fx==='milchick'){
+    G.seen[c.fx]=true;
+    var helly=G.waiting.filter(function(w){return w.ch==='Q';})[0],defy=!G.defianceUsed&&!!helly;
+    if(defy){
+      G.defianceUsed=true;
+      say(c,'Defiance!','Helly cancels '+c.name+"'s effect. She cannot do this again.",'good',{spots:[helly.id]});
+    }else if(c.fx==='cobel'){
+      if(G.paired.length){
+        var sp=pick(G.paired),ks=[pickStack(),pickStack()];
+        say(c,'Reintegration Check','Cobel splits the '+CHARS[sp.ch]+' pair and hides both cards face down in '+stackList(ks)+'.','bad',
+          {spots:sp.cards.map(function(x){return x.id;}),stacks:ks});
+        G.paired=G.paired.filter(function(q){return q!==sp;});
+        sp.cards.forEach(function(x,n){insertHidden(x,ks[n]);});
+        return {stacks:ks};
+      }
+      var nn=gridNums();
+      if(nn.length){var o=pick(nn);
+        say(c,'Kier, Chosen One, Kier!','Nobody is paired, so Cobel blocks '+lab(o.c)+' in Zone '+(zoneOf(o.i)+1)+' until your next refined pair.','bad',{spots:[o.c.id]});
+        G.blocked=o.c.id;}
+      else say(c,'Kier, Chosen One, Kier!','Cobel finds no pair to split and no numerical card to block. No effect.','');
+    }else{
+      var cards=(G.lastPair||[]).filter(function(x){return G.gone.indexOf(x)>=0;});
+      if(cards.length){
+        var dest;
+        if(G.opts.lenient){var open=[];for(var s=0;s<16;s++)if(G.unlocked[zoneOf(s)])open.push(s);dest=cards.map(function(){return pick(open);});}
+        else dest=cards.map(pickStack);
+        say(c,'AGAIN!','Milchick returns your last refined cards ('+cards.map(lab).join(', ')+') '+(G.opts.lenient?'face up':'face down')+' to '+stackList(dest)+'.','bad',{limbo:cards,stacks:dest});
+        G.lastPair=null;G.gone=G.gone.filter(function(x){return cards.indexOf(x)<0;});
+        cards.forEach(function(x,n){x.keep=false;if(G.opts.lenient){x.faceUp=true;G.stacks[dest[n]].push(x);}else insertHidden(x,dest[n]);});
+        return {stacks:dest};
+      }
+      say(c,'AGAIN!','There is no refined pair to return. No effect.','');
+    }
+  }
+  return null;
+}
+function reshuffle(){
+  var back=G.gone.filter(function(x){return x.adm;});
+  say({id:'GM',type:'special',fx:'casey',name:'Gemma',faceUp:true},'Administration reshuffled',
+    'The draw pile ran out while Zone 3 still hides cards, so its '+back.length+' used cards, Gemma among them, are reshuffled and used once more.'+
+    (G.hallPass?'':' After your next refined pair, main characters get the Hall Pass and exit their stacks when they appear.'),'good',{draw:true});
+  G.gone=G.gone.filter(function(x){return !x.adm;});
+  back.forEach(function(x){x.faceUp=false;x.keep=false;});
+  G.draw=shuffle(back);G.reshuffled=true;
+  if(!G.hallPass)G.hallPending=true;
+  snap('effect',null,{draw:true});
+}
+function drawOne(q){
+  var dt=q&&q.dieter?"Dieter's "+(q.dieter===1?'first':'second')+' draw':'';
+  if(!G.draw.length){log((dt?dt+': ':'')+'the draw pile is empty; nothing to draw.');return;}
+  var c=G.draw.pop();c.faceUp=true;
+  if(c.type==='num'){
+    G.hand.push(c);
+    if(dt){c.keep=true;log(dt+' is '+lab(c)+'. It stays in your hand until you refine it.','good');}
+    else log('You drew '+lab(c)+'.'+(G.hand.length>1?' It can be used together with Dieter\'s cards.':' Only this most recent draw can be used.'));
+    snap('draw');}
+  else{log(dt?dt+' is '+lab(c)+', so its ability applies instead of a number card.':'You drew '+lab(c)+'.',c.fx==='cobel'||c.fx==='milchick'||c.fx==='jame'?'bad':'good');
+    G.gone.push(c);snap('effect',null,applySpecial(c));}
+}
+function settle(){
+  for(;;){
+    if(G.over)return;
+    if(G.pending)return;
+    if(revealOne())continue;
+    if(!G.draw.length&&canReshuffle()){reshuffle();continue;}
+    if(G.queue.length){drawOne(G.queue.shift());continue;}
+    if(!hasValidPair()&&!G.draw.length&&!pairable().length&&(G.lockZone!==null||G.hellyPause)){
+      // nothing else can be done, so the one-round restrictions end early
+      if(G.lockZone!==null){log('No other move is possible, so Drummond\'s lock on Zone '+(G.lockZone+1)+' is lifted.');G.lockZone=null;}
+      if(G.hellyPause){log('No other move is possible, so Helly may be paired again.');G.hellyPause=false;}
+      snap('unlock');continue;
+    }
+    break;
+  }
+  if(!hasValidPair()&&!G.draw.length&&!pairable().length){
+    G.over='lose';log('No valid moves are left and the draw pile is empty. The quarter is lost.','bad');snap('end');
+  }
+}
+function beginTurn(){G.turn++;}
+function pairIds(){var ids=[];pairable().forEach(function(ch){mainCards(ch).forEach(function(c){ids.push(c.id);});});return ids;}
+
+/* ---- player actions ---- */
+function actDraw(){
+  if(!canDraw())return false;
+  beginTurn();
+  var drop=G.hand.filter(function(c){return !c.keep;});
+  if(drop.length){log('The unused draw ('+drop.map(lab).join(', ')+') is discarded.');drop.forEach(function(c){G.gone.push(c);});G.hand=G.hand.filter(function(c){return c.keep;});}
+  drawOne();settle();return true;
+}
+function actRefine(ids){
+  if(G.over||G.pending)return false;
+  var t=selectionTotals(ids);if(!t.ok||priorityFix(ids).changed)return false;
+  beginTurn();
+  var cards=usableNums().filter(function(c){return ids.indexOf(c.id)>=0;});
+  var reds=cards.filter(function(c){return c.red;}).map(lab).join(' + '),blks=cards.filter(function(c){return !c.red;}).map(lab).join(' + ');
+  cards.forEach(function(c){if(!takeFromGrid(c.id))G.hand=G.hand.filter(function(h){return h.id!==c.id;});});
+  cards.forEach(function(c){c.keep=false;G.gone.push(c);});
+  G.lastPair=cards;
+  log('Refined '+reds+' with '+blks+' (both total '+t.r+').','good');
+  if(G.blocked){G.blocked=null;log('Cobel steps away; her blocked card is free again.','good');}
+  if(G.lockZone!==null){log('Drummond\'s lock on Zone '+(G.lockZone+1)+' ends.','good');G.lockZone=null;}
+  if(G.hellyPause){G.hellyPause=false;log('Helly may be paired again.','good');}
+  snap('refine');
+  if(G.hallPending&&!G.hallPass){
+    G.hallPass=true;G.hallPending=false;log('Hall Pass is now active.','good');
+    gridMains().forEach(function(o){if(!mateWaiting(o.c.ch)){toWaiting(o.c,'uses the Hall Pass');snap('move');}});
+  }
+  settle();return true;
+}
+function pendingCandidates(){
+  if(!G.pending)return [];
+  if(G.pending.type==='reghabi'){var out=[];G.stacks.forEach(function(s,n){if(s.some(function(x){return !x.faceUp;}))out.push('S'+n);});return out;}
+  if(G.pending.type==='casey'&&G.pending.mode==='main')return caseyMains().map(function(o){return o.c.id;});
+  return gridNums().map(function(o){return o.c.id;});
+}
+function actResolve(ids){
+  var p=G.pending;if(!p||G.over)return false;
+  var cand=pendingCandidates();
+  ids=ids.filter(function(id){return cand.indexOf(id)>=0;}).slice(0,p.max);
+  beginTurn();G.pending=null;
+  var who=p.type==='kier'?"Kier's offer":p.type==='reghabi'?"Reghabi's search":p.who+"'s session";
+  if(!ids.length){log(who+' is declined.');}
+  else if(p.type==='reghabi'){
+    var want=revealedMains().map(function(c){return c.ch;}),freed=[],anyMode=!want.length;
+    ids.forEach(function(sid){
+      G.stacks[+sid.slice(1)].filter(function(x){return !x.faceUp&&x.type==='main';}).forEach(function(x){
+        if(anyMode?freed.length===0:want.indexOf(x.ch)>=0)freed.push(x);
+      });
+    });
+    if(!freed.length)log('Reghabi searches '+ids.length+' stack'+(ids.length>1?'s':'')+' and finds no '+(anyMode?'main character':'match')+'.');
+    freed.forEach(function(x){toWaiting(x,'is found by Reghabi');snap('move');});
+  }
+  else if(p.type==='kier'||p.mode==='num'){
+    var names=ids.map(function(id){var f=takeFromGrid(id);G.gone.push(f.c);return lab(f.c);});
+    log((p.type==='kier'?'Kier':p.who)+' moves away '+names.join(' and ')+'.','good');
+  }else{toWaiting(findCard(ids[0]).c,'is escorted out by '+p.who);}
+  snap('move');
+  settle();return true;
+}
+function cardCount(){
+  var n=G.draw.length+G.hand.length+G.waiting.length+G.gone.length;
+  G.stacks.forEach(function(s){n+=s.length;});G.paired.forEach(function(p){n+=p.cards.length;});return n;
+}
+
+</script>
+<script>
+'use strict';
+/* ---------------- drawing: the 480x800 panel, 1-bit ---------------- */
+const W = 480, H = 800;
+const cv = document.getElementById('screen');
+const ctx = cv.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+// The firmware's Rubik cuts; fontconvert sizes are points at 150 dpi.
+const FACES = { tile: 8, button: 12, ui: 17, display: 25, large: 37, huge: 53 };
+const fontOf = (f, k = 1) => `${(FACES[f] * 150 / 72 * k).toFixed(2)}px Rubik`;
+const capCache = {};
+function capH(f) {
+  if (capCache[f] == null) { ctx.font = fontOf(f); capCache[f] = ctx.measureText('H').actualBoundingBoxAscent; }
+  return capCache[f];
+}
+function widthOf(text, f) { ctx.font = fontOf(f); return ctx.measureText(text).width; }
+function fitFace(text, w, faces) { for (const f of faces) if (widthOf(text, f) <= w) return f; return faces[faces.length - 1]; }
+function txt(x, y, w, h, text, f, align = 'center', white = false, greyInk = false) {
+  let k = 1;
+  ctx.font = fontOf(f);
+  const tw = ctx.measureText(text).width;
+  if (tw > w && w > 0) { k = w / tw; ctx.font = fontOf(f, k); }
+  ctx.fillStyle = white ? '#fff' : greyInk ? grey() : '#000';
+  ctx.textAlign = align;
+  ctx.textBaseline = 'alphabetic';
+  const tx = align === 'center' ? x + w / 2 : align === 'right' ? x + w : x;
+  ctx.fillText(text, Math.round(tx), Math.round(y + (h + capH(f) * k) / 2));
+}
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+function fill(x, y, w, h, color, r = 0) { ctx.fillStyle = color; if (r) { rr(x, y, w, h, r); ctx.fill(); } else ctx.fillRect(x, y, w, h); }
+function stroke(x, y, w, h, color, t, r = 0) {
+  ctx.strokeStyle = color; ctx.lineWidth = t;
+  rr(x + t / 2, y + t / 2, w - t, h - t, Math.max(0, r - t / 2)); ctx.stroke();
+}
+let greyPat = null;
+function grey() {
+  if (!greyPat) {
+    const p = document.createElement('canvas'); p.width = p.height = 2;
+    const pc = p.getContext('2d'); pc.fillStyle = '#000'; pc.fillRect(0, 0, 2, 2); pc.fillStyle = '#fff'; pc.fillRect(0, 0, 1, 1);
+    greyPat = ctx.createPattern(p, 'repeat');
+  }
+  return greyPat;
+}
+let hits = [];
+let lightPat = null;
+function light() {
+  if (!lightPat) {
+    const p = document.createElement('canvas'); p.width = p.height = 4;
+    const pc = p.getContext('2d'); pc.fillStyle = '#fff'; pc.fillRect(0, 0, 4, 4); pc.fillStyle = '#000'; pc.fillRect(0, 0, 1, 1); pc.fillRect(2, 2, 1, 1);
+    lightPat = ctx.createPattern(p, 'repeat');
+  }
+  return lightPat;
+}
+const hit = (x, y, w, h, fn) => hits.push({ x, y, w, h, fn });
+// Words wrapped at spaces into lines no wider than w.
+function wrapLines(text, f, w) {
+  const words = String(text).split(' '); const lines = []; let cur = '';
+  for (const word of words) {
+    const t = cur ? cur + ' ' + word : word;
+    if (cur && widthOf(t, f) > w) { lines.push(cur); cur = word; } else cur = t;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+// Lines from the top of the box, at the cut's line height.
+function wrap(x, y, w, text, f, maxLines, align = 'left', white = false) {
+  let lines = wrapLines(text, f, w);
+  if (lines.length > maxLines) { lines = lines.slice(0, maxLines); lines[maxLines - 1] += '…'; }
+  const lh = LINE[f];
+  lines.forEach((l, i) => txt(x, y + i * lh, w, lh, l, f, align, white));
+  return lines.length * lh;
+}
+const LINE = { tile: 20, button: 30, ui: 42, display: 62, large: 91, huge: 131 };
+
+/* ---------------- Severance on the PaperMono, in a browser ----------------
+   The rules are the phone version's own engine (ENGINE, above); this draws the
+   CrossPlay screens over it, the same layout as the firmware. */
+const ABIL = { kier: 'PROVIDES', dieter: 'DRAW TWO', casey: 'WELLNESS', drummond: 'REFORMS', graner: 'BREAK ROOM',
+  cobel: 'CHECK', milchick: 'AGAIN!', reghabi: 'SEARCH', jame: 'FOUNDER' };
+const BAD = { cobel: 1, milchick: 1, drummond: 1, graner: 1, jame: 1 };
+const SAVE = 'crossplay-severance-v1';
+
+// Announcements: the engine logs each special figure's moment and hands it to
+// onSnap; the ones that do not wait on a choice are kept to show with Continue.
+let anns = [];
+onSnap = function (kind) { if (kind === 'announce' && G.ann && !G.ann.choice) anns.push(JSON.parse(JSON.stringify(G.ann))); };
+
+let screen = 'menu', sel = [], note = '', annIndex = -1, showEnd = false;
+let lenient = false, played = 0, won = 0, hasGame = false, rulesPage = 0, rulesReturn = 'menu';
+
+function persist() {
+  try { localStorage.setItem(SAVE, JSON.stringify({ G: hasGame ? G : null, lenient, played, won })); } catch (e) {}
+}
+function restore() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SAVE));
+    if (!s) return;
+    lenient = !!s.lenient; played = s.played | 0; won = s.won | 0;
+    if (s.G && s.G.stacks && s.G.stacks.length === 16) { G = s.G; G.ann = null; hasGame = !G.over && cardCount() === G.total; }
+  } catch (e) {}
+}
+
+/* ---------------- geometry (as SeveranceScreens.cpp) ---------------- */
+const M = 16, TOP_H = 48, TRACK_Y = 56, TRACK_H = 66, BOX_W = 107, BOX_GAP = 6, MINI_W = 44, MINI_H = 36;
+const CW = 96, CH = 104, CGAP = 6, ZONE_W = 2 * CW + CGAP, ZGAP_X = 16, GRID_X = (W - 2 * ZONE_W - ZGAP_X) / 2;
+const GRID_Y = 130, ZLABEL = 24, ZONE_H = ZLABEL + 2 * CH + CGAP, ZGAP_Y = 12;
+const STATUS_Y = GRID_Y + 2 * ZONE_H + ZGAP_Y + 4, TRAY_Y = STATUS_Y + 46, TRAY_CY = TRAY_Y + 15, TCW = 60, TCH = 70;
+const HAND_X = 98, BUTTONS_Y = 756, BUTTON_H = 42, PANEL_Y = 540, CHOICE_Y = STATUS_Y - 4;
+const zoneTop = r => GRID_Y + r * (ZONE_H + ZGAP_Y), zoneLeft = c => GRID_X + c * (ZONE_W + ZGAP_X);
+function stackRect(i) {
+  const z = Math.floor(i / 4), k = i % 4;
+  return [zoneLeft(z % 2) + (k % 2) * (CW + CGAP), zoneTop(Math.floor(z / 2)) + ZLABEL + Math.floor(k / 2) * (CH + CGAP), CW, CH];
+}
+const boxRect = ch => [M + ch * (BOX_W + BOX_GAP), TRACK_Y, BOX_W, TRACK_H];
+function miniRect(ch, outie) { const b = boxRect(ch); return [b[0] + 6 + (outie ? MINI_W + 7 : 0), b[1] + 24, MINI_W, MINI_H]; }
+const handStep = n => n > 3 ? 52 : TCW + 6;
+const handRect = (k, n) => [HAND_X + k * handStep(n), TRAY_CY, TCW, TCH];
+
+/* ---------------- marks ---------------- */
+function knock(x, y, w, h) { ctx.fillStyle = '#fff'; for (let yy = y; yy < y + h; yy++) for (let xx = x + (yy & 1); xx < x + w; xx += 2) ctx.fillRect(xx, yy, 1, 1); }
+function sayGrey(x, y, w, h, text, f, align = 'center') { txt(x, y, w, h, text, f, align, false, true); }
+function disc(cx, cy, r, color) { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill(); }
+function colourMark(cx, cy, size, green, white = false) {
+  const c = white ? '#fff' : '#000';
+  if (green) disc(cx, cy, size / 2, c); else fill(cx - size / 2, cy - size / 2, size, size, c);
+}
+function dashed(x, y, w, h, t = 2) {
+  ctx.fillStyle = '#000';
+  for (let xx = x; xx < x + w; xx += 10) { const ww = Math.min(6, x + w - xx); ctx.fillRect(xx, y, ww, t); ctx.fillRect(xx, y + h - t, ww, t); }
+  for (let yy = y; yy < y + h; yy += 10) { const hh = Math.min(6, y + h - yy); ctx.fillRect(x, yy, t, hh); ctx.fillRect(x + w - t, yy, t, hh); }
+}
+function stripes(x, y, w, h) { ctx.fillStyle = '#fff'; for (let yy = y + 1; yy < y + h - 1; yy += 2) ctx.fillRect(x + 1, yy, w - 2, 1); }
+function button(x, y, w, h, label, fn, solid = true) {
+  fill(x, y, w, h, solid ? '#000' : '#fff', 6); if (!solid) stroke(x, y, w, h, '#000', 2, 6);
+  txt(x, y, w, h, label, fitFace(label, w - 16, ['ui', 'button']), 'center', solid); hit(x, y, w, h, fn);
+}
+function buttonOff(x, y, w, h, label) { stroke(x, y, w, h, grey(), 2, 6); sayGrey(x, y, w, h, label, fitFace(label, w - 16, ['ui', 'button'])); }
+function smallPill(x, y, w, h, label, fn) { fill(x, y, w, h, '#fff', 6); stroke(x, y, w, h, '#000', 2, 6); txt(x, y, w, h, label, 'button'); hit(x, y, w, h, fn); }
+
+/* ---------------- cards ---------------- */
+function cardBack(x, y, w, h, locked) {
+  fill(x, y, w, h, '#fff', 4); stroke(x, y, w, h, '#000', 2, 4);
+  fill(x + 5, y + 5, w - 10, h - 10, locked ? light() : grey(), 2); stroke(x + 5, y + 5, w - 10, h - 10, '#000', 1, 2);
+}
+function numFace(c, x, y, w, h, selected, small) {
+  const v = c.wild && !c.val ? '?' : String(c.val);
+  const vh = Math.floor(h * 58 / 100);
+  txt(x, y + 4, w, vh, v, small ? 'ui' : 'display');
+  const cy = y + 4 + vh + Math.floor((h - vh - 4) / 2) - 2, mark = small ? 10 : 14;
+  if (c.wild) {
+    if (selected) colourMark(x + w / 2, cy, mark, c.red);
+    else { stroke(x + w / 2 - 24, cy - 10, 48, 20, '#000', 1); txt(x + w / 2 - 24, cy - 10, 48, 20, 'GOAT', 'tile'); }
+    return;
+  }
+  colourMark(x + w / 2, cy, mark, c.red);
+}
+function mainFace(c, x, y, w, h, small) {
+  const innie = c.red;
+  if (innie) fill(x + 2, y + 2, w - 4, h - 4, '#000', 3);
+  if (small) { txt(x, y, w, h, innie ? 'IN' : 'OUT', 'tile', 'center', innie); return; }
+  wrap(x + 6, y + 14, w - 12, c.name, 'button', 2, 'center', innie);
+  stroke(x + w / 2 - 30, y + h - 32, 60, 20, innie ? '#fff' : '#000', 1);
+  txt(x + w / 2 - 30, y + h - 32, 60, 20, innie ? 'INNIE' : 'OUTIE', 'tile', 'center', innie);
+}
+function specialFace(c, x, y, w, h) {
+  const bad = !!BAD[c.fx];
+  if (bad) fill(x + 2, y + 2, w - 4, h - 4, '#000', 3);
+  stroke(x + 5, y + 5, w - 10, h - 10, bad ? '#fff' : '#000', 1);
+  wrap(x + 7, y + 14, w - 14, c.name, 'tile', 3, 'center', bad);
+  const tag = ABIL[c.fx] || '';
+  const tw = Math.min(widthOf(tag, 'tile') + 8, w - 8);
+  stroke(x + (w - tw) / 2, y + h - 34, tw, 20, bad ? '#fff' : '#000', 1);
+  txt(x + (w - tw) / 2, y + h - 34, tw, 20, tag, 'tile', 'center', bad);
+}
+function cardFace(c, r, look = {}, small = false) {
+  let [x, y, w, h] = r;
+  if (!c.faceUp) { cardBack(x, y, w, h, look.lockedZone); return; }
+  if (look.selected) y -= 6;
+  fill(x, y, w, h, '#fff', 4);
+  if (c.type === 'num') numFace(c, x, y, w, h, look.selected, small);
+  else if (c.type === 'main') mainFace(c, x, y, w, h, small);
+  else specialFace(c, x, y, w, h);
+  stroke(x, y, w, h, '#000', look.selected ? 4 : 2, 4);
+  if (look.blocked) { fill(x - 1, y + h / 2 - 12, w + 2, 24, '#000'); txt(x - 1, y + h / 2 - 12, w + 2, 24, 'COBEL', 'button', 'center', true); }
+  if (look.outOfUse) stripes(x, y, w, h);
+  if (look.candidate) dashed(x - 5, y - 5, w + 10, h + 10);
+}
+
+/* ---------------- the board ---------------- */
+const isSel = v => sel.indexOf(v) >= 0;
+function topBar() {
+  sayGrey(M, 2, 240, 18, 'MACRODATA REFINEMENT', 'tile', 'left');
+  txt(M, 18, 240, 30, 'SEVERANCE', 'ui', 'left');
+  smallPill(W - M - 70 - 8 - 80, 6, 70, 36, 'LOG', () => go('log'));
+  smallPill(W - M - 80, 6, 80, 36, 'MENU', () => { persist(); go('menu'); });
+  fill(0, TOP_H, W, 2, '#000');
+}
+function track() {
+  CHAR_ORDER.forEach((ch, k) => {
+    const [bx, by, bw, bh] = boxRect(k), p = G.paired.filter(q => q.ch === ch)[0];
+    fill(bx, by, bw, bh, '#fff'); stroke(bx, by, bw, bh, '#000', p ? 3 : 1);
+    if (p) fill(bx, by, bw, 20, '#000');
+    txt(bx + 6, by, bw - 12, 20, CHARS[ch], 'tile', 'left', !!p);
+    const cards = p ? p.cards : G.waiting.filter(c => c.ch === ch);
+    [true, false].forEach((red, half) => {
+      const r = miniRect(k, half === 1), c = cards.filter(x => x.red === red)[0];
+      if (!c) { dashed(r[0], r[1], r[2], r[3], 1); sayGrey(r[0] + 2, r[1] + 2, r[2] - 4, r[3] - 4, half ? 'OUT' : 'IN', 'tile'); }
+      else cardFace(c, r, { selected: !p && isSel(c.id) }, true);
+      if (c && !p) hit(r[0], r[1], r[2], r[3], () => tapCard(c.id, true));
+    });
+  });
+}
+function grid(cand) {
+  const reghabi = G.pending && G.pending.type === 'reghabi';
+  for (let z = 0; z < 4; z++) {
+    const x = zoneLeft(z % 2), y = zoneTop(Math.floor(z / 2));
+    const label = 'ZONE ' + (z + 1) + (G.lockZone === z ? '  LOCKED BY DRUMMOND' : '');
+    if (G.unlocked[z]) { txt(x, y, ZONE_W, 18, label, 'tile', 'left'); fill(x, y + 19, ZONE_W, 2, '#000'); }
+    else { sayGrey(x, y, ZONE_W, 18, label, 'tile', 'left'); for (let dx = 0; dx < ZONE_W; dx += 4) fill(x + dx, y + 20, 2, 1, '#000'); }
+  }
+  for (let i = 0; i < 16; i++) {
+    const r = stackRect(i), st = G.stacks[i], c = st[st.length - 1];
+    if (!c) dashed(r[0], r[1], r[2], r[3], 1);
+    else {
+      if (st.length > 1) fill(r[0] + 3, r[1] + r[3] + 1, r[2] - 6, 1, '#000');
+      if (st.length > 2) fill(r[0] + 6, r[1] + r[3] + 3, r[2] - 12, 1, '#000');
+      cardFace(c, r, {
+        lockedZone: !G.unlocked[zoneOf(i)], selected: !reghabi && isSel(c.id) && c.faceUp, blocked: G.blocked === c.id,
+        outOfUse: zoneOf(i) === G.lockZone && c.faceUp, candidate: !reghabi && c.faceUp && cand.indexOf(c.id) >= 0,
+      });
+      if (st.length > 1) {
+        const bx = r[0] + r[2] - 30, by = r[1] + r[3] - 22;
+        fill(bx, by, 26, 18, '#fff'); stroke(bx, by, 26, 18, '#000', 1); txt(bx, by, 26, 18, 'x' + st.length, 'tile');
+      }
+    }
+    if (reghabi) {
+      if (isSel('S' + i)) stroke(r[0] - 5, r[1] - 5, r[2] + 10, r[3] + 10, '#000', 3, 4);
+      else if (cand.indexOf('S' + i) >= 0) dashed(r[0] - 5, r[1] - 5, r[2] + 10, r[3] + 10);
+    }
+    hit(r[0] - 3, r[1] - 8, r[2] + 6, r[3] + 11, () => tapStack(i));
+  }
+}
+function status() {
+  let line;
+  if (note) line = note;
+  else if (G.over === 'win') line = 'Quota reached. Every innie has found their outie.';
+  else if (G.over === 'lose') line = 'The quarter is lost. Start a new one from the menu.';
+  else {
+    const f = [];
+    if (G.hallPass) f.push('HALL PASS ACTIVE');
+    if (G.hallPending) f.push('HALL PASS AFTER NEXT PAIR');
+    if (G.lockZone !== null) f.push("DRUMMOND'S LOCK");
+    if (G.hellyPause) f.push('HELLY CANNOT PAIR');
+    if (G.blocked) f.push('COBEL BLOCKING');
+    if (!G.defianceUsed && G.waiting.some(w => w.ch === 'Q')) f.push('DEFIANCE READY');
+    line = f.length ? f.join(' · ') : (G.log.length ? G.log[G.log.length - 1].x : '');
+  }
+  fill(M, STATUS_Y, 44, 22, '#000'); txt(M, STATUS_Y, 44, 22, note ? 'NOTE' : 'NOW', 'tile', 'center', true);
+  wrap(M + 52, STATUS_Y + 1, W - 2 * M - 52, line, 'tile', 2);
+}
+function tray(cand) {
+  fill(M, TRAY_Y - 2, W - 2 * M, 1, '#000');
+  txt(M, TRAY_Y, 80, 16, 'DRAW ' + G.draw.length, 'tile', 'left');
+  if (G.draw.length) { fill(M + 4, TRAY_CY + 4, TCW, TCH, '#000', 4); cardBack(M, TRAY_CY, TCW, TCH, false); }
+  else dashed(M, TRAY_CY, TCW, TCH, 1);
+  hit(M, TRAY_CY, TCW, TCH, tapDraw);
+  txt(HAND_X, TRAY_Y, 100, 16, 'DRAWN', 'tile', 'left');
+  if (!G.hand.length) { const r = handRect(0, 1); dashed(r[0], r[1], r[2], r[3], 1); }
+  G.hand.forEach((c, k) => {
+    const r = handRect(k, G.hand.length);
+    cardFace(c, r, { selected: isSel(c.id), candidate: cand.indexOf(c.id) >= 0 }, true);
+    if (c.keep) { fill(r[0] + 4, r[1] + r[3] - 10, r[2] - 8, 18, '#000'); txt(r[0] + 4, r[1] + r[3] - 10, r[2] - 8, 18, 'DIETER', 'tile', 'center', true); }
+    hit(r[0], r[1], r[2], r[3], () => tapCard(c.id, false));
+  });
+  const sx = 306, t = selectionTotals(sel), main = selMain();
+  if (sel.length && !main) {
+    colourMark(sx + 8, TRAY_CY + 18, 14, true); txt(sx + 22, TRAY_CY + 4, 120, 28, 'GREEN ' + t.r, 'button', 'left');
+    colourMark(sx + 8, TRAY_CY + 52, 14, false); txt(sx + 22, TRAY_CY + 38, 120, 28, 'BLUE ' + t.b, 'button', 'left');
+  } else if (main) wrap(sx, TRAY_CY + 6, W - M - sx, 'Tap the other half to pair', 'tile', 3);
+  else if (!G.over) wrap(sx, TRAY_CY + 6, W - M - sx, 'Tap green and blue numbers with equal totals', 'tile', 3);
+  const half = Math.floor((W - 2 * M - 10) / 2);
+  if (G.over) { button(M, BUTTONS_Y, W - 2 * M, BUTTON_H, 'NEW QUARTER', newQuarter); return; }
+  if (sel.length) button(M, BUTTONS_Y, half, BUTTON_H, 'CLEAR', () => { sel = []; note = ''; render(); }, false);
+  else buttonOff(M, BUTTONS_Y, half, BUTTON_H, 'CLEAR');
+  if (t.ok && !main) button(W - M - half, BUTTONS_Y, half, BUTTON_H, 'REFINE', refine);
+  else buttonOff(W - M - half, BUTTONS_Y, half, BUTTON_H, 'REFINE');
+}
+function announcement(a) {
+  fill(0, PANEL_Y, W, H - PANEL_Y, '#fff'); fill(0, PANEL_Y, W, 3, '#000');
+  const cx = M, cy = PANEL_Y + 18, cw = 112, ch = 132;
+  fill(cx, cy, cw, ch, '#fff', 4); specialFace(a.card, cx, cy, cw, ch); stroke(cx, cy, cw, ch, '#000', 2, 4);
+  const tx = cx + cw + 14, tw = W - M - tx;
+  sayGrey(tx, PANEL_Y + 12, tw, 18, a.card.name, 'tile', 'left');
+  txt(tx, PANEL_Y + 30, tw, 32, a.title, fitFace(a.title, tw, ['ui', 'button']), 'left');
+  fill(tx, PANEL_Y + 64, tw, 1, '#000');
+  wrap(tx, PANEL_Y + 70, tw, a.text, 'tile', 6);
+  button(W - M - 200, BUTTONS_Y, 200, BUTTON_H, 'CONTINUE', () => {
+    if (++annIndex >= anns.length) { annIndex = -1; if (G.over) showEnd = true; }
+    render();
+  });
+}
+function pendingText() {
+  const p = G.pending;
+  if (p.type === 'kier') return ['Lumon always provides!', 'Tap up to two numerical cards for Kier to move away, then Confirm. Or Skip.'];
+  if (p.type === 'reghabi') return ['Reintegration', p.max === 2
+    ? 'Tap up to two stacks. Reghabi frees any hidden match of a revealed main character. Then Confirm, or Skip.'
+    : 'No main character is revealed. Tap up to four stacks; Reghabi frees the first hidden one she finds. Then Confirm, or Skip.'];
+  if (p.mode === 'main') return ['Wellness Session', 'Tap one unmatched character for ' + p.who + ' to set aside, then Confirm. Or Skip.'];
+  return ['Wellness Session', 'No unmatched character is on the grid. Tap one numerical card for ' + p.who + ' to move away, then Confirm. Or Skip.'];
+}
+function choice() {
+  fill(0, CHOICE_Y, W, H - CHOICE_Y, '#fff'); fill(0, CHOICE_Y, W, 3, '#000');
+  const [title, text] = pendingText();
+  txt(M, CHOICE_Y + 10, W - 2 * M, 30, title, 'ui', 'left');
+  wrap(M, CHOICE_Y + 46, W - 2 * M, note || text, 'tile', 3);
+  txt(M, CHOICE_Y + 112, 200, 20, sel.length + ' OF ' + G.pending.max + ' CHOSEN', 'button', 'left');
+  const half = Math.floor((W - 2 * M - 10) / 2);
+  button(M, BUTTONS_Y, half, BUTTON_H, 'SKIP', () => act(() => actResolve([])), false);
+  if (sel.length) button(W - M - half, BUTTONS_Y, half, BUTTON_H, 'CONFIRM', () => { const s = sel.slice(); act(() => actResolve(s)); });
+  else buttonOff(W - M - half, BUTTONS_Y, half, BUTTON_H, 'CONFIRM');
+}
+function ending() {
+  fill(0, PANEL_Y, W, H - PANEL_Y, '#fff'); fill(0, PANEL_Y, W, 3, '#000');
+  const win = G.over === 'win';
+  txt(M, PANEL_Y + 24, W - 2 * M, 50, win ? 'You hit quota!' : 'The quarter is lost', 'display');
+  wrap(M + 10, PANEL_Y + 90, W - 2 * M - 20, win ? 'All main characters are paired. You receive a caricature portrait.'
+    : 'No valid moves were left before all main characters were paired. Please remain seated while we process your transfer.', 'button', 3, 'center');
+  const half = Math.floor((W - 2 * M - 10) / 2);
+  button(M, BUTTONS_Y, half, BUTTON_H, 'VIEW GRID', () => { showEnd = false; render(); }, false);
+  button(W - M - half, BUTTONS_Y, half, BUTTON_H, 'NEW QUARTER', newQuarter);
+}
+function drawBoard() {
+  pruneSel();
+  const cand = annIndex < 0 && !showEnd ? pendingCandidates() : [];
+  topBar(); track(); grid(cand);
+  if (annIndex >= 0) { hits = hits.filter(h => h.y < 50); announcement(anns[annIndex]); }
+  else if (showEnd) { hits = hits.filter(h => h.y < 50); ending(); }
+  else if (G.pending) choice();
+  else { status(); tray(cand); }
+}
+
+/* ---------------- menu, log, rules ---------------- */
+function drawMenu() {
+  sayGrey(0, 60, W, 24, 'MACRODATA REFINEMENT', 'button');
+  txt(0, 92, W, 70, 'SEVERANCE', 'large');
+  fill(60, 176, W - 120, 2, '#000');
+  txt(0, 186, W, 26, 'The card game', 'button');
+  CHAR_ORDER.forEach((ch, k) => {
+    const x = 48 + k * 100, y = 236;
+    fill(x + 10, y + 14, 84, 96, '#fff', 4); stroke(x + 10, y + 14, 84, 96, '#000', 2, 4);
+    fill(x, y, 84, 96, '#000', 4); wrap(x + 4, y + 16, 76, CHARS[ch], 'tile', 2, 'center', true);
+  });
+  if (played) txt(0, 372, W, 24, played + ' QUARTERS  ' + won + ' AT QUOTA', 'button');
+  const rows = [['CONTINUE', () => { if (hasGame) go('board'); }], ['NEW QUARTER', newQuarter],
+    ['RULES', () => { rulesPage = 0; rulesReturn = 'menu'; go('rules'); }],
+    [lenient ? 'EASIER MILCHICK: ON' : 'EASIER MILCHICK: OFF', () => { lenient = !lenient; if (G) G.opts.lenient = lenient; persist(); render(); }]];
+  let y = H - M - rows.length * 68 + 10;
+  rows.forEach(([label, fn], i) => {
+    if (i === 0 && !hasGame) buttonOff(M, y, W - 2 * M, 58, label);
+    else button(M, y, W - 2 * M, 58, label, fn, i === 0 || (i === 1 && !hasGame));
+    y += 68;
+  });
+  txt(0, H - 22, W, 18, '', 'tile');
+}
+function drawLog() {
+  txt(M, 8, 300, 36, 'THE LOG', 'ui', 'left');
+  smallPill(W - M - 90, 6, 90, 36, 'BACK', () => go('board'));
+  fill(0, TOP_H, W, 2, '#000');
+  let y = TOP_H + 10;
+  for (let k = G.log.length - 1; k >= 0; k--) {
+    const l = G.log[k], lines = wrapLines(l.x, 'tile', W - 2 * M - 16).length, h = lines * 20 + 6;
+    if (y + h > 792) break;
+    if (l.k === 'good') fill(M, y + 6, 7, 7, '#000');
+    else if (l.k === 'bad') stroke(M, y + 6, 7, 7, '#000', 2);
+    else fill(M + 2, y + 8, 3, 3, '#000');
+    wrap(M + 16, y, W - 2 * M - 16, l.x, 'tile', lines);
+    if (k > 0 && l.t !== G.log[k - 1].t) fill(M + 16, y + h - 2, W - 2 * M - 16, 1, light());
+    y += h + 4;
+  }
+}
+const RULES = [
+  ['Objective', ["Reunite each employee's innie with their outie: Mark S., Helly R. (Helena), Dylan G. and Irving B. Pair all four to hit quota.",
+    'Innies are the black cards, outies the white ones. Numbers are green (a dot) or blue (a square).']],
+  ['Cards', ['The grid holds 48 cards in layers of 1, 3, 4 and 4 per zone: the numbers 2 to 10 four times each, the eight employees, Kier, Mr. Drummond, Ms. Casey and Emile the Goat.',
+    'Administration, the draw pile, holds 33: 26 numbers and Dieter, Gemma, Doug Graner, Milchick, Cobel, Reghabi and Jame Eagan.']],
+  ['Refining', ['Tap face-up numbers so the green total equals the blue total (7 + 3 green with 10 blue), then REFINE.',
+    'When identical cards are free, the one in the earliest position (Zone 1 first, left to right) must be used.',
+    'Removing a card turns over the one beneath it. Tap the draw pile when you like; only the latest draw can be used.']],
+  ['Pairing', ["Tap an employee's innie and outie when both are on the grid and they pair at once. If one half already waits aside, one tap on the other half pairs them.",
+    'When the draw pile runs out while Zone 3 still hides cards, its used cards are reshuffled once. After your next pair, employees get the Hall Pass and step aside when they appear.',
+    'You lose if no move is left and the pile is empty.']],
+  ['Zones', ['Zone 1 starts open. Zone 2 opens when two number cards remain in Zone 1.',
+    'Zones 3 and 4 open when only one stack in the zone before still hides a card.', 'If no number is face up anywhere, the next locked zone opens.']],
+  ['Special figures', ['Kier: move up to two numbers away. Dieter: draws two; his numbers stay in hand. Ms. Casey and Gemma: set an unmatched employee aside, or move a number away. Helly leaves her stack on her own and can cancel Milchick or Cobel once. Drummond locks his zone until your next pair and reverses the pile and Zone 4.']],
+  ['More figures', ["Graner sends a revealed employee to the bottom of the last Zone 4 stack. Jame cancels Helly's Defiance, pauses her, and replays Milchick and Cobel. Reghabi searches stacks you choose for hidden employees. Milchick returns your last refined cards to the grid. Cobel splits a pair, or blocks a number. Emile the Goat is wild: tap once for green, again for blue."]],
+  ['Credits', ['Severance: The Card Game, designed by u/DREAMWALL, CC BY-NC-SA 4.0. An unofficial fan version of the Version 2 test rules, shared under the same licence.',
+    'The rules engine is the phone version’s own; the PaperMono firmware is checked against it game by game.']],
+];
+function drawRules() {
+  const [title, paras] = RULES[rulesPage];
+  sayGrey(M, 14, 300, 20, "REFINER'S HANDBOOK", 'button', 'left');
+  txt(W - M - 100, 14, 100, 20, (rulesPage + 1) + ' / ' + RULES.length, 'button', 'right');
+  txt(M, 46, W - 2 * M, 44, title, 'display', 'left');
+  fill(M, 96, W - 2 * M, 2, '#000');
+  let y = 112;
+  paras.forEach(p => { y += wrap(M, y, W - 2 * M, p, 'button', 14) + 22; });
+  const half = Math.floor((W - 2 * M - 10) / 2);
+  button(M, BUTTONS_Y, half, BUTTON_H, 'BACK', () => { if (rulesPage > 0) rulesPage--; else return go(rulesReturn); render(); }, false);
+  button(W - M - half, BUTTONS_Y, half, BUTTON_H, rulesPage + 1 < RULES.length ? 'NEXT' : 'DONE',
+    () => { if (rulesPage + 1 < RULES.length) rulesPage++; else return go(rulesReturn); render(); });
+}
+
+/* ---------------- playing ---------------- */
+function go(s) { screen = s; render(); }
+function newQuarter() {
+  anns = []; newGame({ lenient }); hasGame = true; sel = []; note = ''; annIndex = -1; showEnd = false;
+  persist(); go('board');
+}
+// Run a player action, then show what it set off.
+function act(fn) {
+  anns = [];
+  if (fn() === false) { render(); return; }
+  sel = []; note = '';
+  annIndex = anns.length ? 0 : -1;
+  if (G.over && hasGame) { hasGame = false; played++; if (G.over === 'win') won++; if (annIndex < 0) showEnd = true; }
+  persist(); render();
+}
+function mainById(id) { let out = null; CHAR_ORDER.forEach(ch => mainCards(ch).forEach(c => { if (c.id === id) out = c; })); return out; }
+function selMain() { return sel.length ? mainById(sel[0]) : null; }
+function toggle(v, max) {
+  const i = sel.indexOf(v);
+  if (i >= 0) sel.splice(i, 1);
+  else { if (sel.length >= max) sel.shift(); sel.push(v); }
+}
+function pruneSel() {
+  const cand = pendingCandidates(), pids = pairIds(), u = usableNums().map(c => c.id);
+  sel = sel.filter(id => G.pending ? cand.indexOf(id) >= 0 : (pids.indexOf(id) >= 0 || u.indexOf(id) >= 0));
+}
+function tapCard(id, mini) {
+  if (G.over || annIndex >= 0 || showEnd) return;
+  note = '';
+  const cand = pendingCandidates();
+  if (G.pending) {
+    if (cand.indexOf(id) < 0) note = 'That card cannot be chosen for this ability. Pick a highlighted card.';
+    else toggle(id, G.pending.max);
+    return render();
+  }
+  const ok = usableNums().some(c => c.id === id), m = mainById(id), isP = pairIds().indexOf(id) >= 0;
+  const fc = findCard(id), wc = usableNums().filter(c => c.id === id && c.wild)[0];
+  if (id === G.blocked) note = 'Cobel is blocking this card until you refine another pair.';
+  else if (fc && zoneOf(fc.i) === G.lockZone) note = 'Drummond has locked this zone until your next refined pair.';
+  else if (G.hellyPause && id.charAt(0) === 'Q' && !isPaired('Q')) note = 'Jame Eagan has paused Helly until your next refined pair.';
+  else if (wc) {
+    if (selMain()) sel = [];
+    const i = sel.indexOf(id);
+    if (i < 0) { wc.red = true; sel.push(id); note = 'The Goat counts as green. Tap again for blue.'; }
+    else if (wc.red) { wc.red = false; note = 'The Goat counts as blue. Tap again to deselect.'; }
+    else sel.splice(i, 1);
+  } else if (isP && mateWaiting(m.ch)) { sel = []; return act(() => actPair(m.ch)); }
+  else if (isP) {
+    const cur = selMain();
+    if (!cur || cur.ch !== m.ch) sel = [];
+    toggle(id, 99);
+    if (sel.length === 2) { sel = []; return act(() => actPair(m.ch)); }
+  } else if (isPaired(id.charAt(0)) && !ok) note = 'This pair is complete.';
+  else if (!ok) note = mini ? 'This card waits here for its other half.' : 'This character cannot be paired yet.';
+  else { if (selMain()) sel = []; toggle(id, 99); }
+  render();
+}
+function tapStack(i) {
+  if (G.over || annIndex >= 0 || showEnd) return;
+  if (G.pending && G.pending.type === 'reghabi') {
+    note = '';
+    if (pendingCandidates().indexOf('S' + i) < 0) note = 'That stack hides no cards. Pick a highlighted stack.';
+    else toggle('S' + i, G.pending.max);
+    return render();
+  }
+  const st = G.stacks[i], c = st[st.length - 1];
+  if (c && c.faceUp) tapCard(c.id, false);
+}
+function tapDraw() {
+  if (G.over) return;
+  note = '';
+  if (G.pending) note = 'Finish the current ability first: Confirm or Skip.';
+  else if (!G.draw.length) note = 'The draw pile is empty.';
+  else { sel = []; return act(actDraw); }
+  render();
+}
+function refine() {
+  if (!selectionTotals(sel).ok) return;
+  const pf = priorityFix(sel.slice());
+  if (pf.changed) { sel = pf.ids; note = 'Priority rule: an identical card sits in an earlier position, so the selection moved to it. Press Refine again.'; return render(); }
+  const s = sel.slice(); act(() => actRefine(s));
+}
+
+function render() {
+  hits = [];
+  fill(0, 0, W, H, '#fff');
+  ({ menu: drawMenu, board: drawBoard, log: drawLog, rules: drawRules })[screen]();
+  const im = ctx.getImageData(0, 0, W, H), p = im.data;
+  for (let i = 0; i < p.length; i += 4) {
+    const v = (p[i] * 299 + p[i + 1] * 587 + p[i + 2] * 114) / 1000 < 128 ? 0 : 255;
+    p[i] = p[i + 1] = p[i + 2] = v; p[i + 3] = 255;
+  }
+  ctx.putImageData(im, 0, 0);
+}
+
+function fit() {
+  const bare = matchMedia('(max-width: 600px), (display-mode: standalone)').matches;
+  const scale = bare ? Math.min(window.innerWidth / W, (window.innerHeight - 8) / H)
+                     : Math.min((window.innerWidth - 40) / W, (window.innerHeight - 60) / H, 1.25);
+  cv.style.width = Math.floor(W * scale) + 'px'; cv.style.height = Math.floor(H * scale) + 'px';
+  cv.style.imageRendering = scale >= 1 ? 'pixelated' : 'auto';
+}
+cv.addEventListener('click', e => {
+  const r = cv.getBoundingClientRect();
+  const x = (e.clientX - r.left) * W / r.width, y = (e.clientY - r.top) * H / r.height;
+  for (let i = hits.length - 1; i >= 0; --i) {
+    const h = hits[i];
+    if (x >= h.x && x < h.x + h.w && y >= h.y && y < h.y + h.h) { h.fn(); return; }
+  }
+});
+window.addEventListener('resize', fit);
+
+restore();
+document.fonts.load('20px Rubik', 'SEVERANCE 0123456789').then(() => {
+  fit();
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    const hadCopy = !!navigator.serviceWorker.controller;
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadCopy || reloaded) return;
+      reloaded = true; persist(); location.reload();
+    });
+    navigator.serviceWorker.register('sw.js').then(r => r.update()).catch(() => {});
+  }
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
+  render();
+});
+</script>
+</body>
+</html>
