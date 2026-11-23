@@ -181,32 +181,23 @@ void cardFrame(toybox::Screen& screen, const fui::Rect& r, const int edge = 3) {
   screen.target().stroke(r, kBlack, edge, 12);
 }
 
-// A card back: a diamond lattice inside a double frame, and the deck's mark in
-// a white disc in the middle.
-void cardBack(toybox::Screen& screen, const fui::Rect& r, const freeink::Icon& mark) {
-  auto& target = screen.target();
+// A card back: one of The Pale Motel's three patterns, picked when the deck
+// was shuffled, inside the card's frame.
+const freeink::Icon* const kBacks[tt::kBacks][3] = {
+    {&icon_tt_back0_224x318, &icon_tt_back0_224x348, &icon_tt_back0_70x104},
+    {&icon_tt_back1_224x318, &icon_tt_back1_224x348, &icon_tt_back1_70x104},
+    {&icon_tt_back2_224x318, &icon_tt_back2_224x348, &icon_tt_back2_70x104},
+};
+
+void cardBack(toybox::Screen& screen, const fui::Rect& r, const int back) {
   cardFrame(screen, r);
-  const fui::Rect inner = rect(r.x + 9, r.y + 9, r.width - 18, r.height - 18);
-  target.stroke(inner, kBlack, 2, 8);
-  const fui::Rect field = rect(inner.x + 6, inner.y + 6, inner.width - 12, inner.height - 12);
-  // Both diagonals, one row at a time: where each family of lines crosses
-  // the row, a two-pixel dash.
-  const int step = field.width >= 150 ? 18 : 12;
-  for (int y = 0; y < field.height; ++y) {
-    for (int x = (step - y % step) % step; x < field.width; x += step) {
-      target.fill(rect(field.x + x, field.y + y, x + 2 <= field.width ? 2 : 1, 1), kBlack);
-    }
-    for (int x = y % step; x < field.width; x += step) {
-      target.fill(rect(field.x + x, field.y + y, x + 2 <= field.width ? 2 : 1, 1), kBlack);
+  const fui::Rect field = rect(r.x + 6, r.y + 6, r.width - 12, r.height - 12);
+  for (const freeink::Icon* art : kBacks[back % tt::kBacks]) {
+    if (art->w == field.width && art->h == field.height) {
+      icon(screen, field, *art);
+      return;
     }
   }
-  target.stroke(field, kBlack, 1, 4);
-  const int16_t radius = static_cast<int16_t>((mark.w > mark.h ? mark.w : mark.h) / 2 + 12);
-  const int16_t cx = static_cast<int16_t>(r.x + r.width / 2);
-  const int16_t cy = static_cast<int16_t>(r.y + r.height / 2);
-  toybox::disc(screen, cx, cy, static_cast<int16_t>(radius + 3), fui::Color::Black);
-  toybox::disc(screen, cx, cy, radius, fui::Color::White);
-  icon(screen, rect(cx - mark.w / 2, cy - mark.h / 2, mark.w, mark.h), mark);
 }
 
 void bigPlaying(toybox::Screen& screen, const fui::Rect& r, const uint8_t id) {
@@ -369,8 +360,9 @@ const char* const kDieNames[tt::kDieKinds] = {"d4", "d6", "d8", "d10", "d12", "d
 void die(toybox::Screen& screen, const int x, const int y, const int kind, const char* text) {
   const freeink::Icon& art = dieArt(kind, true);
   icon(screen, rect(x, y, art.w, art.h), art);
-  const int drop = kind == 0 ? 16 : 0;
-  const Face f = fit(screen, text, 64, {Face::Display, Face::Ui});
+  // The triangle's middle sits low and narrow: a smaller number, lower down.
+  const int drop = kind == 0 ? 11 : 0;
+  const Face f = kind == 0 ? fit(screen, text, 40, {Face::Ui, Face::Button}) : fit(screen, text, 64, {Face::Display, Face::Ui});
   say(screen, rect(x, y + drop, art.w, art.h), text, f);
 }
 
@@ -412,7 +404,7 @@ void buildMenu(toybox::Screen& screen, const tt::Table& t) {
     say(screen, rect(text.x, r.y + 48, text.width, 48), title, Face::Display, fui::TextAlign::Left);
     if (i == 0) {
       // Two cards, one behind the other.
-      cardBack(screen, rect(r.x + 26, r.y + 28, 82, 116), icon_tt_spades_24);
+      cardBack(screen, rect(r.x + 26, r.y + 28, 82, 116), t.cards.back);
       cardFrame(screen, rect(r.x + 62, r.y + 52, 82, 116));
       say(screen, rect(r.x + 66, r.y + 58, 40, 34), "A", Face::Display);
       iconAt(screen, r.x + 103, r.y + 100, icon_tt_spades_40);
@@ -468,7 +460,7 @@ void buildCards(toybox::Screen& screen, const tt::Table& t) {
     tt::cardName(deck.current[0].id, false, line, sizeof(line));
     say(screen, rect(0, card.bottom() + 8, w, 30), line, Face::Button);
   } else {
-    cardBack(screen, card, icon_tt_spades_40);
+    cardBack(screen, card, deck.back);
     say(screen, rect(0, card.bottom() + 8, w, 30), deck.left ? "Shuffled. Tap DRAW." : "The deck is empty.",
         Face::Button);
   }
@@ -492,7 +484,7 @@ void buildTarot(toybox::Screen& screen, const tt::Table& t) {
 
   if (deck.shown == 0) {
     const fui::Rect card = rect((w - 236) / 2, 156, 236, 360);
-    cardBack(screen, card, icon_tt_major_10_88);
+    cardBack(screen, card, deck.back);
     say(screen, rect(0, card.bottom() + 6, w, 30), deck.left ? "Shuffled. Tap DRAW." : "The deck is empty.",
         Face::Button);
   } else if (deck.shown == 1) {

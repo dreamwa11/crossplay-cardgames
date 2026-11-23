@@ -81,6 +81,26 @@ for s in ("spades", "clubs"):
 for s in ("hearts", "diamonds"):
     icon(s, (96, 40, 24), hollow=True)
 icon("joker", (96, 40))
+# The Pale Motel's three card backs (diamonds, chevrons, rays), its red as
+# paper. Each at the sizes a back is drawn, cropped to fill like CSS cover.
+def cover(name, w, h):
+    sh = round(w * 130 / 92)
+    if sh >= h:
+        png = subprocess.run(["rsvg-convert", "-w", str(w), "-h", str(sh), os.path.join(ART, name + ".svg")],
+                             capture_output=True, check=True).stdout
+        top, left = (sh - h) // 2, 0
+    else:
+        sw = round(h * 92 / 130)
+        png = subprocess.run(["rsvg-convert", "-w", str(sw), "-h", str(h), os.path.join(ART, name + ".svg")],
+                             capture_output=True, check=True).stdout
+        top, left = 0, (sw - w) // 2
+    img = Image.open(io.BytesIO(png)).convert("L")
+    return np.array(img)[top:top + h, left:left + w] < 110
+
+
+for n in range(3):
+    for (w, h) in ((224, 318), (224, 348), (70, 104)):
+        emit(f"icon_tt_back{n}_{w}x{h}", cover(f"back{n}", w, h))
 for d in ("d4", "d6", "d8", "d10", "d12", "d20", "d100"):
     icon(d, (96, 48))
 

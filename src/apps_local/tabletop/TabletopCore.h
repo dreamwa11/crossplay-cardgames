@@ -22,6 +22,7 @@ constexpr int kMajors = 22;
 constexpr int kMaxDeck = kTarotCards;
 constexpr int kHistory = 5;     // earlier draws kept for the strip under the card
 constexpr int kSpread = 3;      // past, present, future
+constexpr int kBacks = 3;       // The Pale Motel's diamonds, chevrons and rays
 
 enum class Die : uint8_t { D4 = 0, D6, D8, D10, D12, D20, D100, Count };
 constexpr int kDieKinds = static_cast<int>(Die::Count);
@@ -54,6 +55,7 @@ struct Deck {
   uint8_t order[kMaxDeck] = {};
   uint8_t left = 0;
   uint8_t size = 0;  // the full deck: 52, 54 or 78
+  uint8_t back = 0;  // which of kBacks the deck wears, picked at each shuffle
   Drawn current[kSpread] = {};
   uint8_t shown = 0;  // cards on the table from the last draw: 0, 1 or 3
   Drawn history[kHistory] = {};

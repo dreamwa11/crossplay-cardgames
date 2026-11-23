@@ -56,7 +56,7 @@ bool num(const char*& p, long& out) {
 }
 
 int writeDeck(const Deck& d, char* out, int size) {
-  int used = std::snprintf(out, size, "%d %d %d", d.size, d.left, d.shown);
+  int used = std::snprintf(out, size, "%d %d %d %d", d.size, d.left, d.shown, d.back);
   if (used < 0 || used >= size) return -1;
   for (int i = 0; i < d.left; ++i) {
     const int n = std::snprintf(out + used, size - used, " %d", d.order[i]);
@@ -79,10 +79,13 @@ int writeDeck(const Deck& d, char* out, int size) {
   return used;
 }
 
-bool readDeck(const char*& p, Deck& d, const int maxSize) {
+bool readDeck(const char*& p, Deck& d, const int maxSize, const bool hasBack) {
   long v[3];
   for (long& x : v)
     if (!num(p, x)) return false;
+  long back = 0;
+  if (hasBack && (!num(p, back) || back < 0 || back >= kBacks)) return false;
+  d.back = static_cast<uint8_t>(back);
   if (v[0] < 1 || v[0] > maxSize || v[1] < 0 || v[1] > v[0] || !(v[2] == 0 || v[2] == 1 || v[2] == kSpread))
     return false;
   d.size = static_cast<uint8_t>(v[0]);
@@ -123,6 +126,7 @@ void start(Table& t, const uint32_t seed) {
 void shuffle(Table& t, Deck& deck, const bool tarot) {
   deck.shown = 0;
   deck.historyLen = 0;
+  deck.back = static_cast<uint8_t>(t.rng.below(kBacks));
   fill(t, deck, tarot);
 }
 
@@ -214,7 +218,7 @@ void cardName(const uint8_t id, const bool tarot, char* out, const int size) {
 // <tarot deck>
 // count picks... rolled values... totalsLen totals...
 int serialize(const Table& t, char* out, const int size) {
-  int used = std::snprintf(out, size, "T1 %lu %d %d %d\n", static_cast<unsigned long>(t.rng.s), t.jokers ? 1 : 0,
+  int used = std::snprintf(out, size, "T2 %lu %d %d %d\n", static_cast<unsigned long>(t.rng.s), t.jokers ? 1 : 0,
                            t.reversals ? 1 : 0, t.spread ? 1 : 0);
   if (used < 0 || used >= size) return -1;
   for (const Deck* d : {&t.cards, &t.tarot}) {
@@ -255,7 +259,9 @@ int serialize(const Table& t, char* out, const int size) {
 }
 
 bool parse(const char* in, Table& out) {
-  if (std::strncmp(in, "T1 ", 3) != 0) return false;
+  // T1 is the same file without the card backs.
+  const bool hasBack = std::strncmp(in, "T2 ", 3) == 0;
+  if (!hasBack && std::strncmp(in, "T1 ", 3) != 0) return false;
   const char* p = in + 3;
   Table t;
   long v[4];
@@ -265,8 +271,8 @@ bool parse(const char* in, Table& out) {
   t.jokers = v[1] != 0;
   t.reversals = v[2] != 0;
   t.spread = v[3] != 0;
-  if (!readDeck(p, t.cards, kPlayingCards + kJokers)) return false;
-  if (!readDeck(p, t.tarot, kTarotCards)) return false;
+  if (!readDeck(p, t.cards, kPlayingCards + kJokers, hasBack)) return false;
+  if (!readDeck(p, t.tarot, kTarotCards, hasBack)) return false;
   if (t.cards.size != kPlayingCards && t.cards.size != kPlayingCards + kJokers) return false;
   if (t.tarot.size != kTarotCards) return false;
   long c;
