@@ -1,6 +1,6 @@
 /* Offline copy of the CrossPlay (PaperMono) version of Tabletop. The game is one file with
-   everything inside it, so once index.html is cached it never needs the network. */
-var CACHE = 'cardgames-tabletop-v7';
+   everything inside it, so once index.html is cached it works offline; the page is fetched fresh when online. */
+var CACHE = 'cardgames-tabletop-v8';
 var FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-tabletop-180.png', 'icon-tabletop-512.png'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(FILES); }).then(function () { return self.skipWaiting(); }));
@@ -13,12 +13,16 @@ self.addEventListener('activate', function (e) {
 });
 self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET') return;
+  if (e.request.mode === 'navigate') {
+    // The page itself: the network first, so a new version shows on the first open,
+    // and the cached copy when offline.
+    e.respondWith(fetch(e.request).then(function (r) {
+      if (r.ok) { var copy = r.clone(); caches.open(CACHE).then(function (c) { c.put('index.html', copy); }); }
+      return r;
+    }).catch(function () { return caches.match('index.html'); }));
+    return;
+  }
   e.respondWith(caches.match(e.request, { ignoreSearch: true }).then(function (hit) {
-    if (hit) return hit;
-    return fetch(e.request).catch(function () {
-      // Offline and not cached: any page of the app is the game itself.
-      if (e.request.mode === 'navigate') return caches.match('index.html');
-      return Response.error();
-    });
+    return hit || fetch(e.request).catch(function () { return Response.error(); });
   }));
 });

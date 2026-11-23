@@ -307,17 +307,19 @@ function drawOne(q){
     G.gone.push(c);snap('effect',null,applySpecial(c));}
 }
 function numsOutside(z){
-  return rawTops().some(function(o){return o.c.type==='num'&&G.unlocked[zoneOf(o.i)]&&zoneOf(o.i)!==z;});
+  return rawTops().some(function(o){return o.c.type==='num'&&o.c.id!==G.blocked&&G.unlocked[zoneOf(o.i)]&&zoneOf(o.i)!==z;});
+}
+// Safety net: Drummond's lock may never leave the grid without a usable number card.
+function liftStaleLock(){
+  if(G.lockZone===null||numsOutside(G.lockZone))return false;
+  log('No face-up number card is left outside Zone '+(G.lockZone+1)+', so Drummond\'s lock is lifted.','good');
+  G.lockZone=null;return true;
 }
 function settle(){
   for(;;){
     if(G.over)return;
     if(G.pending)return;
-    if(G.lockZone!==null&&!numsOutside(G.lockZone)){
-      // safety net: the lock may never leave the grid without a usable number card
-      log('No face-up number card is left outside Zone '+(G.lockZone+1)+', so Drummond\'s lock is lifted.','good');
-      G.lockZone=null;snap('unlock');continue;
-    }
+    if(liftStaleLock()){snap('unlock');continue;}
     if(revealOne())continue;
     if(!G.draw.length&&canReshuffle()){reshuffle();continue;}
     if(G.queue.length){drawOne(G.queue.shift());continue;}

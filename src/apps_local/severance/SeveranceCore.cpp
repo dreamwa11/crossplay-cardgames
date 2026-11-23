@@ -118,7 +118,7 @@ bool numsOutside(const Game& g, const int z) {
   Top all[kStacks];
   const int n = rawTops(g, all);
   for (int k = 0; k < n; ++k)
-    if (isNum(all[k].c) && g.unlocked[zoneOf(all[k].i)] && zoneOf(all[k].i) != z) return true;
+    if (isNum(all[k].c) && all[k].c != g.blocked && g.unlocked[zoneOf(all[k].i)] && zoneOf(all[k].i) != z) return true;
   return false;
 }
 int gridNums(const Game& g, Top* out) {
@@ -699,13 +699,7 @@ void settle(Game& g) {
   for (;;) {
     if (g.over != Over::No) return;
     if (g.pending.type != Pend::None) return;
-    if (g.lockZone != kNone && !numsOutside(g, g.lockZone)) {
-      // Safety net: the lock may never leave the grid without a usable number card.
-      logLine(g, Kind::Good, "No face-up number card is left outside Zone %d, so Drummond's lock is lifted.",
-              g.lockZone + 1);
-      g.lockZone = kNone;
-      continue;
-    }
+    if (liftStaleLock(g)) continue;
     if (revealOne(g)) continue;
     if (!g.draw.n && canReshuffle(g)) {
       reshuffle(g);
@@ -971,6 +965,13 @@ int usableNums(const Game& g, uint8_t* out) {
   for (int k = 0; k < n; ++k) out[m++] = t[k].c;
   m += playableHand(g, out + m);
   return m;
+}
+
+bool liftStaleLock(Game& g) {
+  if (g.lockZone == kNone || numsOutside(g, g.lockZone)) return false;
+  logLine(g, Kind::Good, "No face-up number card is left outside Zone %d, so Drummond's lock is lifted.", g.lockZone + 1);
+  g.lockZone = kNone;
+  return true;
 }
 
 int playableHand(const Game& g, uint8_t* out) {

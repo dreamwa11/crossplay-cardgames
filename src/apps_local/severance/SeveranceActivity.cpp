@@ -90,7 +90,10 @@ void SeveranceActivity::load() {
   played = v[1] < 0 ? 0 : v[1];
   won = v[2] < 0 ? 0 : v[2];
   const char* line = std::strchr(buffer.get(), '\n');
-  if (v[3] && line && sev::parse(line + 1, *game)) hasGame = game->over == sev::Over::No;
+  if (v[3] && line && sev::parse(line + 1, *game)) {
+    hasGame = game->over == sev::Over::No;
+    if (hasGame && game->pending.type == sev::Pend::None) sev::liftStaleLock(*game);
+  }
 #endif
 }
 

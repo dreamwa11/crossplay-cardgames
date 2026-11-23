@@ -152,6 +152,9 @@ int usableNums(const Game& g, uint8_t* out);  // grid numbers in use, then the p
 // Drawn number cards stay in hand: Dieter's are all playable, the rest form a
 // pile whose top card is playable.
 int playableHand(const Game& g, uint8_t* out);
+// Safety net: lifts Drummond's lock when no usable number card is left outside
+// the locked zone (settle runs it; a loaded game runs it once too).
+bool liftStaleLock(Game& g);
 int wasteDepth(const Game& g);
 bool isUsable(const Game& g, int id);
 bool hasValidPair(const Game& g);
