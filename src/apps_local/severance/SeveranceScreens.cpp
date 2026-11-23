@@ -259,6 +259,7 @@ struct Look {
   bool outOfUse = false;  // in Drummond's locked zone
   bool lockedZone = false;
   bool goatGreen = false;  // the Goat, chosen as green (else blue) while selected
+  int visibleW = 0;        // a drawn card partly covered by the next: its face fits the strip that shows
 };
 
 void cardBack(toybox::Screen& screen, const fui::Rect& r, const bool locked) {
@@ -280,20 +281,23 @@ void numFace(toybox::Screen& screen, const fui::Rect& r, const s::Game& g, const
     std::snprintf(v, sizeof(v), "%d", g.card[id].val);
   }
   const int valueH = r.height * 58 / 100;
-  say(screen, rect(r.x, r.y + 4, r.width, valueH), v, small ? Face::Ui : Face::Display);
+  const int vw = look.visibleW > 0 && look.visibleW < r.width ? look.visibleW : r.width;
+  const Face vf = !small ? Face::Display : fit(screen, v, vw - 8, {Face::Ui, Face::Button});
+  say(screen, rect(r.x, r.y + 4, vw, valueH), v, vf);
   const int cy = r.y + 4 + valueH + (r.height - valueH - 4) / 2 - 2;
   const int mark = small ? 10 : 14;
   if (d.wild) {
     if (look.selected) {
-      colourMark(screen, r.x + r.width / 2, cy, mark, look.goatGreen);
+      colourMark(screen, r.x + vw / 2, cy, mark, look.goatGreen);
     } else {
-      const fui::Rect tag = rect(r.x + r.width / 2 - 24, cy - 10, 48, 20);
+      const int tw = vw - 6 < 48 ? vw - 6 : 48;
+      const fui::Rect tag = rect(r.x + vw / 2 - tw / 2, cy - 10, tw, 20);
       screen.target().stroke(tag, kBlack, 1, 0);
       say(screen, tag, "GOAT", Face::Tile);
     }
     return;
   }
-  colourMark(screen, r.x + r.width / 2, cy, mark, g.card[id].red);
+  colourMark(screen, r.x + vw / 2, cy, mark, g.card[id].red);
 }
 
 void mainFace(toybox::Screen& screen, const fui::Rect& r, const int id, const bool small) {
@@ -537,6 +541,7 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
     look.goatGreen = g.card[id].red;
     for (int q = 0; q < nCand; ++q) look.candidate |= cand[q] == id;
     const fui::Rect r = handRect(k, nh);
+    if (k < nh - 1 && handStep(nh) < kTrayCardW + 6) look.visibleW = handStep(nh);
     // Earlier draws wait under the top one: show them as a card's edge behind it.
     if (!g.card[id].keep && s::wasteDepth(g) > 1) {
       t.fill(rect(r.x + 4, r.y + 4, r.width, r.height), kBlack, 4);

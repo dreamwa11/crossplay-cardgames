@@ -579,17 +579,18 @@ function cardBack(x, y, w, h, locked) {
   fill(x, y, w, h, '#fff', 4); stroke(x, y, w, h, '#000', 2, 4);
   fill(x + 5, y + 5, w - 10, h - 10, locked ? light() : grey(), 2); stroke(x + 5, y + 5, w - 10, h - 10, '#000', 1, 2);
 }
-function numFace(c, x, y, w, h, selected, small) {
+function numFace(c, x, y, w, h, selected, small, visW) {
   const v = c.wild && !c.val ? '?' : String(c.val);
-  const vh = Math.floor(h * 58 / 100);
-  txt(x, y + 4, w, vh, v, small ? 'ui' : 'display');
+  const vh = Math.floor(h * 58 / 100), vw = visW > 0 && visW < w ? visW : w;
+  txt(x, y + 4, vw, vh, v, small ? fitFace(v, vw - 8, ['ui', 'button']) : 'display');
   const cy = y + 4 + vh + Math.floor((h - vh - 4) / 2) - 2, mark = small ? 10 : 14;
   if (c.wild) {
-    if (selected) colourMark(x + w / 2, cy, mark, c.red);
-    else { stroke(x + w / 2 - 24, cy - 10, 48, 20, '#000', 1); txt(x + w / 2 - 24, cy - 10, 48, 20, 'GOAT', 'tile'); }
+    const tw = Math.min(48, vw - 6);
+    if (selected) colourMark(x + vw / 2, cy, mark, c.red);
+    else { stroke(x + vw / 2 - tw / 2, cy - 10, tw, 20, '#000', 1); txt(x + vw / 2 - tw / 2, cy - 10, tw, 20, 'GOAT', 'tile'); }
     return;
   }
-  colourMark(x + w / 2, cy, mark, c.red);
+  colourMark(x + vw / 2, cy, mark, c.red);
 }
 function mainFace(c, x, y, w, h, small) {
   const innie = c.red;
@@ -614,7 +615,7 @@ function cardFace(c, r, look = {}, small = false) {
   if (!c.faceUp) { cardBack(x, y, w, h, look.lockedZone); return; }
   if (look.selected) y -= 6;
   fill(x, y, w, h, '#fff', 4);
-  if (c.type === 'num') numFace(c, x, y, w, h, look.selected, small);
+  if (c.type === 'num') numFace(c, x, y, w, h, look.selected, small, look.visibleW);
   else if (c.type === 'main') mainFace(c, x, y, w, h, small);
   else specialFace(c, x, y, w, h);
   stroke(x, y, w, h, '#000', look.selected ? 4 : 2, 4);
@@ -710,7 +711,8 @@ function tray(cand) {
     const r = handRect(k, hand.length);
     // Earlier draws wait under the top one: show them as a card's edge behind it.
     if (!c.keep && wasteDepth() > 1) fill(r[0] + 4, r[1] + 4, r[2], r[3], '#000', 4);
-    cardFace(c, r, { selected: isSel(c.id), candidate: cand.indexOf(c.id) >= 0 }, true);
+    const covered = k < hand.length - 1 && handStep(hand.length) < TCW + 6;
+    cardFace(c, r, { selected: isSel(c.id), candidate: cand.indexOf(c.id) >= 0, visibleW: covered ? handStep(hand.length) : 0 }, true);
     hit(r[0], r[1], r[2], r[3], () => tapCard(c.id, false));
   });
   const sx = M, sw = handLeft - 12 - sx, t = selectionTotals(sel), main = selMain();
