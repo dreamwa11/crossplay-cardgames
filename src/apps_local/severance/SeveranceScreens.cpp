@@ -41,7 +41,7 @@ constexpr int kZoneGapY = 12;
 // the right, under the right thumb; the drawn cards on the left.
 constexpr int kStatusY = kGridY + 2 * kZoneH + kZoneGapY + 14;  // 580
 constexpr int kTrayY = kStatusY + 64;
-constexpr int kTrayCardY = kTrayY + 18;
+constexpr int kTrayCardY = kTrayY + 6;
 constexpr int kTrayCardW = 62;
 constexpr int kTrayCardH = 72;
 constexpr int kDrawX = 480 - 16 - kTrayCardW - 4;
@@ -511,18 +511,22 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
   const s::Game& g = *m.game;
   auto& t = screen.target();
   t.fill(rect(kM, kTrayY - 8, kW - 2 * kM, 1), kBlack);
-  char label[24];
-  std::snprintf(label, sizeof(label), "DRAW %d", g.draw.n);
-  say(screen, rect(kW - kM - 100, kTrayY, 100, 16), label, Face::Tile, fui::TextAlign::Right);
   const fui::Rect pile = drawRect();
   if (g.draw.n) {
     t.fill(rect(pile.x + 4, pile.y + 4, pile.width, pile.height), kBlack, 4);
     cardBack(screen, pile, false);
+    // What is left, in a pill on the pile's bottom-right corner.
+    char left[8];
+    std::snprintf(left, sizeof(left), "%d", g.draw.n);
+    const int pw = widthOf(screen, left, Face::Button) + 16;
+    const fui::Rect pillR = rect(pile.x + pile.width - pw + 10, pile.y + pile.height - 14, pw, 26);
+    t.fill(pillR, kWhite, 13);
+    t.stroke(pillR, kBlack, 2, 13);
+    say(screen, pillR, left, Face::Button);
   } else {
     dashed(screen, pile, 1);
   }
   const int handLeft = handRect(0, g.hand.n ? g.hand.n : 1).x;
-  say(screen, rect(handLeft, kTrayY, 100, 16), "DRAWN", Face::Tile, fui::TextAlign::Left);
   if (!g.hand.n) dashed(screen, handRect(0, 1), 1);
   for (int k = 0; k < g.hand.n; ++k) {
     const int id = g.hand.c[k];
@@ -532,13 +536,6 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
     for (int q = 0; q < nCand; ++q) look.candidate |= cand[q] == id;
     const fui::Rect r = handRect(k, g.hand.n);
     cardFace(screen, r, g, id, look, true);
-    if (g.card[id].keep) {
-      // Dieter's: a black D in the top-left corner, clear of the number's
-      // mark and visible on a card half covered by the next one.
-      const fui::Rect tag = rect(r.x + 3, r.y + 3, 16, 18);
-      t.fill(tag, kBlack, 2);
-      say(screen, tag, "D", Face::Tile, fui::TextAlign::Center, true);
-    }
   }
   // The selection's totals on the left: round over square, or what a chosen
   // employee needs.
@@ -671,7 +668,7 @@ const RulesPage kRules[] = {
      "stack in the zone before still hides a card.\n\nIf no number is face up anywhere, the next locked zone "
      "opens."},
     {"Special figures",
-     "Kier: move up to two numbers away. Dieter: draws two; his numbers stay in hand, marked D. Ms. Casey and Gemma: set an "
+     "Kier: move up to two numbers away. Dieter: draws two; his numbers stay in hand. Ms. Casey and Gemma: set an "
      "unmatched employee aside, or move a number away. Helly leaves her stack on her own and can cancel Milchick or "
      "Cobel once. Drummond locks his zone until your next pair and reverses the pile and Zone 4."},
     {"More figures",

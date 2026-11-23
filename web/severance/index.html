@@ -528,7 +528,7 @@ function restore() {
 const M = 16, TOP_H = 48, TRACK_Y = 56, TRACK_H = 66, BOX_W = 107, BOX_GAP = 6, MINI_W = 44, MINI_H = 36;
 const CW = 96, CH = 92, CGAP = 6, ZONE_W = 2 * CW + CGAP, ZGAP_X = 16, GRID_X = (W - 2 * ZONE_W - ZGAP_X) / 2;
 const GRID_Y = 130, ZLABEL = 22, ZONE_H = ZLABEL + 2 * CH + CGAP, ZGAP_Y = 12;
-const STATUS_Y = GRID_Y + 2 * ZONE_H + ZGAP_Y + 14, TRAY_Y = STATUS_Y + 64, TRAY_CY = TRAY_Y + 18, TCW = 62, TCH = 72;
+const STATUS_Y = GRID_Y + 2 * ZONE_H + ZGAP_Y + 14, TRAY_Y = STATUS_Y + 64, TRAY_CY = TRAY_Y + 6, TCW = 62, TCH = 72;
 const DRAW_X = W - 16 - TCW - 4;
 const BUTTONS_Y = 752, BUTTON_H = 42, PANEL_Y = 540, CHOICE_Y = STATUS_Y - 4;
 const zoneTop = r => GRID_Y + r * (ZONE_H + ZGAP_Y), zoneLeft = c => GRID_X + c * (ZONE_W + ZGAP_X);
@@ -687,17 +687,16 @@ function status() {
 }
 function tray(cand) {
   fill(M, TRAY_Y - 8, W - 2 * M, 1, '#000');
-  txt(W - M - 100, TRAY_Y, 100, 16, 'DRAW ' + G.draw.length, 'tile', 'right');
-  if (G.draw.length) { fill(DRAW_X + 4, TRAY_CY + 4, TCW, TCH, '#000', 4); cardBack(DRAW_X, TRAY_CY, TCW, TCH, false); }
+  if (G.draw.length) { fill(DRAW_X + 4, TRAY_CY + 4, TCW, TCH, '#000', 4); cardBack(DRAW_X, TRAY_CY, TCW, TCH, false);
+    const n = String(G.draw.length), pw = widthOf(n, 'button') + 16, px = DRAW_X + TCW - pw + 10, py = TRAY_CY + TCH - 14;
+    fill(px, py, pw, 26, '#fff', 13); stroke(px, py, pw, 26, '#000', 2, 13); txt(px, py, pw, 26, n, 'button'); }
   else dashed(DRAW_X, TRAY_CY, TCW, TCH, 1);
   hit(DRAW_X, TRAY_CY, TCW, TCH, tapDraw);
   const handLeft = handRect(0, G.hand.length || 1)[0];
-  txt(handLeft, TRAY_Y, 100, 16, 'DRAWN', 'tile', 'left');
   if (!G.hand.length) { const r = handRect(0, 1); dashed(r[0], r[1], r[2], r[3], 1); }
   G.hand.forEach((c, k) => {
     const r = handRect(k, G.hand.length);
     cardFace(c, r, { selected: isSel(c.id), candidate: cand.indexOf(c.id) >= 0 }, true);
-    if (c.keep) { fill(r[0] + 3, r[1] + 3, 16, 18, '#000', 2); txt(r[0] + 3, r[1] + 3, 16, 18, 'D', 'tile', 'center', true); }
     hit(r[0], r[1], r[2], r[3], () => tapCard(c.id, false));
   });
   const sx = M, sw = handLeft - 12 - sx, t = selectionTotals(sel), main = selMain();
@@ -819,7 +818,7 @@ const RULES = [
     'You lose if no move is left and the pile is empty.']],
   ['Zones', ['Zone 1 starts open. Zone 2 opens when two number cards remain in Zone 1.',
     'Zones 3 and 4 open when only one stack in the zone before still hides a card.', 'If no number is face up anywhere, the next locked zone opens.']],
-  ['Special figures', ['Kier: move up to two numbers away. Dieter: draws two; his numbers stay in hand, marked D. Ms. Casey and Gemma: set an unmatched employee aside, or move a number away. Helly leaves her stack on her own and can cancel Milchick or Cobel once. Drummond locks his zone until your next pair and reverses the pile and Zone 4.']],
+  ['Special figures', ['Kier: move up to two numbers away. Dieter: draws two; his numbers stay in hand. Ms. Casey and Gemma: set an unmatched employee aside, or move a number away. Helly leaves her stack on her own and can cancel Milchick or Cobel once. Drummond locks his zone until your next pair and reverses the pile and Zone 4.']],
   ['More figures', ["Graner sends a revealed employee to the bottom of the last Zone 4 stack. Jame cancels Helly's Defiance, pauses her, and replays Milchick and Cobel. Reghabi searches stacks you choose for hidden employees. Milchick returns your last refined cards to the grid. Cobel splits a pair, or blocks a number. Emile the Goat is wild: tap once for round, again for square."]],
   ['Credits', ['Severance: The Card Game, designed by u/DREAMWALL, CC BY-NC-SA 4.0. An unofficial fan version of the Version 2 test rules, shared under the same licence.',
     'The rules engine is the phone version’s own; the PaperMono firmware is checked against it game by game.']],
