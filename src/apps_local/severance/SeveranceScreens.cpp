@@ -44,7 +44,6 @@ constexpr int kTrayY = kStatusY + 64;
 constexpr int kTrayCardY = kTrayY + 18;
 constexpr int kTrayCardW = 62;
 constexpr int kTrayCardH = 72;
-constexpr int kHandX = 16;
 constexpr int kDrawX = 480 - 16 - kTrayCardW - 4;
 constexpr int kButtonsY = 752;
 constexpr int kButtonH = 42;
@@ -74,8 +73,12 @@ fui::Rect miniRect(const int ch, const bool outie) {
   return rect(b.x + 6 + (outie ? kMiniW + 7 : 0), b.y + 24, kMiniW, kMiniH);
 }
 fui::Rect drawRect() { return rect(kDrawX, kTrayCardY, kTrayCardW, kTrayCardH); }
-int handStep(const int n) { return n > 3 ? 52 : kTrayCardW + 6; }
-fui::Rect handRect(const int k, const int n) { return rect(kHandX + k * handStep(n), kTrayCardY, kTrayCardW, kTrayCardH); }
+// The drawn cards sit just left of the pile, the newest nearest it; three or
+// more overlap so the totals keep their room on the left.
+int handStep(const int n) { return n > 3 ? 40 : n > 2 ? 50 : kTrayCardW + 6; }
+fui::Rect handRect(const int k, const int n) {
+  return rect(kDrawX - 12 - kTrayCardW - (n - 1 - k) * handStep(n), kTrayCardY, kTrayCardW, kTrayCardH);
+}
 
 // ---- text ----
 
@@ -501,10 +504,7 @@ void status(toybox::Screen& screen, const BoardModel& m) {
       add(said ? said : "Refine round and square numbers with equal totals, pair revealed characters, or draw.");
     }
   }
-  const fui::Rect chip = rect(kM, kStatusY, 44, 22);
-  t.fill(chip, kBlack);
-  say(screen, chip, m.note ? "NOTE" : "NOW", Face::Tile, fui::TextAlign::Center, true);
-  prose(screen, rect(kM + 52, kStatusY - 1, kW - 2 * kM - 52, 44), line, Face::Tile, 2);
+  prose(screen, rect(kM, kStatusY - 1, kW - 2 * kM, 44), line, Face::Tile, 2);
 }
 
 void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, const int nCand) {
@@ -521,7 +521,8 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
   } else {
     dashed(screen, pile, 1);
   }
-  say(screen, rect(kHandX, kTrayY, 100, 16), "DRAWN", Face::Tile, fui::TextAlign::Left);
+  const int handLeft = handRect(0, g.hand.n ? g.hand.n : 1).x;
+  say(screen, rect(handLeft, kTrayY, 100, 16), "DRAWN", Face::Tile, fui::TextAlign::Left);
   if (!g.hand.n) dashed(screen, handRect(0, 1), 1);
   for (int k = 0; k < g.hand.n; ++k) {
     const int id = g.hand.c[k];
@@ -532,32 +533,31 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
     const fui::Rect r = handRect(k, g.hand.n);
     cardFace(screen, r, g, id, look, true);
     if (g.card[id].keep) {
-      const fui::Rect tag = rect(r.x + 4, r.y + r.height - 18, r.width - 8, 18);
-      t.fill(tag, kBlack);
-      say(screen, tag, "DIETER", Face::Tile, fui::TextAlign::Center, true);
+      // Dieter's: a black D in the top-left corner, clear of the number's
+      // mark and visible on a card half covered by the next one.
+      const fui::Rect tag = rect(r.x + 3, r.y + 3, 16, 18);
+      t.fill(tag, kBlack, 2);
+      say(screen, tag, "D", Face::Tile, fui::TextAlign::Center, true);
     }
   }
-  // The selection's totals, round over square.
-  const int sx = 248;
+  // The selection's totals on the left: round over square, or what a chosen
+  // employee needs.
+  const int sx = kM;
+  const int sw = handLeft - 12 - sx;
   const s::Totals tot = s::selectionTotals(g, m.sel, m.nSel);
   bool main = false;
   for (int k = 0; k < m.nSel; ++k) main |= s::cardDef(m.sel[k]).type == s::Type::Main;
   if (g.pending.type == s::Pend::None && m.nSel && !main) {
     char v[24];
+    const Face f = fit(screen, "SQUARE 88", sw - 22, {Face::Button, Face::Tile});
     colourMark(screen, sx + 8, kTrayCardY + 18, 14, true);
     std::snprintf(v, sizeof(v), "ROUND %d", tot.green);
-    const int vw = kDrawX - 12 - sx - 22;
-    say(screen, rect(sx + 22, kTrayCardY + 4, vw, 28), v, fit(screen, "SQUARE 88", vw, {Face::Button, Face::Tile}),
-        fui::TextAlign::Left);
+    say(screen, rect(sx + 22, kTrayCardY + 4, sw - 22, 28), v, f, fui::TextAlign::Left);
     colourMark(screen, sx + 8, kTrayCardY + 52, 14, false);
     std::snprintf(v, sizeof(v), "SQUARE %d", tot.blue);
-    say(screen, rect(sx + 22, kTrayCardY + 38, vw, 28), v, fit(screen, "SQUARE 88", vw, {Face::Button, Face::Tile}),
-        fui::TextAlign::Left);
+    say(screen, rect(sx + 22, kTrayCardY + 38, sw - 22, 28), v, f, fui::TextAlign::Left);
   } else if (g.pending.type == s::Pend::None && main) {
-    prose(screen, rect(sx, kTrayCardY + 6, kDrawX - 12 - sx, 64), "Tap the other half to pair", Face::Tile, 3);
-  } else if (g.pending.type == s::Pend::None && g.over == s::Over::No) {
-    prose(screen, rect(sx, kTrayCardY + 6, kDrawX - 12 - sx, 64), "Tap round and square numbers with equal totals",
-          Face::Tile, 3);
+    prose(screen, rect(sx, kTrayCardY + 6, sw, 64), "Tap the other half to pair", Face::Tile, 3);
   }
   // Buttons.
   const int half = (kW - 2 * kM - 10) / 2;
@@ -591,8 +591,9 @@ void announcement(toybox::Screen& screen, const s::Game& g, const s::Ann& a) {
   t.stroke(card, kBlack, 2, 4);
   const int tx = card.x + card.width + 14;
   const int tw = kW - kM - tx;
-  sayGrey(screen, rect(tx, kPanelY + 12, tw, 18), s::cardName(a.card), Face::Tile, fui::TextAlign::Left);
-  say(screen, rect(tx, kPanelY + 30, tw, 32), a.title, fit(screen, a.title, tw, {Face::Ui, Face::Button}),
+  // The ability's title small and grey, the figure's name large.
+  sayGrey(screen, rect(tx, kPanelY + 12, tw, 18), a.title, Face::Tile, fui::TextAlign::Left);
+  say(screen, rect(tx, kPanelY + 30, tw, 32), s::cardName(a.card), fit(screen, s::cardName(a.card), tw, {Face::Ui, Face::Button}),
       fui::TextAlign::Left);
   t.fill(rect(tx, kPanelY + 64, tw, 1), kBlack);
   prose(screen, rect(tx, kPanelY + 70, tw, 130), a.text, Face::Tile, 6);
@@ -670,7 +671,7 @@ const RulesPage kRules[] = {
      "stack in the zone before still hides a card.\n\nIf no number is face up anywhere, the next locked zone "
      "opens."},
     {"Special figures",
-     "Kier: move up to two numbers away. Dieter: draws two; his numbers stay in hand. Ms. Casey and Gemma: set an "
+     "Kier: move up to two numbers away. Dieter: draws two; his numbers stay in hand, marked D. Ms. Casey and Gemma: set an "
      "unmatched employee aside, or move a number away. Helly leaves her stack on her own and can cancel Milchick or "
      "Cobel once. Drummond locks his zone until your next pair and reverses the pile and Zone 4."},
     {"More figures",

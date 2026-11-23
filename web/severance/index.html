@@ -530,7 +530,7 @@ const CW = 96, CH = 92, CGAP = 6, ZONE_W = 2 * CW + CGAP, ZGAP_X = 16, GRID_X = 
 const GRID_Y = 130, ZLABEL = 22, ZONE_H = ZLABEL + 2 * CH + CGAP, ZGAP_Y = 12;
 const STATUS_Y = GRID_Y + 2 * ZONE_H + ZGAP_Y + 14, TRAY_Y = STATUS_Y + 64, TRAY_CY = TRAY_Y + 18, TCW = 62, TCH = 72;
 const DRAW_X = W - 16 - TCW - 4;
-const HAND_X = 16, BUTTONS_Y = 752, BUTTON_H = 42, PANEL_Y = 540, CHOICE_Y = STATUS_Y - 4;
+const BUTTONS_Y = 752, BUTTON_H = 42, PANEL_Y = 540, CHOICE_Y = STATUS_Y - 4;
 const zoneTop = r => GRID_Y + r * (ZONE_H + ZGAP_Y), zoneLeft = c => GRID_X + c * (ZONE_W + ZGAP_X);
 function stackRect(i) {
   const z = Math.floor(i / 4), k = i % 4;
@@ -538,8 +538,9 @@ function stackRect(i) {
 }
 const boxRect = ch => [M + ch * (BOX_W + BOX_GAP), TRACK_Y, BOX_W, TRACK_H];
 function miniRect(ch, outie) { const b = boxRect(ch); return [b[0] + 6 + (outie ? MINI_W + 7 : 0), b[1] + 24, MINI_W, MINI_H]; }
-const handStep = n => n > 3 ? 52 : TCW + 6;
-const handRect = (k, n) => [HAND_X + k * handStep(n), TRAY_CY, TCW, TCH];
+// Drawn cards just left of the pile, the newest nearest it; three or more overlap.
+const handStep = n => n > 3 ? 40 : n > 2 ? 50 : TCW + 6;
+const handRect = (k, n) => [DRAW_X - 12 - TCW - (n - 1 - k) * handStep(n), TRAY_CY, TCW, TCH];
 
 /* ---------------- marks ---------------- */
 function knock(x, y, w, h) { ctx.fillStyle = '#fff'; for (let yy = y; yy < y + h; yy++) for (let xx = x + (yy & 1); xx < x + w; xx += 2) ctx.fillRect(xx, yy, 1, 1); }
@@ -682,8 +683,7 @@ function status() {
     const said = G.log.filter(l => l.t === G.turn && !/^(You drew |The unused draw)/.test(l.x)).pop();
     line = f.length ? f.join(' · ') : (said ? said.x : 'Refine round and square numbers with equal totals, pair revealed characters, or draw.');
   }
-  fill(M, STATUS_Y, 44, 22, '#000'); txt(M, STATUS_Y, 44, 22, note ? 'NOTE' : 'NOW', 'tile', 'center', true);
-  wrap(M + 52, STATUS_Y + 1, W - 2 * M - 52, line, 'tile', 2);
+  wrap(M, STATUS_Y + 1, W - 2 * M, line, 'tile', 2);
 }
 function tray(cand) {
   fill(M, TRAY_Y - 8, W - 2 * M, 1, '#000');
@@ -691,20 +691,21 @@ function tray(cand) {
   if (G.draw.length) { fill(DRAW_X + 4, TRAY_CY + 4, TCW, TCH, '#000', 4); cardBack(DRAW_X, TRAY_CY, TCW, TCH, false); }
   else dashed(DRAW_X, TRAY_CY, TCW, TCH, 1);
   hit(DRAW_X, TRAY_CY, TCW, TCH, tapDraw);
-  txt(HAND_X, TRAY_Y, 100, 16, 'DRAWN', 'tile', 'left');
+  const handLeft = handRect(0, G.hand.length || 1)[0];
+  txt(handLeft, TRAY_Y, 100, 16, 'DRAWN', 'tile', 'left');
   if (!G.hand.length) { const r = handRect(0, 1); dashed(r[0], r[1], r[2], r[3], 1); }
   G.hand.forEach((c, k) => {
     const r = handRect(k, G.hand.length);
     cardFace(c, r, { selected: isSel(c.id), candidate: cand.indexOf(c.id) >= 0 }, true);
-    if (c.keep) { fill(r[0] + 4, r[1] + r[3] - 18, r[2] - 8, 18, '#000'); txt(r[0] + 4, r[1] + r[3] - 18, r[2] - 8, 18, 'DIETER', 'tile', 'center', true); }
+    if (c.keep) { fill(r[0] + 3, r[1] + 3, 16, 18, '#000', 2); txt(r[0] + 3, r[1] + 3, 16, 18, 'D', 'tile', 'center', true); }
     hit(r[0], r[1], r[2], r[3], () => tapCard(c.id, false));
   });
-  const sx = 248, t = selectionTotals(sel), main = selMain();
+  const sx = M, sw = handLeft - 12 - sx, t = selectionTotals(sel), main = selMain();
   if (sel.length && !main) {
-    colourMark(sx + 8, TRAY_CY + 18, 14, true); txt(sx + 22, TRAY_CY + 4, DRAW_X - 12 - sx - 22, 28, 'ROUND ' + t.r, fitFace('SQUARE 88', DRAW_X - 12 - sx - 22, ['button', 'tile']), 'left');
-    colourMark(sx + 8, TRAY_CY + 52, 14, false); txt(sx + 22, TRAY_CY + 38, DRAW_X - 12 - sx - 22, 28, 'SQUARE ' + t.b, fitFace('SQUARE 88', DRAW_X - 12 - sx - 22, ['button', 'tile']), 'left');
-  } else if (main) wrap(sx, TRAY_CY + 6, DRAW_X - 12 - sx, 'Tap the other half to pair', 'tile', 3);
-  else if (!G.over) wrap(sx, TRAY_CY + 6, DRAW_X - 12 - sx, 'Tap round and square numbers with equal totals', 'tile', 3);
+    const f = fitFace('SQUARE 88', sw - 22, ['button', 'tile']);
+    colourMark(sx + 8, TRAY_CY + 18, 14, true); txt(sx + 22, TRAY_CY + 4, sw - 22, 28, 'ROUND ' + t.r, f, 'left');
+    colourMark(sx + 8, TRAY_CY + 52, 14, false); txt(sx + 22, TRAY_CY + 38, sw - 22, 28, 'SQUARE ' + t.b, f, 'left');
+  } else if (main) wrap(sx, TRAY_CY + 6, sw, 'Tap the other half to pair', 'tile', 3);
   const half = Math.floor((W - 2 * M - 10) / 2);
   if (G.over) { button(M, BUTTONS_Y, W - 2 * M, BUTTON_H, 'NEW QUARTER', newQuarter); return; }
   if (sel.length) button(M, BUTTONS_Y, half, BUTTON_H, 'CLEAR', () => { sel = []; note = ''; render(); }, false);
@@ -717,8 +718,8 @@ function announcement(a) {
   const cx = M, cy = PANEL_Y + 18, cw = 112, ch = 132;
   fill(cx, cy, cw, ch, '#fff', 4); specialFace(a.card, cx, cy, cw, ch); stroke(cx, cy, cw, ch, '#000', 2, 4);
   const tx = cx + cw + 14, tw = W - M - tx;
-  sayGrey(tx, PANEL_Y + 12, tw, 18, a.card.name, 'tile', 'left');
-  txt(tx, PANEL_Y + 30, tw, 32, a.title, fitFace(a.title, tw, ['ui', 'button']), 'left');
+  sayGrey(tx, PANEL_Y + 12, tw, 18, a.title, 'tile', 'left');
+  txt(tx, PANEL_Y + 30, tw, 32, a.card.name, fitFace(a.card.name, tw, ['ui', 'button']), 'left');
   fill(tx, PANEL_Y + 64, tw, 1, '#000');
   wrap(tx, PANEL_Y + 70, tw, a.text, 'tile', 6);
   button(W - M - 200, BUTTONS_Y, 200, BUTTON_H, 'CONTINUE', () => {
@@ -818,7 +819,7 @@ const RULES = [
     'You lose if no move is left and the pile is empty.']],
   ['Zones', ['Zone 1 starts open. Zone 2 opens when two number cards remain in Zone 1.',
     'Zones 3 and 4 open when only one stack in the zone before still hides a card.', 'If no number is face up anywhere, the next locked zone opens.']],
-  ['Special figures', ['Kier: move up to two numbers away. Dieter: draws two; his numbers stay in hand. Ms. Casey and Gemma: set an unmatched employee aside, or move a number away. Helly leaves her stack on her own and can cancel Milchick or Cobel once. Drummond locks his zone until your next pair and reverses the pile and Zone 4.']],
+  ['Special figures', ['Kier: move up to two numbers away. Dieter: draws two; his numbers stay in hand, marked D. Ms. Casey and Gemma: set an unmatched employee aside, or move a number away. Helly leaves her stack on her own and can cancel Milchick or Cobel once. Drummond locks his zone until your next pair and reverses the pile and Zone 4.']],
   ['More figures', ["Graner sends a revealed employee to the bottom of the last Zone 4 stack. Jame cancels Helly's Defiance, pauses her, and replays Milchick and Cobel. Reghabi searches stacks you choose for hidden employees. Milchick returns your last refined cards to the grid. Cobel splits a pair, or blocks a number. Emile the Goat is wild: tap once for round, again for square."]],
   ['Credits', ['Severance: The Card Game, designed by u/DREAMWALL, CC BY-NC-SA 4.0. An unofficial fan version of the Version 2 test rules, shared under the same licence.',
     'The rules engine is the phone version’s own; the PaperMono firmware is checked against it game by game.']],
