@@ -20,7 +20,6 @@
 #include "connections/ConnectionsActivity.h"
 #include "dungeon/DungeonActivity.h"
 #include "forehead/ForeheadActivity.h"
-#include "go/GoActivity.h"
 #include "hackernews/HackerNewsActivity.h"
 #include "hearts/HeartsActivity.h"
 #include "hex/HexActivity.h"
@@ -30,7 +29,6 @@
 #include "knucklebones/KnucklebonesActivity.h"
 #include "lobo/LoboActivity.h"
 #include "lobo/LoboShelfIcon.h"
-#include "minesweeper/MinesweeperActivity.h"
 #include "murdle/MurdleActivity.h"
 #include "notes/NotesActivity.h"
 #include "picross/PicrossActivity.h"
@@ -39,17 +37,13 @@
 #include "scoundrel/ScoundrelShelfIcon.h"
 #include "seasalt/SeaSaltActivity.h"
 #include "solitaire/SolitaireActivity.h"
-#include "study/StudyActivity.h"
 #include "sudoku/SudokuActivity.h"
 #include "toybattle/ToyBattleActivity.h"
-#include "trivia/TriviaActivity.h"
 #include "ui/ToyboxIcons.h"
 #include "underhand/UnderhandActivity.h"
 #include "wallpapers/WallpapersActivity.h"
 #include "wavelength/WavelengthActivity.h"
 #include "wikipedia/WikipediaActivity.h"
-#include "wordle/WordleActivity.h"
-#include "xkcd/XkcdActivity.h"
 #include "yahtzee/YahtzeeActivity.h"
 
 namespace {
@@ -74,22 +68,16 @@ constexpr shelf::Item kGames[] = {
     {"CONNECT FOUR", &icon_connectfour_32, &ConnectFourActivity::create},
     {"YAHTZEE", &icon_yahtzee_32, &YahtzeeActivity::create},
     {"KNUCKLEBONES", &icon_knucklebones_32, &KnucklebonesActivity::create},
-    {"MINESWEEPER", &icon_minesweeper_32, &MinesweeperActivity::create},
     {"SUDOKU", &icon_sudoku_32, &SudokuActivity::create},
     {"PICROSS", &icon_picross_32, &PicrossActivity::create},
     {"TOY BATTLE", &icon_toybattle_32, &ToyBattleActivity::create},
     {"FOREHEAD", &icon_forehead_32, &ForeheadActivity::create},
-    {"TRIVIA", &icon_trivia_32, &TriviaActivity::create},
     {"WAVELENGTH", &icon_wavelength_32, &WavelengthActivity::create},
-    {"GO", &icon_go_32, &GoActivity::create},
     {"HEX", &icon_hex_32, &HexActivity::create},
     {"UNDERHAND", &icon_underhand_32, &UnderhandActivity::create},
-    {"WORDLE", &icon_wordle_32, &WordleActivity::create},
 };
 constexpr shelf::Item kApps[] = {
-    {"STUDY", &icon_study_32, &StudyActivity::create},
     {"HACKER NEWS", &icon_hackernews_32, &HackerNewsActivity::create},
-    {"XKCD", &icon_xkcd_32, &XkcdActivity::create},
     {"INSTAPAPER", &icon_instapaper_32, &InstapaperActivity::create},
     {"WALLPAPERS", &icon_wallpapers_32, &WallpapersActivity::create},
     {"WIKIPEDIA", &icon_wikipedia_32, &WikipediaActivity::create},

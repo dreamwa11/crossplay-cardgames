@@ -5,7 +5,9 @@
 > published as releases, and the device's *Check for updates* reads this
 > repository's releases, not upstream's. The phone versions of both games,
 > black and white like the panel, are in `web/` and are published to
-> https://dreamwa11.github.io/crossplay-cardgames/ (`.github/workflows/pages.yml`). Everything below is CrossPlay's own README.
+> https://dreamwa11.github.io/crossplay-cardgames/ (`.github/workflows/pages.yml`).
+> To make room for more card games this build leaves out Study, Go, xkcd,
+> Trivia, Wordle and Minesweeper (see `build_src_filter` in `platformio.ini`). Everything below is CrossPlay's own README.
 
 <h1 align="center">
   <img src="site/assets/logo.svg#gh-light-mode-only" width="72" alt="CrossPlay"><img src="site/assets/logo-dark.svg#gh-dark-mode-only" width="72" alt="CrossPlay"><br>
@@ -35,7 +37,7 @@ devices with an 800x480 panel, capacitive touch and two physical buttons
 (three on the Sticky; the design uses the two shared buttons), and
 [CrossPoint](https://crosspointreader.com/) already makes them good at reading.
 CrossPlay is firmware that keeps all of that and adds the other things a screen
-that holds still is good at: **27 games and 8 apps**,
+that holds still is good at: **23 games and 6 apps**,
 spaced-repetition flashcards, comics, a read-later queue, and two devices that
 play together with nothing to set up.
 
@@ -74,26 +76,20 @@ the import lands a real pack instead of failing on an unreachable host.
 | **Connect Four** | Drop a disc, get four in a line. Seven columns, one tap each.                |
 | **Yahtzee**      | Thirteen boxes, three rolls a turn, and the Joker rules in full.             |
 | **Knucklebones** | Cult of the Lamb's dice game. Matching dice multiply; yours destroy theirs.  |
-| **Minesweeper**  | Tap to dig, hold to flag, tap a finished number to chord its neighbours.     |
 | **Sudoku**       | Generated on the device and graded by the technique it needs, not the clues. |
 | **Picross**     | Fill the grid from the clues and a picture appears. Wrong fills lock in.     |
 | **Sea Salt**     | Sea Salt & Paper: collect duos, bet on STOP or LAST CHANCE.                  |
 | **Toy Battle**   | Nine boards of bases and paths. Hold regions, take medals, solo or nearby.   |
 | **Forehead**     | Screen against your forehead, the room shouts clues, sixty seconds.          |
-| **Trivia**       | 50,000 questions off 42 years of Jeopardy. Read them out, or play alone.     |
 | **Wavelength**   | A hidden point on a spectrum, one clue, and the whole table arguing.         |
-| **Go**           | 9x9, 13x13 or 19x19, against the device or someone next to you. It counts.   |
 | **Hex**          | Join your two edges before they join theirs. No captures, and no draws.      |
 | **Underhand**    | The 2017 cult card game: bribe, sacrifice, dodge the police, summon a god.   |
-| **Wordle**       | Six guesses for the day's word, with every past day in an archive.           |
 
 ### Apps
 
 |                 |                                                                          |
 | --------------- | ------------------------------------------------------------------------ |
-| **Study**       | Anki decks with the FSRS scheduler, offline.                             |
 | **Hacker News** | The front page in a reading serif, articles kept on the card.            |
-| **xkcd**        | The archive, packed for the card and drawn one to one.                   |
 | **Instapaper**  | Your read-later queue, synced both ways: reading position and archiving. |
 | **Wallpapers**  | Pick an image on the card as the sleep screen, one tap to set it.        |
 | **Wikipedia**   | Fifty thousand articles on the card, read like a book, no internet.      |
