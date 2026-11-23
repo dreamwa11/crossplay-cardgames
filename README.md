@@ -1,6 +1,7 @@
 > **crossplay-cardgames** is a copy of [CrossPlay](https://github.com/ma-r-s/crossplay)
-> with two games added: **Scoundrel** (`src/apps_local/scoundrel/`) and **Lobo**
-> (`src/apps_local/lobo/`). They build into every CrossPlay device; GitHub Actions builds the M5Stack
+> with two games added, **Scoundrel** (`src/apps_local/scoundrel/`) and **Lobo**
+> (`src/apps_local/lobo/`), and **Tabletop** (`src/apps_local/tabletop/`): playing
+> cards, tarot and dice. They build into every CrossPlay device; GitHub Actions builds the M5Stack
 > PaperMono firmware (`.github/workflows/papermono.yml`). Tagged versions are
 > published as releases, and the device's *Check for updates* reads this
 > repository's releases, not upstream's. The phone versions of both games,
@@ -38,7 +39,7 @@ devices with an 800x480 panel, capacitive touch and two physical buttons
 (three on the Sticky; the design uses the two shared buttons), and
 [CrossPoint](https://crosspointreader.com/) already makes them good at reading.
 CrossPlay is firmware that keeps all of that and adds the other things a screen
-that holds still is good at: **12 games and 5 apps**,
+that holds still is good at: **12 games and 6 apps**,
 spaced-repetition flashcards, comics, a read-later queue, and two devices that
 play together with nothing to set up.
 
@@ -79,6 +80,7 @@ the import lands a real pack instead of failing on an unreachable host.
 
 |                 |                                                                          |
 | --------------- | ------------------------------------------------------------------------ |
+| **Tabletop**    | Draw playing cards or tarot (one card or a three-card spread), roll any dice. |
 | **Instapaper**  | Your read-later queue, synced both ways: reading position and archiving. |
 | **Wallpapers**  | Pick an image on the card as the sleep screen, one tap to set it.        |
 | **Wikipedia**   | Fifty thousand articles on the card, read like a book, no internet.      |

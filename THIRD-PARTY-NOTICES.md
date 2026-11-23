@@ -47,6 +47,11 @@ rasterised into `src/apps_local/lobo/LoboArt.h`; sources and details in
 `src/apps_local/lobo/art/`. Lobo itself is a solitaire game by James Ernest,
 Crab Fragment Labs (2022); this is an unofficial fan version.
 
+**Tabletop's art**: the major arcana by Caro Asercion, and the suits, joker
+and shelf mark by Lorc, Skoll and Delapouite, all from game-icons.net,
+CC BY 3.0, rasterised into `src/apps_local/tabletop/TabletopArt.h`; details in
+`src/apps_local/tabletop/art/ATTRIBUTION.md`.
+
 **"celtic" chess pieces**, MIT, Copyright (c) Maurizio Monge, from
 [maurimo/chess-art](https://github.com/maurimo/chess-art). Chess's board art is
 rasterised from them into `src/apps_local/chess/ChessPieces.h` at authoring

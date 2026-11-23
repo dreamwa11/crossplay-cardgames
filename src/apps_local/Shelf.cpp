@@ -21,6 +21,8 @@
 #include "knucklebones/KnucklebonesActivity.h"
 #include "lobo/LoboActivity.h"
 #include "lobo/LoboShelfIcon.h"
+#include "tabletop/TabletopActivity.h"
+#include "tabletop/TabletopShelfIcon.h"
 #include "murdle/MurdleActivity.h"
 #include "notes/NotesActivity.h"
 #include "player/PlayerActivity.h"
@@ -54,6 +56,7 @@ constexpr shelf::Item kGames[] = {
     {"UNDERHAND", &icon_underhand_32, &UnderhandActivity::create},
 };
 constexpr shelf::Item kApps[] = {
+    {"TABLETOP", &icon_tabletop_32, &TabletopActivity::create},
     {"INSTAPAPER", &icon_instapaper_32, &InstapaperActivity::create},
     {"WALLPAPERS", &icon_wallpapers_32, &WallpapersActivity::create},
     {"WIKIPEDIA", &icon_wikipedia_32, &WikipediaActivity::create},
