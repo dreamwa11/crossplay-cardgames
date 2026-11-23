@@ -282,7 +282,7 @@ void numFace(toybox::Screen& screen, const fui::Rect& r, const s::Game& g, const
   }
   const int valueH = r.height * 58 / 100;
   const int vw = look.visibleW > 0 && look.visibleW < r.width ? look.visibleW : r.width;
-  const Face vf = !small ? Face::Display : fit(screen, v, vw - 8, {Face::Ui, Face::Button});
+  const Face vf = !small ? Face::Ui : fit(screen, v, vw - 8, {Face::Ui, Face::Button});
   say(screen, rect(r.x, r.y + 4, vw, valueH), v, vf);
   const int cy = r.y + 4 + valueH + (r.height - valueH - 4) / 2 - 2;
   const int mark = small ? 10 : 14;

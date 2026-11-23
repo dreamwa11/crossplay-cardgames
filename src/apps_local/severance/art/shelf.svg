@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <!-- The keycard on the phone version's draw pile: a plain card with a drop. -->
-  <rect x="5" y="1.5" width="22" height="29" rx="2" fill="#fff" stroke="#000" stroke-width="3"/>
+  <rect x="5" y="1.5" width="22" height="29" rx="2" fill="#fff" stroke="#000" stroke-width="2"/>
   <path d="M19.5 14 C19.5 14 15.5 19.5 15.5 22 a4 4 0 0 0 8 0 C23.5 19.5 19.5 14 19.5 14z" fill="#000"/>
 </svg>

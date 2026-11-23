@@ -582,7 +582,7 @@ function cardBack(x, y, w, h, locked) {
 function numFace(c, x, y, w, h, selected, small, visW) {
   const v = c.wild && !c.val ? '?' : String(c.val);
   const vh = Math.floor(h * 58 / 100), vw = visW > 0 && visW < w ? visW : w;
-  txt(x, y + 4, vw, vh, v, small ? fitFace(v, vw - 8, ['ui', 'button']) : 'display');
+  txt(x, y + 4, vw, vh, v, small ? fitFace(v, vw - 8, ['ui', 'button']) : 'ui');
   const cy = y + 4 + vh + Math.floor((h - vh - 4) / 2) - 2, mark = small ? 10 : 14;
   if (c.wild) {
     const tw = Math.min(48, vw - 6);
