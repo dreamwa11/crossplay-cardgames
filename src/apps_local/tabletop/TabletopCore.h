@@ -23,6 +23,7 @@ constexpr int kMaxDeck = kTarotCards;
 constexpr int kHistory = 5;     // earlier draws kept for the strip under the card
 constexpr int kSpread = 3;      // past, present, future
 constexpr int kBacks = 3;       // The Pale Motel's diamonds, chevrons and rays
+constexpr int kTarotBack = 2;   // the rays are tarot's; the other two are the playing deck's
 
 enum class Die : uint8_t { D4 = 0, D6, D8, D10, D12, D20, D100, Count };
 constexpr int kDieKinds = static_cast<int>(Die::Count);

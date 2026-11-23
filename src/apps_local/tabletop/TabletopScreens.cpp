@@ -183,18 +183,21 @@ void cardFrame(toybox::Screen& screen, const fui::Rect& r, const int edge = 3) {
 
 // A card back: one of The Pale Motel's three patterns, picked when the deck
 // was shuffled, inside the card's frame.
-const freeink::Icon* const kBacks[tt::kBacks][3] = {
-    {&icon_tt_back0_224x318, &icon_tt_back0_224x348, &icon_tt_back0_70x104},
-    {&icon_tt_back1_224x318, &icon_tt_back1_224x348, &icon_tt_back1_70x104},
-    {&icon_tt_back2_224x318, &icon_tt_back2_224x348, &icon_tt_back2_70x104},
+struct BackArt {
+  uint8_t back;
+  const freeink::Icon* art;
+};
+const BackArt kBackArt[] = {
+    {0, &icon_tt_back0_224x318}, {0, &icon_tt_back0_70x104}, {1, &icon_tt_back1_224x318},
+    {1, &icon_tt_back1_70x104},  {2, &icon_tt_back2_224x348},
 };
 
 void cardBack(toybox::Screen& screen, const fui::Rect& r, const int back) {
   cardFrame(screen, r);
   const fui::Rect field = rect(r.x + 6, r.y + 6, r.width - 12, r.height - 12);
-  for (const freeink::Icon* art : kBacks[back % tt::kBacks]) {
-    if (art->w == field.width && art->h == field.height) {
-      icon(screen, field, *art);
+  for (const BackArt& b : kBackArt) {
+    if (b.back == back && b.art->w == field.width && b.art->h == field.height) {
+      icon(screen, field, *b.art);
       return;
     }
   }
@@ -362,7 +365,9 @@ void die(toybox::Screen& screen, const int x, const int y, const int kind, const
   icon(screen, rect(x, y, art.w, art.h), art);
   // The triangle's middle sits low and narrow: a smaller number, lower down.
   const int drop = kind == 0 ? 11 : 0;
-  const Face f = kind == 0 ? fit(screen, text, 40, {Face::Ui, Face::Button}) : fit(screen, text, 64, {Face::Display, Face::Ui});
+  // One size per die, so every number on it matches: the big cut where every
+  // face is a single digit and the die is wide enough, the UI cut otherwise.
+  const Face f = (kind == 1 || kind == 2) ? Face::Display : Face::Ui;
   say(screen, rect(x, y + drop, art.w, art.h), text, f);
 }
 
@@ -406,7 +411,7 @@ void buildMenu(toybox::Screen& screen, const tt::Table& t) {
       // Two cards, one behind the other.
       cardBack(screen, rect(r.x + 26, r.y + 28, 82, 116), t.cards.back);
       cardFrame(screen, rect(r.x + 62, r.y + 52, 82, 116));
-      say(screen, rect(r.x + 66, r.y + 58, 40, 34), "A", Face::Display);
+      say(screen, rect(r.x + 68, r.y + 60, 30, 26), "A", Face::Ui);
       iconAt(screen, r.x + 103, r.y + 100, icon_tt_spades_40);
       std::snprintf(line, sizeof(line), "%d of %d left", t.cards.left, t.cards.size);
       say(screen, rect(text.x, r.y + 100, text.width, 30), line, Face::Ui, fui::TextAlign::Left);
@@ -415,9 +420,9 @@ void buildMenu(toybox::Screen& screen, const tt::Table& t) {
     } else if (i == 1) {
       const fui::Rect c = rect(r.x + 36, r.y + 18, 108, 160);
       cardFrame(screen, c);
-      say(screen, rect(c.x, c.y + 6, c.width, 26), "XVII", Face::Button);
-      iconAt(screen, c.x + c.width / 2, c.y + 40, icon_tt_major_17_88);
-      say(screen, rect(c.x, c.bottom() - 30, c.width, 24), "THE STAR", Face::Tile);
+      say(screen, rect(c.x, c.y + 6, c.width, 26), "0", Face::Button);
+      iconAt(screen, c.x + c.width / 2, c.y + 40, icon_tt_major_00_88);
+      say(screen, rect(c.x, c.bottom() - 30, c.width, 24), "THE FOOL", Face::Tile);
       std::snprintf(line, sizeof(line), "%d of %d left", t.tarot.left, t.tarot.size);
       say(screen, rect(text.x, r.y + 100, text.width, 30), line, Face::Ui, fui::TextAlign::Left);
       say(screen, rect(text.x, r.y + 132, text.width, 26), t.spread ? "Three-card spread" : "One card at a time",

@@ -98,8 +98,9 @@ def cover(name, w, h):
     return np.array(img)[top:top + h, left:left + w] < 110
 
 
-for n in range(3):
-    for (w, h) in ((224, 318), (224, 348), (70, 104)):
+# The playing deck wears 0 or 1 (on its screen and its menu tile), tarot 2.
+for n, sizes in ((0, ((224, 318), (70, 104))), (1, ((224, 318), (70, 104))), (2, ((224, 348),))):
+    for (w, h) in sizes:
         emit(f"icon_tt_back{n}_{w}x{h}", cover(f"back{n}", w, h))
 for d in ("d4", "d6", "d8", "d10", "d12", "d20", "d100"):
     icon(d, (96, 48))

@@ -126,7 +126,8 @@ void start(Table& t, const uint32_t seed) {
 void shuffle(Table& t, Deck& deck, const bool tarot) {
   deck.shown = 0;
   deck.historyLen = 0;
-  deck.back = static_cast<uint8_t>(t.rng.below(kBacks));
+  // Tarot always wears the rays; playing cards get the diamonds or the chevrons.
+  deck.back = static_cast<uint8_t>(tarot ? kTarotBack : t.rng.below(kTarotBack));
   fill(t, deck, tarot);
 }
 
@@ -275,6 +276,8 @@ bool parse(const char* in, Table& out) {
   if (!readDeck(p, t.tarot, kTarotCards, hasBack)) return false;
   if (t.cards.size != kPlayingCards && t.cards.size != kPlayingCards + kJokers) return false;
   if (t.tarot.size != kTarotCards) return false;
+  t.tarot.back = kTarotBack;
+  if (t.cards.back == kTarotBack) t.cards.back = 0;
   long c;
   if (!num(p, c) || c < 0 || c > kMaxDice) return false;
   t.dice.count = static_cast<uint8_t>(c);
