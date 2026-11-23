@@ -526,10 +526,11 @@ function restore() {
 
 /* ---------------- geometry (as SeveranceScreens.cpp) ---------------- */
 const M = 16, TOP_H = 48, TRACK_Y = 56, TRACK_H = 66, BOX_W = 107, BOX_GAP = 6, MINI_W = 44, MINI_H = 36;
-const CW = 96, CH = 100, CGAP = 6, ZONE_W = 2 * CW + CGAP, ZGAP_X = 16, GRID_X = (W - 2 * ZONE_W - ZGAP_X) / 2;
-const GRID_Y = 130, ZLABEL = 24, ZONE_H = ZLABEL + 2 * CH + CGAP, ZGAP_Y = 12;
-const STATUS_Y = GRID_Y + 2 * ZONE_H + ZGAP_Y + 12, TRAY_Y = STATUS_Y + 56, TRAY_CY = TRAY_Y + 15, TCW = 60, TCH = 70;
-const HAND_X = 98, BUTTONS_Y = 758, BUTTON_H = 42, PANEL_Y = 540, CHOICE_Y = STATUS_Y - 4;
+const CW = 96, CH = 92, CGAP = 6, ZONE_W = 2 * CW + CGAP, ZGAP_X = 16, GRID_X = (W - 2 * ZONE_W - ZGAP_X) / 2;
+const GRID_Y = 130, ZLABEL = 22, ZONE_H = ZLABEL + 2 * CH + CGAP, ZGAP_Y = 12;
+const STATUS_Y = GRID_Y + 2 * ZONE_H + ZGAP_Y + 14, TRAY_Y = STATUS_Y + 64, TRAY_CY = TRAY_Y + 18, TCW = 62, TCH = 72;
+const DRAW_X = W - 16 - TCW - 4;
+const HAND_X = 16, BUTTONS_Y = 752, BUTTON_H = 42, PANEL_Y = 540, CHOICE_Y = STATUS_Y - 4;
 const zoneTop = r => GRID_Y + r * (ZONE_H + ZGAP_Y), zoneLeft = c => GRID_X + c * (ZONE_W + ZGAP_X);
 function stackRect(i) {
   const z = Math.floor(i / 4), k = i % 4;
@@ -582,9 +583,9 @@ function mainFace(c, x, y, w, h, small) {
   const innie = c.red;
   if (innie) fill(x + 2, y + 2, w - 4, h - 4, '#000', 3);
   if (small) { txt(x, y, w, h, innie ? 'IN' : 'OUT', 'tile', 'center', innie); return; }
-  wrap(x + 6, y + 14, w - 12, c.name, 'button', 2, 'center', innie);
-  stroke(x + w / 2 - 30, y + h - 32, 60, 20, innie ? '#fff' : '#000', 1);
-  txt(x + w / 2 - 30, y + h - 32, 60, 20, innie ? 'INNIE' : 'OUTIE', 'tile', 'center', innie);
+  wrap(x + 6, y + 14, w - 12, c.name, widthOf(c.name, 'button') <= w - 12 ? 'button' : 'tile', 2, 'center', innie);
+  stroke(x + 7, y + h - 28, 54, 20, innie ? '#fff' : '#000', 1);
+  txt(x + 7, y + h - 28, 54, 20, innie ? 'INNIE' : 'OUTIE', 'tile', 'center', innie);
 }
 function specialFace(c, x, y, w, h) {
   const bad = !!BAD[c.fx];
@@ -677,17 +678,19 @@ function status() {
     if (G.hellyPause) f.push('HELLY CANNOT PAIR');
     if (G.blocked) f.push('COBEL BLOCKING');
     if (!G.defianceUsed && G.waiting.some(w => w.ch === 'Q')) f.push('DEFIANCE READY');
-    line = f.length ? f.join(' · ') : (G.log.length ? G.log[G.log.length - 1].x : '');
+    // The newest thing that happened this turn, except a plain draw report.
+    const said = G.log.filter(l => l.t === G.turn && !/^(You drew |The unused draw)/.test(l.x)).pop();
+    line = f.length ? f.join(' · ') : (said ? said.x : 'Refine round and square numbers with equal totals, pair revealed characters, or draw.');
   }
   fill(M, STATUS_Y, 44, 22, '#000'); txt(M, STATUS_Y, 44, 22, note ? 'NOTE' : 'NOW', 'tile', 'center', true);
   wrap(M + 52, STATUS_Y + 1, W - 2 * M - 52, line, 'tile', 2);
 }
 function tray(cand) {
-  fill(M, TRAY_Y - 2, W - 2 * M, 1, '#000');
-  txt(M, TRAY_Y, 80, 16, 'DRAW ' + G.draw.length, 'tile', 'left');
-  if (G.draw.length) { fill(M + 4, TRAY_CY + 4, TCW, TCH, '#000', 4); cardBack(M, TRAY_CY, TCW, TCH, false); }
-  else dashed(M, TRAY_CY, TCW, TCH, 1);
-  hit(M, TRAY_CY, TCW, TCH, tapDraw);
+  fill(M, TRAY_Y - 8, W - 2 * M, 1, '#000');
+  txt(W - M - 100, TRAY_Y, 100, 16, 'DRAW ' + G.draw.length, 'tile', 'right');
+  if (G.draw.length) { fill(DRAW_X + 4, TRAY_CY + 4, TCW, TCH, '#000', 4); cardBack(DRAW_X, TRAY_CY, TCW, TCH, false); }
+  else dashed(DRAW_X, TRAY_CY, TCW, TCH, 1);
+  hit(DRAW_X, TRAY_CY, TCW, TCH, tapDraw);
   txt(HAND_X, TRAY_Y, 100, 16, 'DRAWN', 'tile', 'left');
   if (!G.hand.length) { const r = handRect(0, 1); dashed(r[0], r[1], r[2], r[3], 1); }
   G.hand.forEach((c, k) => {
@@ -696,12 +699,12 @@ function tray(cand) {
     if (c.keep) { fill(r[0] + 4, r[1] + r[3] - 18, r[2] - 8, 18, '#000'); txt(r[0] + 4, r[1] + r[3] - 18, r[2] - 8, 18, 'DIETER', 'tile', 'center', true); }
     hit(r[0], r[1], r[2], r[3], () => tapCard(c.id, false));
   });
-  const sx = 306, t = selectionTotals(sel), main = selMain();
+  const sx = 248, t = selectionTotals(sel), main = selMain();
   if (sel.length && !main) {
-    colourMark(sx + 8, TRAY_CY + 18, 14, true); txt(sx + 22, TRAY_CY + 4, W - M - sx - 22, 28, 'ROUND ' + t.r, fitFace('SQUARE 88', W - M - sx - 22, ['button', 'tile']), 'left');
-    colourMark(sx + 8, TRAY_CY + 52, 14, false); txt(sx + 22, TRAY_CY + 38, W - M - sx - 22, 28, 'SQUARE ' + t.b, fitFace('SQUARE 88', W - M - sx - 22, ['button', 'tile']), 'left');
-  } else if (main) wrap(sx, TRAY_CY + 6, W - M - sx, 'Tap the other half to pair', 'tile', 3);
-  else if (!G.over) wrap(sx, TRAY_CY + 6, W - M - sx, 'Tap round and square numbers with equal totals', 'tile', 3);
+    colourMark(sx + 8, TRAY_CY + 18, 14, true); txt(sx + 22, TRAY_CY + 4, DRAW_X - 12 - sx - 22, 28, 'ROUND ' + t.r, fitFace('SQUARE 88', DRAW_X - 12 - sx - 22, ['button', 'tile']), 'left');
+    colourMark(sx + 8, TRAY_CY + 52, 14, false); txt(sx + 22, TRAY_CY + 38, DRAW_X - 12 - sx - 22, 28, 'SQUARE ' + t.b, fitFace('SQUARE 88', DRAW_X - 12 - sx - 22, ['button', 'tile']), 'left');
+  } else if (main) wrap(sx, TRAY_CY + 6, DRAW_X - 12 - sx, 'Tap the other half to pair', 'tile', 3);
+  else if (!G.over) wrap(sx, TRAY_CY + 6, DRAW_X - 12 - sx, 'Tap round and square numbers with equal totals', 'tile', 3);
   const half = Math.floor((W - 2 * M - 10) / 2);
   if (G.over) { button(M, BUTTONS_Y, W - 2 * M, BUTTON_H, 'NEW QUARTER', newQuarter); return; }
   if (sel.length) button(M, BUTTONS_Y, half, BUTTON_H, 'CLEAR', () => { sel = []; note = ''; render(); }, false);

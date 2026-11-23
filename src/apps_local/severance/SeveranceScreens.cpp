@@ -28,23 +28,25 @@ constexpr int kBoxGap = 6;
 constexpr int kMiniW = 44;
 constexpr int kMiniH = 36;
 constexpr int kCardW = 96;
-constexpr int kCardH = 100;
+constexpr int kCardH = 92;
 constexpr int kCardGap = 6;
 constexpr int kZoneW = 2 * kCardW + kCardGap;
 constexpr int kZoneGapX = 16;
 constexpr int kGridX = (kW - 2 * kZoneW - kZoneGapX) / 2;
 constexpr int kGridY = 130;
-constexpr int kZoneLabelH = 24;
+constexpr int kZoneLabelH = 22;
 constexpr int kZoneH = kZoneLabelH + 2 * kCardH + kCardGap;
 constexpr int kZoneGapY = 12;
-// The message bar, with air above it and below it.
-constexpr int kStatusY = kGridY + 2 * kZoneH + kZoneGapY + 12;  // 614
-constexpr int kTrayY = kStatusY + 56;
-constexpr int kTrayCardY = kTrayY + 15;
-constexpr int kTrayCardW = 60;
-constexpr int kTrayCardH = 70;
-constexpr int kHandX = 98;
-constexpr int kButtonsY = 758;
+// The message bar, then the tray, each with air around it. The draw pile is on
+// the right, under the right thumb; the drawn cards on the left.
+constexpr int kStatusY = kGridY + 2 * kZoneH + kZoneGapY + 14;  // 580
+constexpr int kTrayY = kStatusY + 64;
+constexpr int kTrayCardY = kTrayY + 18;
+constexpr int kTrayCardW = 62;
+constexpr int kTrayCardH = 72;
+constexpr int kHandX = 16;
+constexpr int kDrawX = 480 - 16 - kTrayCardW - 4;
+constexpr int kButtonsY = 752;
 constexpr int kButtonH = 42;
 constexpr int kM = 16;
 constexpr int kPanelY = 540;  // a special figure's announcement and the result
@@ -71,7 +73,7 @@ fui::Rect miniRect(const int ch, const bool outie) {
   const fui::Rect b = boxRect(ch);
   return rect(b.x + 6 + (outie ? kMiniW + 7 : 0), b.y + 24, kMiniW, kMiniH);
 }
-fui::Rect drawRect() { return rect(kM, kTrayCardY, kTrayCardW, kTrayCardH); }
+fui::Rect drawRect() { return rect(kDrawX, kTrayCardY, kTrayCardW, kTrayCardH); }
 int handStep(const int n) { return n > 3 ? 52 : kTrayCardW + 6; }
 fui::Rect handRect(const int k, const int n) { return rect(kHandX + k * handStep(n), kTrayCardY, kTrayCardW, kTrayCardH); }
 
@@ -299,9 +301,12 @@ void mainFace(toybox::Screen& screen, const fui::Rect& r, const int id, const bo
     say(screen, r, innie ? "IN" : "OUT", Face::Tile, fui::TextAlign::Center, innie);
     return;
   }
-  prose(screen, rect(r.x + 6, r.y + 14, r.width - 12, 48), s::cardName(id), Face::Button, 2, fui::TextAlign::Center,
-        innie);
-  const fui::Rect tag = rect(r.x + r.width / 2 - 30, r.y + r.height - 32, 60, 20);
+  // The name on one line in the button cut if it fits, else two smaller ones.
+  const char* name = s::cardName(id);
+  const Face f = widthOf(screen, name, Face::Button) <= r.width - 12 ? Face::Button : Face::Tile;
+  prose(screen, rect(r.x + 6, r.y + 14, r.width - 12, 44), name, f, 2, fui::TextAlign::Center, innie);
+  // Bottom left, clear of the stack count in the other corner.
+  const fui::Rect tag = rect(r.x + 7, r.y + r.height - 28, 54, 20);
   screen.target().stroke(tag, innie ? kWhite : kBlack, 1, 0);
   say(screen, tag, innie ? "INNIE" : "OUTIE", Face::Tile, fui::TextAlign::Center, innie);
 }
@@ -485,7 +490,16 @@ void status(toybox::Screen& screen, const BoardModel& m) {
     bool helly = false;
     for (int k = 0; k < g.waiting.n; ++k) helly |= s::cardDef(g.waiting.c[k]).ch == 1;
     if (!g.defianceUsed && helly) add("DEFIANCE READY");
-    if (!n) add(g.nLog ? g.log[g.nLog - 1].text : "");
+    if (!n) {
+      // The newest thing that happened this turn, except a plain draw report:
+      // the drawn card is on the table for anyone to see.
+      const char* said = nullptr;
+      for (int k = g.nLog - 1; k >= 0 && g.log[k].turn == g.turn && !said; --k) {
+        const char* x = g.log[k].text;
+        if (std::strncmp(x, "You drew ", 9) != 0 && std::strncmp(x, "The unused draw", 15) != 0) said = x;
+      }
+      add(said ? said : "Refine round and square numbers with equal totals, pair revealed characters, or draw.");
+    }
   }
   const fui::Rect chip = rect(kM, kStatusY, 44, 22);
   t.fill(chip, kBlack);
@@ -496,10 +510,10 @@ void status(toybox::Screen& screen, const BoardModel& m) {
 void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, const int nCand) {
   const s::Game& g = *m.game;
   auto& t = screen.target();
-  t.fill(rect(kM, kTrayY - 2, kW - 2 * kM, 1), kBlack);
+  t.fill(rect(kM, kTrayY - 8, kW - 2 * kM, 1), kBlack);
   char label[24];
   std::snprintf(label, sizeof(label), "DRAW %d", g.draw.n);
-  say(screen, rect(kM, kTrayY, 80, 16), label, Face::Tile, fui::TextAlign::Left);
+  say(screen, rect(kW - kM - 100, kTrayY, 100, 16), label, Face::Tile, fui::TextAlign::Right);
   const fui::Rect pile = drawRect();
   if (g.draw.n) {
     t.fill(rect(pile.x + 4, pile.y + 4, pile.width, pile.height), kBlack, 4);
@@ -524,7 +538,7 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
     }
   }
   // The selection's totals, round over square.
-  const int sx = 306;
+  const int sx = 248;
   const s::Totals tot = s::selectionTotals(g, m.sel, m.nSel);
   bool main = false;
   for (int k = 0; k < m.nSel; ++k) main |= s::cardDef(m.sel[k]).type == s::Type::Main;
@@ -532,7 +546,7 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
     char v[24];
     colourMark(screen, sx + 8, kTrayCardY + 18, 14, true);
     std::snprintf(v, sizeof(v), "ROUND %d", tot.green);
-    const int vw = kW - kM - sx - 22;
+    const int vw = kDrawX - 12 - sx - 22;
     say(screen, rect(sx + 22, kTrayCardY + 4, vw, 28), v, fit(screen, "SQUARE 88", vw, {Face::Button, Face::Tile}),
         fui::TextAlign::Left);
     colourMark(screen, sx + 8, kTrayCardY + 52, 14, false);
@@ -540,10 +554,10 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
     say(screen, rect(sx + 22, kTrayCardY + 38, vw, 28), v, fit(screen, "SQUARE 88", vw, {Face::Button, Face::Tile}),
         fui::TextAlign::Left);
   } else if (g.pending.type == s::Pend::None && main) {
-    prose(screen, rect(sx, kTrayCardY + 6, kW - kM - sx, 64), "Tap the other half to pair", Face::Tile, 3);
+    prose(screen, rect(sx, kTrayCardY + 6, kDrawX - 12 - sx, 64), "Tap the other half to pair", Face::Tile, 3);
   } else if (g.pending.type == s::Pend::None && g.over == s::Over::No) {
-    prose(screen, rect(sx, kTrayCardY + 6, kW - kM - sx, 64), "Tap round and square numbers with equal totals", Face::Tile,
-          3);
+    prose(screen, rect(sx, kTrayCardY + 6, kDrawX - 12 - sx, 64), "Tap round and square numbers with equal totals",
+          Face::Tile, 3);
   }
   // Buttons.
   const int half = (kW - 2 * kM - 10) / 2;
