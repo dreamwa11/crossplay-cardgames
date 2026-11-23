@@ -1,0 +1,14 @@
+{
+  "name": "Tabletop for CrossPlay",
+  "short_name": "Tabletop",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "icon-tabletop-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-tabletop-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
