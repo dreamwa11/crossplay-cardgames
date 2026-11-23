@@ -222,10 +222,10 @@ void SeveranceActivity::tapCard(const int id, const bool mini) {
     if (!in) {
       g.card[id].red = true;
       toggle(id, ui::kMaxSel);
-      setNote("The Goat counts as green. Tap again for blue.");
+      setNote("The Goat counts as round. Tap again for square.");
     } else if (g.card[id].red) {
       g.card[id].red = false;
-      setNote("The Goat counts as blue. Tap again to deselect.");
+      setNote("The Goat counts as square. Tap again to deselect.");
     } else {
       toggle(id, ui::kMaxSel);
     }

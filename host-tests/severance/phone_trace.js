@@ -1,9 +1,16 @@
 // Plays the same seeded quarters as trace.cpp with the phone version's engine.
 const fs = require('fs');
 const vm = require('vm');
+// The PaperMono has no colour, so its words for the two number colours are
+// round and square; the phone engine is reworded the same way before it runs.
+function blackAndWhite(src) {
+  const out = src.replace("(c.red?'green':'blue')", "(c.red?'round':'square')").replace('counts as green or blue', 'counts as round or square');
+  if (out.indexOf("'round':'square'") < 0 || out.indexOf('round or square') < 0) throw new Error('phone engine wording moved');
+  return out;
+}
 const ctx = {console};
 vm.createContext(ctx);
-vm.runInContext(fs.readFileSync(__dirname + '/phone_engine.js', 'utf8'), ctx);
+vm.runInContext(blackAndWhite(fs.readFileSync(__dirname + '/phone_engine.js', 'utf8')), ctx);
 // The port's xorshift in place of Math.random, consumed the same way.
 vm.runInContext(`
 var RS = 0;

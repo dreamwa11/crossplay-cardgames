@@ -28,7 +28,7 @@ constexpr int kBoxGap = 6;
 constexpr int kMiniW = 44;
 constexpr int kMiniH = 36;
 constexpr int kCardW = 96;
-constexpr int kCardH = 104;
+constexpr int kCardH = 100;
 constexpr int kCardGap = 6;
 constexpr int kZoneW = 2 * kCardW + kCardGap;
 constexpr int kZoneGapX = 16;
@@ -37,13 +37,14 @@ constexpr int kGridY = 130;
 constexpr int kZoneLabelH = 24;
 constexpr int kZoneH = kZoneLabelH + 2 * kCardH + kCardGap;
 constexpr int kZoneGapY = 12;
-constexpr int kStatusY = kGridY + 2 * kZoneH + kZoneGapY + 4;  // 622
-constexpr int kTrayY = kStatusY + 46;
+// The message bar, with air above it and below it.
+constexpr int kStatusY = kGridY + 2 * kZoneH + kZoneGapY + 12;  // 614
+constexpr int kTrayY = kStatusY + 56;
 constexpr int kTrayCardY = kTrayY + 15;
 constexpr int kTrayCardW = 60;
 constexpr int kTrayCardH = 70;
 constexpr int kHandX = 98;
-constexpr int kButtonsY = 756;
+constexpr int kButtonsY = 758;
 constexpr int kButtonH = 42;
 constexpr int kM = 16;
 constexpr int kPanelY = 540;  // a special figure's announcement and the result
@@ -517,12 +518,12 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
     const fui::Rect r = handRect(k, g.hand.n);
     cardFace(screen, r, g, id, look, true);
     if (g.card[id].keep) {
-      const fui::Rect tag = rect(r.x + 4, r.y + r.height - 10, r.width - 8, 18);
+      const fui::Rect tag = rect(r.x + 4, r.y + r.height - 18, r.width - 8, 18);
       t.fill(tag, kBlack);
       say(screen, tag, "DIETER", Face::Tile, fui::TextAlign::Center, true);
     }
   }
-  // The selection's totals, green over blue.
+  // The selection's totals, round over square.
   const int sx = 306;
   const s::Totals tot = s::selectionTotals(g, m.sel, m.nSel);
   bool main = false;
@@ -530,15 +531,18 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
   if (g.pending.type == s::Pend::None && m.nSel && !main) {
     char v[24];
     colourMark(screen, sx + 8, kTrayCardY + 18, 14, true);
-    std::snprintf(v, sizeof(v), "GREEN %d", tot.green);
-    say(screen, rect(sx + 22, kTrayCardY + 4, 120, 28), v, Face::Button, fui::TextAlign::Left);
+    std::snprintf(v, sizeof(v), "ROUND %d", tot.green);
+    const int vw = kW - kM - sx - 22;
+    say(screen, rect(sx + 22, kTrayCardY + 4, vw, 28), v, fit(screen, "SQUARE 88", vw, {Face::Button, Face::Tile}),
+        fui::TextAlign::Left);
     colourMark(screen, sx + 8, kTrayCardY + 52, 14, false);
-    std::snprintf(v, sizeof(v), "BLUE %d", tot.blue);
-    say(screen, rect(sx + 22, kTrayCardY + 38, 120, 28), v, Face::Button, fui::TextAlign::Left);
+    std::snprintf(v, sizeof(v), "SQUARE %d", tot.blue);
+    say(screen, rect(sx + 22, kTrayCardY + 38, vw, 28), v, fit(screen, "SQUARE 88", vw, {Face::Button, Face::Tile}),
+        fui::TextAlign::Left);
   } else if (g.pending.type == s::Pend::None && main) {
     prose(screen, rect(sx, kTrayCardY + 6, kW - kM - sx, 64), "Tap the other half to pair", Face::Tile, 3);
   } else if (g.pending.type == s::Pend::None && g.over == s::Over::No) {
-    prose(screen, rect(sx, kTrayCardY + 6, kW - kM - sx, 64), "Tap green and blue numbers with equal totals", Face::Tile,
+    prose(screen, rect(sx, kTrayCardY + 6, kW - kM - sx, 64), "Tap round and square numbers with equal totals", Face::Tile,
           3);
   }
   // Buttons.
@@ -631,14 +635,14 @@ struct RulesPage {
 const RulesPage kRules[] = {
     {"Objective",
      "Reunite each employee's innie with their outie: Mark S., Helly R. (Helena), Dylan G. and Irving B. Pair all "
-     "four to hit quota.\n\nInnies are the black cards, outies the white ones. Numbers are green (a dot) or blue (a "
-     "square)."},
+     "four to hit quota.\n\nInnies are the black cards, outies the white ones. Numbers are round (marked with a dot) "
+     "or square (marked with a square)."},
     {"Cards",
      "The grid holds 48 cards in layers of 1, 3, 4 and 4 per zone: the numbers 2 to 10 four times each, the eight "
      "employees, Kier, Mr. Drummond, Ms. Casey and Emile the Goat.\n\nAdministration, the draw pile, holds 33: 26 "
      "numbers and Dieter, Gemma, Doug Graner, Milchick, Cobel, Reghabi and Jame Eagan."},
     {"Refining",
-     "Tap face-up numbers so the green total equals the blue total (7 + 3 green with 10 blue), then REFINE.\n\nWhen "
+     "Tap face-up numbers so the round total equals the square total (7 + 3 round with 10 square), then REFINE.\n\nWhen "
      "identical cards are free, the one in the earliest position (Zone 1 first, left to right) must be used.\n\n"
      "Removing a card turns over the one beneath it. Tap the draw pile when you like; only the latest draw can be "
      "used."},
@@ -659,7 +663,7 @@ const RulesPage kRules[] = {
      "Graner sends a revealed employee to the bottom of the last Zone 4 stack. Jame cancels Helly's Defiance, pauses "
      "her, and replays Milchick and Cobel. Reghabi searches stacks you choose for hidden employees. Milchick returns "
      "your last refined cards to the grid. Cobel splits a pair, or blocks a number. Emile the Goat is wild: tap "
-     "once for green, again for blue."},
+     "once for round, again for square."},
     {"Credits",
      "Severance: The Card Game, designed by u/DREAMWALL, CC BY-NC-SA 4.0. An unofficial fan version of the Version 2 "
      "test rules, shared under the same licence.\n\nThe same rules as the phone version, checked against it game by "

@@ -333,7 +333,7 @@ void onReveal(Game& g, int id, int i) {
     char how[96];
     rollGoat(g, id, how, sizeof(how));
     logLine(g, Kind::Good,
-            "Emile the Goat is revealed in Zone %d. He is worth %d, set by %s, and counts as green or blue, whichever "
+            "Emile the Goat is revealed in Zone %d. He is worth %d, set by %s, and counts as round or square, whichever "
             "you choose.",
             zone, g.card[id].val, how);
     return;
@@ -880,7 +880,7 @@ void label(const Game& g, const int id, char* out, const int size) {
       std::snprintf(out, size, "Emile the Goat");
     }
   } else if (d.type == Type::Num) {
-    std::snprintf(out, size, "%d %s", s.val, s.red ? "green" : "blue");
+    std::snprintf(out, size, "%d %s", s.val, s.red ? "round" : "square");
   } else if (d.type == Type::Main) {
     std::snprintf(out, size, "%s (%s)", cardName(id), d.red ? "innie" : "outie");
   } else {

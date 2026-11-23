@@ -53,7 +53,7 @@ function zoneOf(i){return Math.floor(i/4);}
 function mkSpecial(fx,id,adm){return {id:id,type:'special',fx:fx,name:SPECIALS[fx],faceUp:false,adm:!!adm};}
 function lab(c){
   if(c.wild)return 'Emile the Goat'+(c.faceUp&&c.val?' (worth '+c.val+')':'');
-  if(c.type==='num')return c.val+' '+(c.red?'green':'blue');
+  if(c.type==='num')return c.val+' '+(c.red?'round':'square');
   if(c.type==='main')return c.name+' ('+(c.red?'innie':'outie')+')';
   return c.name;
 }
@@ -204,7 +204,7 @@ function rollGoat(c){
 }
 function onReveal(c,i){
   var pos='Zone '+(zoneOf(i)+1);
-  if(c.wild){var how=rollGoat(c);log('Emile the Goat is revealed in '+pos+'. He is worth '+c.val+', set by '+how+', and counts as green or blue, whichever you choose.','good');snap('reveal',c.id);return;}
+  if(c.wild){var how=rollGoat(c);log('Emile the Goat is revealed in '+pos+'. He is worth '+c.val+', set by '+how+', and counts as round or square, whichever you choose.','good');snap('reveal',c.id);return;}
   if(c.type==='num'){if(!G.dealing)log('Revealed '+lab(c)+' in '+pos+'.');snap('reveal');return;}
   if(c.type==='main'){
     log(lab(c)+' is revealed in '+pos+'.');snap('reveal',c.id);
@@ -526,10 +526,10 @@ function restore() {
 
 /* ---------------- geometry (as SeveranceScreens.cpp) ---------------- */
 const M = 16, TOP_H = 48, TRACK_Y = 56, TRACK_H = 66, BOX_W = 107, BOX_GAP = 6, MINI_W = 44, MINI_H = 36;
-const CW = 96, CH = 104, CGAP = 6, ZONE_W = 2 * CW + CGAP, ZGAP_X = 16, GRID_X = (W - 2 * ZONE_W - ZGAP_X) / 2;
+const CW = 96, CH = 100, CGAP = 6, ZONE_W = 2 * CW + CGAP, ZGAP_X = 16, GRID_X = (W - 2 * ZONE_W - ZGAP_X) / 2;
 const GRID_Y = 130, ZLABEL = 24, ZONE_H = ZLABEL + 2 * CH + CGAP, ZGAP_Y = 12;
-const STATUS_Y = GRID_Y + 2 * ZONE_H + ZGAP_Y + 4, TRAY_Y = STATUS_Y + 46, TRAY_CY = TRAY_Y + 15, TCW = 60, TCH = 70;
-const HAND_X = 98, BUTTONS_Y = 756, BUTTON_H = 42, PANEL_Y = 540, CHOICE_Y = STATUS_Y - 4;
+const STATUS_Y = GRID_Y + 2 * ZONE_H + ZGAP_Y + 12, TRAY_Y = STATUS_Y + 56, TRAY_CY = TRAY_Y + 15, TCW = 60, TCH = 70;
+const HAND_X = 98, BUTTONS_Y = 758, BUTTON_H = 42, PANEL_Y = 540, CHOICE_Y = STATUS_Y - 4;
 const zoneTop = r => GRID_Y + r * (ZONE_H + ZGAP_Y), zoneLeft = c => GRID_X + c * (ZONE_W + ZGAP_X);
 function stackRect(i) {
   const z = Math.floor(i / 4), k = i % 4;
@@ -693,15 +693,15 @@ function tray(cand) {
   G.hand.forEach((c, k) => {
     const r = handRect(k, G.hand.length);
     cardFace(c, r, { selected: isSel(c.id), candidate: cand.indexOf(c.id) >= 0 }, true);
-    if (c.keep) { fill(r[0] + 4, r[1] + r[3] - 10, r[2] - 8, 18, '#000'); txt(r[0] + 4, r[1] + r[3] - 10, r[2] - 8, 18, 'DIETER', 'tile', 'center', true); }
+    if (c.keep) { fill(r[0] + 4, r[1] + r[3] - 18, r[2] - 8, 18, '#000'); txt(r[0] + 4, r[1] + r[3] - 18, r[2] - 8, 18, 'DIETER', 'tile', 'center', true); }
     hit(r[0], r[1], r[2], r[3], () => tapCard(c.id, false));
   });
   const sx = 306, t = selectionTotals(sel), main = selMain();
   if (sel.length && !main) {
-    colourMark(sx + 8, TRAY_CY + 18, 14, true); txt(sx + 22, TRAY_CY + 4, 120, 28, 'GREEN ' + t.r, 'button', 'left');
-    colourMark(sx + 8, TRAY_CY + 52, 14, false); txt(sx + 22, TRAY_CY + 38, 120, 28, 'BLUE ' + t.b, 'button', 'left');
+    colourMark(sx + 8, TRAY_CY + 18, 14, true); txt(sx + 22, TRAY_CY + 4, W - M - sx - 22, 28, 'ROUND ' + t.r, fitFace('SQUARE 88', W - M - sx - 22, ['button', 'tile']), 'left');
+    colourMark(sx + 8, TRAY_CY + 52, 14, false); txt(sx + 22, TRAY_CY + 38, W - M - sx - 22, 28, 'SQUARE ' + t.b, fitFace('SQUARE 88', W - M - sx - 22, ['button', 'tile']), 'left');
   } else if (main) wrap(sx, TRAY_CY + 6, W - M - sx, 'Tap the other half to pair', 'tile', 3);
-  else if (!G.over) wrap(sx, TRAY_CY + 6, W - M - sx, 'Tap green and blue numbers with equal totals', 'tile', 3);
+  else if (!G.over) wrap(sx, TRAY_CY + 6, W - M - sx, 'Tap round and square numbers with equal totals', 'tile', 3);
   const half = Math.floor((W - 2 * M - 10) / 2);
   if (G.over) { button(M, BUTTONS_Y, W - 2 * M, BUTTON_H, 'NEW QUARTER', newQuarter); return; }
   if (sel.length) button(M, BUTTONS_Y, half, BUTTON_H, 'CLEAR', () => { sel = []; note = ''; render(); }, false);
@@ -804,10 +804,10 @@ function drawLog() {
 }
 const RULES = [
   ['Objective', ["Reunite each employee's innie with their outie: Mark S., Helly R. (Helena), Dylan G. and Irving B. Pair all four to hit quota.",
-    'Innies are the black cards, outies the white ones. Numbers are green (a dot) or blue (a square).']],
+    'Innies are the black cards, outies the white ones. Numbers are round (marked with a dot) or square (marked with a square).']],
   ['Cards', ['The grid holds 48 cards in layers of 1, 3, 4 and 4 per zone: the numbers 2 to 10 four times each, the eight employees, Kier, Mr. Drummond, Ms. Casey and Emile the Goat.',
     'Administration, the draw pile, holds 33: 26 numbers and Dieter, Gemma, Doug Graner, Milchick, Cobel, Reghabi and Jame Eagan.']],
-  ['Refining', ['Tap face-up numbers so the green total equals the blue total (7 + 3 green with 10 blue), then REFINE.',
+  ['Refining', ['Tap face-up numbers so the round total equals the square total (7 + 3 round with 10 square), then REFINE.',
     'When identical cards are free, the one in the earliest position (Zone 1 first, left to right) must be used.',
     'Removing a card turns over the one beneath it. Tap the draw pile when you like; only the latest draw can be used.']],
   ['Pairing', ["Tap an employee's innie and outie when both are on the grid and they pair at once. If one half already waits aside, one tap on the other half pairs them.",
@@ -816,7 +816,7 @@ const RULES = [
   ['Zones', ['Zone 1 starts open. Zone 2 opens when two number cards remain in Zone 1.',
     'Zones 3 and 4 open when only one stack in the zone before still hides a card.', 'If no number is face up anywhere, the next locked zone opens.']],
   ['Special figures', ['Kier: move up to two numbers away. Dieter: draws two; his numbers stay in hand. Ms. Casey and Gemma: set an unmatched employee aside, or move a number away. Helly leaves her stack on her own and can cancel Milchick or Cobel once. Drummond locks his zone until your next pair and reverses the pile and Zone 4.']],
-  ['More figures', ["Graner sends a revealed employee to the bottom of the last Zone 4 stack. Jame cancels Helly's Defiance, pauses her, and replays Milchick and Cobel. Reghabi searches stacks you choose for hidden employees. Milchick returns your last refined cards to the grid. Cobel splits a pair, or blocks a number. Emile the Goat is wild: tap once for green, again for blue."]],
+  ['More figures', ["Graner sends a revealed employee to the bottom of the last Zone 4 stack. Jame cancels Helly's Defiance, pauses her, and replays Milchick and Cobel. Reghabi searches stacks you choose for hidden employees. Milchick returns your last refined cards to the grid. Cobel splits a pair, or blocks a number. Emile the Goat is wild: tap once for round, again for square."]],
   ['Credits', ['Severance: The Card Game, designed by u/DREAMWALL, CC BY-NC-SA 4.0. An unofficial fan version of the Version 2 test rules, shared under the same licence.',
     'The rules engine is the phone version’s own; the PaperMono firmware is checked against it game by game.']],
 ];
@@ -877,8 +877,8 @@ function tapCard(id, mini) {
   else if (wc) {
     if (selMain()) sel = [];
     const i = sel.indexOf(id);
-    if (i < 0) { wc.red = true; sel.push(id); note = 'The Goat counts as green. Tap again for blue.'; }
-    else if (wc.red) { wc.red = false; note = 'The Goat counts as blue. Tap again to deselect.'; }
+    if (i < 0) { wc.red = true; sel.push(id); note = 'The Goat counts as round. Tap again for square.'; }
+    else if (wc.red) { wc.red = false; note = 'The Goat counts as square. Tap again to deselect.'; }
     else sel.splice(i, 1);
   } else if (isP && mateWaiting(m.ch)) { sel = []; return act(() => actPair(m.ch)); }
   else if (isP) {

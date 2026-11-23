@@ -67,7 +67,7 @@ the import lands a real pack instead of failing on an unreachable host.
 | **Solitaire**    | Klondike, turned sideways because that is the shape of a tableau.            |
 | **Scoundrel**    | The solo dungeon crawl from a deck of cards. Fight, equip, drink or flee.    |
 | **Lobo**         | Clear the Wolf's hand across the table. Every move you make has a price.     |
-| **Severance**    | Refine green against blue to reunite every innie with their outie. V2 rules. |
+| **Severance**    | Refine round against square to reunite every innie with their outie. V2 rules. |
 | **Hearts**       | Duck the tricks. Every heart costs one and the queen of spades costs 13.     |
 | **D&Diagrams**   | A nonogram whose clues are a dungeon. 64 of them.                            |
 | **Jaipur**       | The two-player trading game, solo or nearby.                                 |
