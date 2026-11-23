@@ -69,11 +69,17 @@ for size in "${SIZES[@]}"; do
 done
 
 SRCDIR=lib/EpdFont/builtinFonts/source
+rubik_size() { case "$1" in 14) echo 12;; 20) echo 17;; 30) echo 25;; 44) echo 37;; 64) echo 53;; *) echo "$1";; esac; }
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
-curl -fsSL "https://github.com/google/fonts/raw/main/ofl/jersey25/Jersey25-Regular.ttf" -o "$WORK/jersey25.ttf"
-uv run --quiet --with fonttools pyftsubset "$WORK/jersey25.ttf" \
+# This fork sets the UI in Rubik at weight 500 (SIL OFL, Google Fonts), in
+# place of upstream CrossPlay's Jersey 25. Rubik is a size smaller than Jersey
+# at the same cap height, so each cut is converted at the size whose metrics
+# match the old cut: 10->8, 14->12, 20->17, 30->25, 44->37, 64->53.
+curl -fsSL "https://github.com/google/fonts/raw/main/ofl/rubik/Rubik%5Bwght%5D.ttf" -o "$WORK/rubik.ttf"
+uv run --quiet --with fonttools fonttools varLib.instancer "$WORK/rubik.ttf" wght=500 -o "$WORK/rubik500.ttf"
+uv run --quiet --with fonttools pyftsubset "$WORK/rubik500.ttf" \
   --unicodes="U+0020-007E" --output-file="$WORK/jersey25-subset.ttf"
 
 # The reading face is a different family and a different argument. Noto Serif,
@@ -99,7 +105,7 @@ fi
 for size in "${SIZES[@]}"; do
   out="src/apps_local/ui/fonts/toybox_${size}.h"
   uv run --quiet --with freetype-py --with fonttools \
-    python lib/EpdFont/scripts/fontconvert.py "toybox_${size}" "${size}" "$WORK/jersey25-subset.ttf" \
+    python lib/EpdFont/scripts/fontconvert.py "toybox_${size}" "$(rubik_size "$size")" "$WORK/jersey25-subset.ttf" \
     2>/dev/null | grep -v "extracted$" > "$out"
   # fontconvert records the absolute path it was handed; keep it reproducible.
   sed -i '' -e "s| \* Command used: .*| * Command used: tools_local/toybox/gen_toybox_fonts.sh (fontconvert.py toybox_${size} ${size} jersey25-subset.ttf)|" "$out"

@@ -124,12 +124,12 @@ struct CutMetrics {
 // ui/fonts/. ToyboxFonts.cpp checks these against the real font data at startup
 // and logs an error if a regenerated cut ever moves, so they cannot rot in
 // silence -- which matters because nothing else here can see a font.
-constexpr CutMetrics kTileCut{21, 17, 13};     // toybox_10
-constexpr CutMetrics kButtonCut{29, 24, 18};   // toybox_14
+constexpr CutMetrics kTileCut{20, 16, 12};     // toybox_10
+constexpr CutMetrics kButtonCut{30, 24, 18};   // toybox_14
 constexpr CutMetrics kUiCut{42, 34, 25};       // toybox_20
-constexpr CutMetrics kDisplayCut{63, 51, 38};  // toybox_30
-constexpr CutMetrics kLargeCut{92, 74, 57};    // toybox_44
-constexpr CutMetrics kHugeCut{133, 108, 82};   // toybox_64
+constexpr CutMetrics kDisplayCut{62, 49, 37};  // toybox_30
+constexpr CutMetrics kLargeCut{91, 73, 54};    // toybox_44
+constexpr CutMetrics kHugeCut{131, 104, 78};   // toybox_64
 
 // Connections speaks Instrument Serif, so its three cuts need the same
 // treatment: the serif line boxes are proportionally taller still, and a 26px
