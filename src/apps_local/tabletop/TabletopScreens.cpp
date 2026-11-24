@@ -533,9 +533,13 @@ void buildTarot(toybox::Screen& screen, const tt::Table& t) {
     constexpr int kW = 140;
     constexpr int kH = 226;
     const int gap = (w - 3 * kW - 2 * m) / 2;
+    // The cards and their labels (place, then REVERSED) centred between the
+    // chips and the earlier cards' strip, as the single card is.
+    constexpr int kBlockH = kH + 8 + 26 + 4 + 22;
+    const int top = 148 + (552 - 148 - kBlockH) / 2;
     for (int i = 0; i < deck.shown; ++i) {
       const int x = m + i * (kW + gap);
-      const fui::Rect card = rect(x, 160, kW, kH);
+      const fui::Rect card = rect(x, top, kW, kH);
       tarotCard(screen, card, deck.current[i], false);
       sayGrey(screen, rect(x, card.bottom() + 8, kW, 26), places[i], Face::Button);
       if (deck.current[i].reversed) say(screen, rect(x, card.bottom() + 36, kW, 22), "REVERSED", Face::Tile);

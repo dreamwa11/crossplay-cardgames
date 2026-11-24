@@ -331,12 +331,13 @@ function drawTarot() {
     tarotCard(x, y, 236, 360, d.current[0], true);
     if (d.current[0].rev) say(0, y + 366, W, 30, 'REVERSED', 'button');
   } else {
-    const kw = 140, kh = 226, gap = (W - 3 * kw - 2 * M) / 2;
+    // The cards and their labels centred between the chips and the earlier strip.
+    const kw = 140, kh = 226, gap = (W - 3 * kw - 2 * M) / 2, top = 148 + Math.floor((552 - 148 - (kh + 60)) / 2);
     d.current.forEach((c, i) => {
       const x = M + i * (kw + gap);
-      tarotCard(x, 160, kw, kh, c, false);
-      say(x, 160 + kh + 8, kw, 26, ['PAST', 'PRESENT', 'FUTURE'][i], 'button', 'center', false, true);
-      if (c.rev) say(x, 160 + kh + 36, kw, 22, 'REVERSED', 'tile');
+      tarotCard(x, top, kw, kh, c, false);
+      say(x, top + kh + 8, kw, 26, ['PAST', 'PRESENT', 'FUTURE'][i], 'button', 'center', false, true);
+      if (c.rev) say(x, top + kh + 36, kw, 22, 'REVERSED', 'tile');
     });
   }
   earlier(d, true, 556);

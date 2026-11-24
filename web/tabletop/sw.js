@@ -1,6 +1,6 @@
 /* Offline copy of the CrossPlay (PaperMono) version of Tabletop. The game is one file with
    everything inside it, so once index.html is cached it works offline; the page is fetched fresh when online. */
-var CACHE = 'cardgames-tabletop-v8';
+var CACHE = 'cardgames-tabletop-v9';
 var FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-tabletop-180.png', 'icon-tabletop-512.png'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(FILES); }).then(function () { return self.skipWaiting(); }));
