@@ -539,7 +539,7 @@ function restore() {
 const M = 16, TOP_H = 48, TRACK_Y = 56, TRACK_H = 34, BOX_W = 107, BOX_GAP = 6, BAR_H = 7;
 const CW = 96, CH = 92, CGAP = 6, ZONE_W = 2 * CW + CGAP, ZGAP_X = 16, GRID_X = (W - 2 * ZONE_W - ZGAP_X) / 2;
 const GRID_Y = TRACK_Y + TRACK_H + 8, ZLABEL = 22, ZONE_H = ZLABEL + 2 * CH + CGAP, ZGAP_Y = 12;
-const STATUS_Y = GRID_Y + 2 * ZONE_H + ZGAP_Y + 14, TRAY_Y = STATUS_Y + 64, TRAY_CY = TRAY_Y + 6, TCW = 62, TCH = 100;
+const STATUS_Y = GRID_Y + 2 * ZONE_H + ZGAP_Y + 14, TRAY_Y = STATUS_Y + 76, TRAY_CY = TRAY_Y + 6, TCW = 62, TCH = 88;
 const BUTTONS_Y = 752, BUTTON_H = 42, PANEL_Y = STATUS_Y - 40, CHOICE_Y = STATUS_Y - 4;
 const zoneTop = r => GRID_Y + r * (ZONE_H + ZGAP_Y), zoneLeft = c => GRID_X + c * (ZONE_W + ZGAP_X);
 function stackRect(i) {
@@ -564,6 +564,15 @@ function disc(cx, cy, r, color) { ctx.fillStyle = color; ctx.beginPath(); ctx.ar
 function colourMark(cx, cy, size, green, white = false) {
   const c = white ? '#fff' : '#000';
   if (green) disc(cx, cy, size / 2, c); else fill(cx - size / 2, cy - size / 2, size, size, c);
+}
+// The Administration drop (the phone version's keycard mark): a point over a round base.
+function drop(cx, top, h) {
+  const r = Math.floor(h * 36 / 100), cy = top + h - r - 1; ctx.fillStyle = '#000';
+  for (let y = top; y < top + h; y++) {
+    let w = 0;
+    if (y < cy) w = Math.floor(r * (y - top) / (cy - top)); else while ((w + 1) * (w + 1) + (y - cy) * (y - cy) <= r * r) w++;
+    ctx.fillRect(cx - w, y, 2 * w + 1, 1);
+  }
 }
 function dashed(x, y, w, h, t = 2) {
   ctx.fillStyle = '#000';
@@ -646,7 +655,7 @@ function track() {
     [true, false].forEach((red, half) => {
       // Innie then outie: black once waiting aside or paired, grey until then; hollow when selected.
       const r = barRect(k, half === 1), c = cards.filter(x => x.red === red)[0];
-      if (!c) fill(r[0], r[1], r[2], r[3], grey(), 2);
+      if (!c) stroke(r[0], r[1], r[2], r[3], '#000', 1, 2);
       else if (!p && isSel(c.id)) { fill(r[0], r[1] - 3, r[2], r[3] + 3, '#000', 2); fill(r[0] + 3, r[1], r[2] - 6, r[3] - 3, '#fff'); }
       else fill(r[0], r[1], r[2], r[3], '#000', 2);
       if (c && !p) hit(r[0], TRACK_Y, r[2], GRID_Y - TRACK_Y, () => tapCard(c.id, true));
@@ -700,7 +709,7 @@ function status() {
     const said = G.log.filter(l => l.t === G.turn && !/^(You drew |The unused draw)/.test(l.x)).pop();
     line = f.length ? f.join(' · ') : (said ? said.x : 'Refine round and square numbers with equal totals, pair revealed characters, or draw.');
   }
-  wrap(M, STATUS_Y + 1, W - 2 * M, line, 'tile', 2);
+  wrap(M, STATUS_Y + 1, W - 2 * M, line, 'tile', 3);
 }
 function tray(cand) {
   fill(M, TRAY_Y - 8, W - 2 * M, 1, '#000');
@@ -719,6 +728,7 @@ function tray(cand) {
     if (!c.keep && wasteDepth() > 1) fill(r[0] + 4, r[1] + 4, r[2], r[3], '#000', 4);
     const covered = k < hand.length - 1 && handStep(hand.length) < TCW + 6;
     cardFace(c, r, { selected: isSel(c.id), candidate: cand.indexOf(c.id) >= 0, visibleW: covered ? handStep(hand.length) : 0, visibleRight: drawLeft }, true);
+    drop(r[0] + r[2] - 12, r[1] + r[3] - 23 - (isSel(c.id) ? 6 : 0), 16);
     hit(r[0], r[1], r[2], r[3], () => tapCard(c.id, false));
   });
   const sx = drawLeft ? far[0] + TCW + 16 : M, sw = drawLeft ? W - M - sx : far[0] - 12 - sx, ty = TRAY_CY + (TCH - 72) / 2;

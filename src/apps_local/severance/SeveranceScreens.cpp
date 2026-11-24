@@ -39,10 +39,10 @@ constexpr int kZoneGapY = 12;
 // The message bar, then the tray, each with air around it. The draw pile is on
 // the right, under the right thumb; the drawn cards on the left.
 constexpr int kStatusY = kGridY + 2 * kZoneH + kZoneGapY + 14;  // 548
-constexpr int kTrayY = kStatusY + 64;
+constexpr int kTrayY = kStatusY + 76;
 constexpr int kTrayCardY = kTrayY + 6;
 constexpr int kTrayCardW = 62;
-constexpr int kTrayCardH = 100;
+constexpr int kTrayCardH = 88;
 constexpr int kButtonsY = 752;
 constexpr int kButtonH = 42;
 constexpr int kM = 16;
@@ -206,6 +206,22 @@ void colourMark(toybox::Screen& screen, const int cx, const int cy, const int si
     disc(screen, cx, cy, size / 2, p);
   } else {
     screen.target().fill(rect(cx - size / 2, cy - size / 2, size, size), p);
+  }
+}
+
+// The Administration drop (the phone version's keycard mark): a point over a round base.
+void drop(toybox::Screen& screen, const int cx, const int top, const int h) {
+  const int r = h * 36 / 100;
+  const int cy = top + h - r - 1;
+  for (int y = top; y < top + h; ++y) {
+    int w;
+    if (y < cy) {
+      w = r * (y - top) / (cy - top);
+    } else {
+      w = 0;
+      while ((w + 1) * (w + 1) + (y - cy) * (y - cy) <= r * r) ++w;
+    }
+    screen.target().fill(rect(cx - w, y, 2 * w + 1, 1), kBlack);
   }
 }
 
@@ -410,7 +426,7 @@ void track(toybox::Screen& screen, const BoardModel& m) {
     for (int half = 0; half < 2; ++half) {
       const fui::Rect r = barRect(ch, half == 1);
       if (cards[half] == s::kNone) {
-        t.fill(r, kGrey, 2);
+        t.stroke(r, kBlack, 1, 2);
       } else if (!paired && selected(m, cards[half])) {
         t.fill(rect(r.x, r.y - 3, r.width, r.height + 3), kBlack, 2);
         t.fill(rect(r.x + 3, r.y, r.width - 6, r.height - 3), kWhite);
@@ -519,7 +535,7 @@ void status(toybox::Screen& screen, const BoardModel& m) {
       add(said ? said : "Refine round and square numbers with equal totals, pair revealed characters, or draw.");
     }
   }
-  prose(screen, rect(kM, kStatusY - 1, kW - 2 * kM, 44), line, Face::Tile, 2);
+  prose(screen, rect(kM, kStatusY - 1, kW - 2 * kM, 64), line, Face::Tile, 3);
 }
 
 void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, const int nCand) {
@@ -562,6 +578,8 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
       t.fill(rect(r.x + 4, r.y + 4, r.width, r.height), kBlack, 4);
     }
     cardFace(screen, r, g, id, look, true);
+    // Drawn cards wear the Administration drop, bottom right.
+    if (s::cardDef(id).type == s::Type::Num) drop(screen, r.x + r.width - 12, r.y + r.height - 23 - (look.selected ? 6 : 0), 16);
   }
   // The selection's totals on the open side: round over square, or what a
   // chosen employee needs.
