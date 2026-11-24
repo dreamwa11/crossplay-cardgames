@@ -74,19 +74,22 @@ void SeveranceActivity::onExit() {
 }
 
 // File, version 1:
-//   line 1: V1 lenient played won hasGame
+//   line 1: V1 lenient played won hasGame [drawLeft]
 //   then the game in SeveranceCore's own format
 void SeveranceActivity::load() {
 #if defined(ARDUINO_ARCH_ESP32) || defined(SIMULATOR)
   hasGame = false;
+  ui::setDrawLeft(drawLeft);
   if (!Storage.exists(kSavePath)) return;
   auto buffer = makeUniqueNoThrow<char[]>(kSaveBytes);
   if (!buffer) return;
   std::memset(buffer.get(), 0, kSaveBytes);
   if (Storage.readFileToBuffer(kSavePath, buffer.get(), kSaveBytes - 1) == 0) return;
-  int v[4] = {};
-  if (std::sscanf(buffer.get(), "V1 %d %d %d %d", &v[0], &v[1], &v[2], &v[3]) != 4) return;
+  int v[5] = {};
+  if (std::sscanf(buffer.get(), "V1 %d %d %d %d %d", &v[0], &v[1], &v[2], &v[3], &v[4]) < 4) return;
   lenient = v[0] != 0;
+  drawLeft = v[4] != 0;
+  ui::setDrawLeft(drawLeft);
   played = v[1] < 0 ? 0 : v[1];
   won = v[2] < 0 ? 0 : v[2];
   const char* line = std::strchr(buffer.get(), '\n');
@@ -105,7 +108,8 @@ void SeveranceActivity::save() {
     LOG_ERR("SEV", "OOM: save buffer");
     return;
   }
-  int used = std::snprintf(buffer.get(), kSaveBytes, "V1 %d %d %d %d\n", lenient ? 1 : 0, played, won, hasGame ? 1 : 0);
+  int used = std::snprintf(buffer.get(), kSaveBytes, "V1 %d %d %d %d %d\n", lenient ? 1 : 0, played, won, hasGame ? 1 : 0,
+                           drawLeft ? 1 : 0);
   if (hasGame) {
     const int n = sev::serialize(*game, buffer.get() + used, kSaveBytes - used);
     if (n < 0) {
@@ -324,6 +328,7 @@ uint32_t SeveranceActivity::surfaceMeaning() const {
   uint8_t hand[sev::kCards];
   m = paintclock::mixMeaning(m, static_cast<uint32_t>(sev::playableHand(*game, hand)));
   m = paintclock::mixMeaning(m, static_cast<uint32_t>(sev::wasteDepth(*game) > 1));
+  m = paintclock::mixMeaning(m, static_cast<uint32_t>(drawLeft));
   m = paintclock::mixMeaning(m, static_cast<uint32_t>(game->pending.type));
   m = paintclock::mixMeaning(m, static_cast<uint32_t>(annIndex + 1));
   return paintclock::mixMeaning(m, showEnd ? 1u : 0u);
@@ -400,6 +405,13 @@ void SeveranceActivity::loop() {
         case ui::MenuRow::Lenient:
           lenient = !lenient;
           g.lenient = lenient;
+          save();
+          requestUpdate();
+          return;
+        case ui::MenuRow::DrawSide:
+          // Layout only: the quarter in play carries on as it is.
+          drawLeft = !drawLeft;
+          ui::setDrawLeft(drawLeft);
           save();
           requestUpdate();
           return;
@@ -487,6 +499,7 @@ void SeveranceActivity::render(RenderLock&&) {
         ui::MenuModel model;
         model.canContinue = hasGame;
         model.lenient = lenient;
+        model.drawLeft = drawLeft;
         model.played = played;
         model.won = won;
         ui::buildMenu(surface, model);

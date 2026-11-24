@@ -521,37 +521,41 @@ let anns = [];
 onSnap = function (kind) { if (kind === 'announce' && G.ann && !G.ann.choice) anns.push(JSON.parse(JSON.stringify(G.ann))); };
 
 let screen = 'menu', sel = [], note = '', annIndex = -1, showEnd = false;
-let lenient = false, played = 0, won = 0, hasGame = false, rulesPage = 0, rulesReturn = 'menu';
+let lenient = false, drawLeft = false, played = 0, won = 0, hasGame = false, rulesPage = 0, rulesReturn = 'menu';
 
 function persist() {
-  try { localStorage.setItem(SAVE, JSON.stringify({ G: hasGame ? G : null, lenient, played, won })); } catch (e) {}
+  try { localStorage.setItem(SAVE, JSON.stringify({ G: hasGame ? G : null, lenient, drawLeft, played, won })); } catch (e) {}
 }
 function restore() {
   try {
     const s = JSON.parse(localStorage.getItem(SAVE));
     if (!s) return;
-    lenient = !!s.lenient; played = s.played | 0; won = s.won | 0;
+    lenient = !!s.lenient; drawLeft = !!s.drawLeft; played = s.played | 0; won = s.won | 0;
     if (s.G && s.G.stacks && s.G.stacks.length === 16) { G = s.G; G.ann = null; hasGame = !G.over && cardCount() === G.total; if (hasGame && !G.pending) liftStaleLock(); }
   } catch (e) {}
 }
 
 /* ---------------- geometry (as SeveranceScreens.cpp) ---------------- */
-const M = 16, TOP_H = 48, TRACK_Y = 56, TRACK_H = 66, BOX_W = 107, BOX_GAP = 6, MINI_W = 44, MINI_H = 36;
+const M = 16, TOP_H = 48, TRACK_Y = 56, TRACK_H = 34, BOX_W = 107, BOX_GAP = 6, BAR_H = 7;
 const CW = 96, CH = 92, CGAP = 6, ZONE_W = 2 * CW + CGAP, ZGAP_X = 16, GRID_X = (W - 2 * ZONE_W - ZGAP_X) / 2;
-const GRID_Y = 130, ZLABEL = 22, ZONE_H = ZLABEL + 2 * CH + CGAP, ZGAP_Y = 12;
-const STATUS_Y = GRID_Y + 2 * ZONE_H + ZGAP_Y + 14, TRAY_Y = STATUS_Y + 64, TRAY_CY = TRAY_Y + 6, TCW = 62, TCH = 72;
-const DRAW_X = W - 16 - TCW - 4;
-const BUTTONS_Y = 752, BUTTON_H = 42, PANEL_Y = 540, CHOICE_Y = STATUS_Y - 4;
+const GRID_Y = TRACK_Y + TRACK_H + 8, ZLABEL = 22, ZONE_H = ZLABEL + 2 * CH + CGAP, ZGAP_Y = 12;
+const STATUS_Y = GRID_Y + 2 * ZONE_H + ZGAP_Y + 14, TRAY_Y = STATUS_Y + 64, TRAY_CY = TRAY_Y + 6, TCW = 62, TCH = 100;
+const BUTTONS_Y = 752, BUTTON_H = 42, PANEL_Y = STATUS_Y - 40, CHOICE_Y = STATUS_Y - 4;
 const zoneTop = r => GRID_Y + r * (ZONE_H + ZGAP_Y), zoneLeft = c => GRID_X + c * (ZONE_W + ZGAP_X);
 function stackRect(i) {
   const z = Math.floor(i / 4), k = i % 4;
   return [zoneLeft(z % 2) + (k % 2) * (CW + CGAP), zoneTop(Math.floor(z / 2)) + ZLABEL + Math.floor(k / 2) * (CH + CGAP), CW, CH];
 }
 const boxRect = ch => [M + ch * (BOX_W + BOX_GAP), TRACK_Y, BOX_W, TRACK_H];
-function miniRect(ch, outie) { const b = boxRect(ch); return [b[0] + 6 + (outie ? MINI_W + 7 : 0), b[1] + 24, MINI_W, MINI_H]; }
-// Drawn cards just left of the pile, the newest nearest it; three or more overlap.
+function barRect(ch, outie) { const b = boxRect(ch), w = Math.floor((b[2] - 6) / 2); return [b[0] + (outie ? w + 6 : 0), b[1] + b[3] - BAR_H, w, BAR_H]; }
+// The draw pile at the right edge, or the left by choice; drawn cards beside it,
+// the newest nearest; three or more overlap.
+const drawX = () => drawLeft ? M : W - M - TCW - 4;
 const handStep = n => n > 3 ? 40 : n > 2 ? 50 : TCW + 6;
-const handRect = (k, n) => [DRAW_X - 12 - TCW - (n - 1 - k) * handStep(n), TRAY_CY, TCW, TCH];
+function handRect(k, n) {
+  const off = 12 + (n - 1 - k) * handStep(n);
+  return [drawLeft ? drawX() + TCW + off : drawX() - TCW - off, TRAY_CY, TCW, TCH];
+}
 
 /* ---------------- marks ---------------- */
 function knock(x, y, w, h) { ctx.fillStyle = '#fff'; for (let yy = y; yy < y + h; yy++) for (let xx = x + (yy & 1); xx < x + w; xx += 2) ctx.fillRect(xx, yy, 1, 1); }
@@ -579,9 +583,9 @@ function cardBack(x, y, w, h, locked) {
   fill(x, y, w, h, '#fff', 4); stroke(x, y, w, h, '#000', 2, 4);
   fill(x + 5, y + 5, w - 10, h - 10, locked ? light() : grey(), 2); stroke(x + 5, y + 5, w - 10, h - 10, '#000', 1, 2);
 }
-function numFace(c, x, y, w, h, selected, small, visW) {
+function numFace(c, x0, y, w, h, selected, small, visW, visRight) {
   const v = c.wild && !c.val ? '?' : String(c.val);
-  const vh = Math.floor(h * 58 / 100), vw = visW > 0 && visW < w ? visW : w;
+  const vh = Math.floor(h * 58 / 100), vw = visW > 0 && visW < w ? visW : w, x = visRight ? x0 + w - vw : x0;
   txt(x, y + 4, vw, vh, v, small ? fitFace(v, vw - 8, ['ui', 'button']) : 'ui');
   const cy = y + 4 + vh + Math.floor((h - vh - 4) / 2) - 2, mark = small ? 10 : 14;
   if (c.wild) {
@@ -615,7 +619,7 @@ function cardFace(c, r, look = {}, small = false) {
   if (!c.faceUp) { cardBack(x, y, w, h, look.lockedZone); return; }
   if (look.selected) y -= 6;
   fill(x, y, w, h, '#fff', 4);
-  if (c.type === 'num') numFace(c, x, y, w, h, look.selected, small, look.visibleW);
+  if (c.type === 'num') numFace(c, x, y, w, h, look.selected, small, look.visibleW, look.visibleRight);
   else if (c.type === 'main') mainFace(c, x, y, w, h, small);
   else specialFace(c, x, y, w, h);
   stroke(x, y, w, h, '#000', look.selected ? 4 : 2, 4);
@@ -636,15 +640,16 @@ function topBar() {
 function track() {
   CHAR_ORDER.forEach((ch, k) => {
     const [bx, by, bw, bh] = boxRect(k), p = G.paired.filter(q => q.ch === ch)[0];
-    fill(bx, by, bw, bh, '#fff'); stroke(bx, by, bw, bh, '#000', p ? 3 : 1);
-    if (p) fill(bx, by, bw, 20, '#000');
-    txt(bx + 6, by, bw - 12, 20, CHARS[ch], 'tile', 'left', !!p);
+    if (p) fill(bx, by, bw, 22, '#000', 3);
+    txt(bx + 4, by + 1, bw - 8, 20, CHARS[ch], 'tile', 'left', !!p);
     const cards = p ? p.cards : G.waiting.filter(c => c.ch === ch);
     [true, false].forEach((red, half) => {
-      const r = miniRect(k, half === 1), c = cards.filter(x => x.red === red)[0];
-      if (!c) { dashed(r[0], r[1], r[2], r[3], 1); sayGrey(r[0] + 2, r[1] + 2, r[2] - 4, r[3] - 4, half ? 'OUT' : 'IN', 'tile'); }
-      else cardFace(c, r, { selected: !p && isSel(c.id) }, true);
-      if (c && !p) hit(r[0], r[1], r[2], r[3], () => tapCard(c.id, true));
+      // Innie then outie: black once waiting aside or paired, grey until then; hollow when selected.
+      const r = barRect(k, half === 1), c = cards.filter(x => x.red === red)[0];
+      if (!c) fill(r[0], r[1], r[2], r[3], grey(), 2);
+      else if (!p && isSel(c.id)) { fill(r[0], r[1] - 3, r[2], r[3] + 3, '#000', 2); fill(r[0] + 3, r[1], r[2] - 6, r[3] - 3, '#fff'); }
+      else fill(r[0], r[1], r[2], r[3], '#000', 2);
+      if (c && !p) hit(r[0], TRACK_Y, r[2], GRID_Y - TRACK_Y, () => tapCard(c.id, true));
     });
   });
 }
@@ -699,28 +704,30 @@ function status() {
 }
 function tray(cand) {
   fill(M, TRAY_Y - 8, W - 2 * M, 1, '#000');
+  const DRAW_X = drawX();
   if (G.draw.length) { fill(DRAW_X + 4, TRAY_CY + 4, TCW, TCH, '#000', 4); cardBack(DRAW_X, TRAY_CY, TCW, TCH, false);
-    const n = String(G.draw.length), pw = widthOf(n, 'button') + 16, px = DRAW_X + TCW - pw + 10, py = TRAY_CY + TCH - 14;
+    const n = String(G.draw.length), pw = widthOf(n, 'button') + 16, px = drawLeft ? DRAW_X - 10 : DRAW_X + TCW - pw + 10, py = TRAY_CY + TCH - 14;
     fill(px, py, pw, 26, '#fff', 13); stroke(px, py, pw, 26, '#000', 2, 13); txt(px, py, pw, 26, n, 'button'); }
   else dashed(DRAW_X, TRAY_CY, TCW, TCH, 1);
   hit(DRAW_X, TRAY_CY, TCW, TCH, tapDraw);
   const hand = playableHand();
-  const handLeft = handRect(0, hand.length || 1)[0];
+  const far = handRect(0, hand.length || 1);
   if (!hand.length) { const r = handRect(0, 1); dashed(r[0], r[1], r[2], r[3], 1); }
   hand.forEach((c, k) => {
     const r = handRect(k, hand.length);
     // Earlier draws wait under the top one: show them as a card's edge behind it.
     if (!c.keep && wasteDepth() > 1) fill(r[0] + 4, r[1] + 4, r[2], r[3], '#000', 4);
     const covered = k < hand.length - 1 && handStep(hand.length) < TCW + 6;
-    cardFace(c, r, { selected: isSel(c.id), candidate: cand.indexOf(c.id) >= 0, visibleW: covered ? handStep(hand.length) : 0 }, true);
+    cardFace(c, r, { selected: isSel(c.id), candidate: cand.indexOf(c.id) >= 0, visibleW: covered ? handStep(hand.length) : 0, visibleRight: drawLeft }, true);
     hit(r[0], r[1], r[2], r[3], () => tapCard(c.id, false));
   });
-  const sx = M, sw = handLeft - 12 - sx, t = selectionTotals(sel), main = selMain();
+  const sx = drawLeft ? far[0] + TCW + 16 : M, sw = drawLeft ? W - M - sx : far[0] - 12 - sx, ty = TRAY_CY + (TCH - 72) / 2;
+  const t = selectionTotals(sel), main = selMain();
   if (sel.length && !main) {
     const f = fitFace('SQUARE 88', sw - 22, ['button', 'tile']);
-    colourMark(sx + 8, TRAY_CY + 18, 14, true); txt(sx + 22, TRAY_CY + 4, sw - 22, 28, 'ROUND ' + t.r, f, 'left');
-    colourMark(sx + 8, TRAY_CY + 52, 14, false); txt(sx + 22, TRAY_CY + 38, sw - 22, 28, 'SQUARE ' + t.b, f, 'left');
-  } else if (main) wrap(sx, TRAY_CY + 6, sw, 'Tap the other half to pair', 'tile', 3);
+    colourMark(sx + 8, ty + 18, 14, true); txt(sx + 22, ty + 4, sw - 22, 28, 'ROUND ' + t.r, f, 'left');
+    colourMark(sx + 8, ty + 52, 14, false); txt(sx + 22, ty + 38, sw - 22, 28, 'SQUARE ' + t.b, f, 'left');
+  } else if (main) wrap(sx, ty + 6, sw, 'Tap the other half to pair', 'tile', 3);
   const half = Math.floor((W - 2 * M - 10) / 2);
   if (G.over) { button(M, BUTTONS_Y, W - 2 * M, BUTTON_H, 'NEW QUARTER', newQuarter); return; }
   if (sel.length) button(M, BUTTONS_Y, half, BUTTON_H, 'CLEAR', () => { sel = []; note = ''; render(); }, false);
@@ -796,7 +803,8 @@ function drawMenu() {
   if (played) txt(0, 372, W, 24, played + ' QUARTERS  ' + won + ' AT QUOTA', 'button');
   const rows = [['CONTINUE', () => { if (hasGame) go('board'); }], ['NEW QUARTER', newQuarter],
     ['RULES', () => { rulesPage = 0; rulesReturn = 'menu'; go('rules'); }],
-    [lenient ? 'EASIER MILCHICK: ON' : 'EASIER MILCHICK: OFF', () => { lenient = !lenient; if (G) G.opts.lenient = lenient; persist(); render(); }]];
+    [lenient ? 'EASIER MILCHICK: ON' : 'EASIER MILCHICK: OFF', () => { lenient = !lenient; if (G) G.opts.lenient = lenient; persist(); render(); }],
+    [drawLeft ? 'DRAW PILE: LEFT' : 'DRAW PILE: RIGHT', () => { drawLeft = !drawLeft; persist(); render(); }]];
   let y = H - M - rows.length * 68 + 10;
   rows.forEach(([label, fn], i) => {
     if (i === 0 && !hasGame) buttonOff(M, y, W - 2 * M, 58, label);

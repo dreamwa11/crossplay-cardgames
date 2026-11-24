@@ -45,6 +45,7 @@ class SeveranceActivity final : public Activity {
   int annIndex = -1;
   bool showEnd = false;
   bool lenient = false;
+  bool drawLeft = false;
   int played = 0;
   int won = 0;
   int rulesPage = 0;

@@ -22,33 +22,31 @@ FontBinder* gFonts = nullptr;
 constexpr int kW = 480;
 constexpr int kTopH = 48;
 constexpr int kTrackY = 56;
-constexpr int kTrackH = 66;
+constexpr int kTrackH = 34;  // a name over two bars, innie then outie
 constexpr int kBoxW = 107;
 constexpr int kBoxGap = 6;
-constexpr int kMiniW = 44;
-constexpr int kMiniH = 36;
+constexpr int kBarH = 7;
 constexpr int kCardW = 96;
 constexpr int kCardH = 92;
 constexpr int kCardGap = 6;
 constexpr int kZoneW = 2 * kCardW + kCardGap;
 constexpr int kZoneGapX = 16;
 constexpr int kGridX = (kW - 2 * kZoneW - kZoneGapX) / 2;
-constexpr int kGridY = 130;
+constexpr int kGridY = kTrackY + kTrackH + 8;
 constexpr int kZoneLabelH = 22;
 constexpr int kZoneH = kZoneLabelH + 2 * kCardH + kCardGap;
 constexpr int kZoneGapY = 12;
 // The message bar, then the tray, each with air around it. The draw pile is on
 // the right, under the right thumb; the drawn cards on the left.
-constexpr int kStatusY = kGridY + 2 * kZoneH + kZoneGapY + 14;  // 580
+constexpr int kStatusY = kGridY + 2 * kZoneH + kZoneGapY + 14;  // 548
 constexpr int kTrayY = kStatusY + 64;
 constexpr int kTrayCardY = kTrayY + 6;
 constexpr int kTrayCardW = 62;
-constexpr int kTrayCardH = 72;
-constexpr int kDrawX = 480 - 16 - kTrayCardW - 4;
+constexpr int kTrayCardH = 100;
 constexpr int kButtonsY = 752;
 constexpr int kButtonH = 42;
 constexpr int kM = 16;
-constexpr int kPanelY = 540;  // a special figure's announcement and the result
+constexpr int kPanelY = kStatusY - 40;  // a special figure's announcement and the result
 constexpr int kChoiceY = kStatusY - 4;
 
 fui::Rect rect(const int x, const int y, const int w, const int h) {
@@ -68,16 +66,27 @@ fui::Rect stackRect(const int i) {
               kCardW, kCardH);
 }
 fui::Rect boxRect(const int ch) { return rect(kM + ch * (kBoxW + kBoxGap), kTrackY, kBoxW, kTrackH); }
-fui::Rect miniRect(const int ch, const bool outie) {
+// The bar under the name: the tap target is the bar and the space above it.
+fui::Rect barRect(const int ch, const bool outie) {
   const fui::Rect b = boxRect(ch);
-  return rect(b.x + 6 + (outie ? kMiniW + 7 : 0), b.y + 24, kMiniW, kMiniH);
+  const int w = (b.width - 6) / 2;
+  return rect(b.x + (outie ? w + 6 : 0), b.y + b.height - kBarH, w, kBarH);
 }
-fui::Rect drawRect() { return rect(kDrawX, kTrayCardY, kTrayCardW, kTrayCardH); }
-// The drawn cards sit just left of the pile, the newest nearest it; three or
-// more overlap so the totals keep their room on the left.
+fui::Rect barHitRect(const int ch, const bool outie) {
+  const fui::Rect r = barRect(ch, outie);
+  return rect(r.x, kTrackY, r.width, kGridY - kTrackY);
+}
+// The draw pile sits at the right edge, or the left one by the player's
+// choice; the drawn cards sit beside it, the newest nearest.
+bool gDrawLeft = false;
+int drawX() { return gDrawLeft ? kM : kW - kM - kTrayCardW - 4; }
+fui::Rect drawRect() { return rect(drawX(), kTrayCardY, kTrayCardW, kTrayCardH); }
+// Three or more drawn cards overlap so the totals keep their room.
 int handStep(const int n) { return n > 3 ? 40 : n > 2 ? 50 : kTrayCardW + 6; }
 fui::Rect handRect(const int k, const int n) {
-  return rect(kDrawX - 12 - kTrayCardW - (n - 1 - k) * handStep(n), kTrayCardY, kTrayCardW, kTrayCardH);
+  const int off = 12 + (n - 1 - k) * handStep(n);
+  if (gDrawLeft) return rect(drawX() + kTrayCardW + off, kTrayCardY, kTrayCardW, kTrayCardH);
+  return rect(drawX() - kTrayCardW - off, kTrayCardY, kTrayCardW, kTrayCardH);
 }
 
 // ---- text ----
@@ -260,6 +269,7 @@ struct Look {
   bool lockedZone = false;
   bool goatGreen = false;  // the Goat, chosen as green (else blue) while selected
   int visibleW = 0;        // a drawn card partly covered by the next: its face fits the strip that shows
+  bool visibleRight = false;  // that strip is the card's right side (the pile on the left)
 };
 
 void cardBack(toybox::Screen& screen, const fui::Rect& r, const bool locked) {
@@ -282,22 +292,23 @@ void numFace(toybox::Screen& screen, const fui::Rect& r, const s::Game& g, const
   }
   const int valueH = r.height * 58 / 100;
   const int vw = look.visibleW > 0 && look.visibleW < r.width ? look.visibleW : r.width;
+  const int vx = look.visibleRight ? r.x + r.width - vw : r.x;
   const Face vf = !small ? Face::Ui : fit(screen, v, vw - 8, {Face::Ui, Face::Button});
-  say(screen, rect(r.x, r.y + 4, vw, valueH), v, vf);
+  say(screen, rect(vx, r.y + 4, vw, valueH), v, vf);
   const int cy = r.y + 4 + valueH + (r.height - valueH - 4) / 2 - 2;
   const int mark = small ? 10 : 14;
   if (d.wild) {
     if (look.selected) {
-      colourMark(screen, r.x + vw / 2, cy, mark, look.goatGreen);
+      colourMark(screen, vx + vw / 2, cy, mark, look.goatGreen);
     } else {
       const int tw = vw - 6 < 48 ? vw - 6 : 48;
-      const fui::Rect tag = rect(r.x + vw / 2 - tw / 2, cy - 10, tw, 20);
+      const fui::Rect tag = rect(vx + vw / 2 - tw / 2, cy - 10, tw, 20);
       screen.target().stroke(tag, kBlack, 1, 0);
       say(screen, tag, "GOAT", Face::Tile);
     }
     return;
   }
-  colourMark(screen, r.x + vw / 2, cy, mark, g.card[id].red);
+  colourMark(screen, vx + vw / 2, cy, mark, g.card[id].red);
 }
 
 void mainFace(toybox::Screen& screen, const fui::Rect& r, const int id, const bool small) {
@@ -381,14 +392,12 @@ void track(toybox::Screen& screen, const BoardModel& m) {
   for (int ch = 0; ch < s::kChars; ++ch) {
     const fui::Rect b = boxRect(ch);
     const bool paired = s::isPaired(g, ch);
-    t.fill(b, kWhite);
-    t.stroke(b, kBlack, paired ? 3 : 1, 0);
     // A paired employee's name goes white on black.
     char name[24];
     std::snprintf(name, sizeof(name), "%s", s::charName(ch));
-    const fui::Rect band = rect(b.x, b.y, b.width, 20);
-    if (paired) t.fill(band, kBlack);
-    say(screen, rect(b.x + 6, b.y, b.width - 12, 20), name, Face::Tile, fui::TextAlign::Left, paired);
+    const fui::Rect band = rect(b.x, b.y, b.width, 22);
+    if (paired) t.fill(band, kBlack, 3);
+    say(screen, rect(b.x + 4, b.y + 1, b.width - 8, 20), name, Face::Tile, fui::TextAlign::Left, paired);
     // The two halves: from the pair, or waiting aside.
     int cards[2] = {s::kNone, s::kNone};
     for (int p = 0; p < g.nPaired; ++p)
@@ -396,16 +405,18 @@ void track(toybox::Screen& screen, const BoardModel& m) {
         for (int k = 0; k < g.paired[p].n; ++k) cards[s::cardDef(g.paired[p].cards[k]).red ? 0 : 1] = g.paired[p].cards[k];
     for (int k = 0; k < g.waiting.n; ++k)
       if (s::cardDef(g.waiting.c[k]).ch == ch) cards[s::cardDef(g.waiting.c[k]).red ? 0 : 1] = g.waiting.c[k];
+    // Innie then outie: black once that half is waiting aside or paired, grey
+    // until then. A selected half is drawn hollow.
     for (int half = 0; half < 2; ++half) {
-      const fui::Rect r = miniRect(ch, half == 1);
+      const fui::Rect r = barRect(ch, half == 1);
       if (cards[half] == s::kNone) {
-        dashed(screen, r, 1);
-        sayGrey(screen, rect(r.x + 2, r.y + 2, r.width - 4, r.height - 4), half ? "OUT" : "IN", Face::Tile);
-        continue;
+        t.fill(r, kGrey, 2);
+      } else if (!paired && selected(m, cards[half])) {
+        t.fill(rect(r.x, r.y - 3, r.width, r.height + 3), kBlack, 2);
+        t.fill(rect(r.x + 3, r.y, r.width - 6, r.height - 3), kWhite);
+      } else {
+        t.fill(r, kBlack, 2);
       }
-      Look look;
-      look.selected = !paired && selected(m, cards[half]);
-      cardFace(screen, r, g, cards[half], look, true);
     }
   }
 }
@@ -519,11 +530,12 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
   if (g.draw.n) {
     t.fill(rect(pile.x + 4, pile.y + 4, pile.width, pile.height), kBlack, 4);
     cardBack(screen, pile, false);
-    // What is left, in a pill on the pile's bottom-right corner.
+    // What is left, in a pill on the pile's bottom corner away from the edge.
     char left[8];
     std::snprintf(left, sizeof(left), "%d", g.draw.n);
     const int pw = widthOf(screen, left, Face::Button) + 16;
-    const fui::Rect pillR = rect(pile.x + pile.width - pw + 10, pile.y + pile.height - 14, pw, 26);
+    const int px = gDrawLeft ? pile.x - 10 : pile.x + pile.width - pw + 10;
+    const fui::Rect pillR = rect(px, pile.y + pile.height - 14, pw, 26);
     t.fill(pillR, kWhite, 13);
     t.stroke(pillR, kBlack, 2, 13);
     say(screen, pillR, left, Face::Button);
@@ -532,7 +544,7 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
   }
   uint8_t hand[s::kCards];
   const int nh = s::playableHand(g, hand);
-  const int handLeft = handRect(0, nh ? nh : 1).x;
+  const fui::Rect far = handRect(0, nh ? nh : 1);
   if (!nh) dashed(screen, handRect(0, 1), 1);
   for (int k = 0; k < nh; ++k) {
     const int id = hand[k];
@@ -541,31 +553,35 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
     look.goatGreen = g.card[id].red;
     for (int q = 0; q < nCand; ++q) look.candidate |= cand[q] == id;
     const fui::Rect r = handRect(k, nh);
-    if (k < nh - 1 && handStep(nh) < kTrayCardW + 6) look.visibleW = handStep(nh);
+    if (k < nh - 1 && handStep(nh) < kTrayCardW + 6) {
+      look.visibleW = handStep(nh);
+      look.visibleRight = gDrawLeft;
+    }
     // Earlier draws wait under the top one: show them as a card's edge behind it.
     if (!g.card[id].keep && s::wasteDepth(g) > 1) {
       t.fill(rect(r.x + 4, r.y + 4, r.width, r.height), kBlack, 4);
     }
     cardFace(screen, r, g, id, look, true);
   }
-  // The selection's totals on the left: round over square, or what a chosen
-  // employee needs.
-  const int sx = kM;
-  const int sw = handLeft - 12 - sx;
+  // The selection's totals on the open side: round over square, or what a
+  // chosen employee needs.
+  const int sx = gDrawLeft ? far.x + far.width + 16 : kM;
+  const int sw = gDrawLeft ? kW - kM - sx : far.x - 12 - sx;
+  const int ty = kTrayCardY + (kTrayCardH - 72) / 2;
   const s::Totals tot = s::selectionTotals(g, m.sel, m.nSel);
   bool main = false;
   for (int k = 0; k < m.nSel; ++k) main |= s::cardDef(m.sel[k]).type == s::Type::Main;
   if (g.pending.type == s::Pend::None && m.nSel && !main) {
     char v[24];
     const Face f = fit(screen, "SQUARE 88", sw - 22, {Face::Button, Face::Tile});
-    colourMark(screen, sx + 8, kTrayCardY + 18, 14, true);
+    colourMark(screen, sx + 8, ty + 18, 14, true);
     std::snprintf(v, sizeof(v), "ROUND %d", tot.green);
-    say(screen, rect(sx + 22, kTrayCardY + 4, sw - 22, 28), v, f, fui::TextAlign::Left);
-    colourMark(screen, sx + 8, kTrayCardY + 52, 14, false);
+    say(screen, rect(sx + 22, ty + 4, sw - 22, 28), v, f, fui::TextAlign::Left);
+    colourMark(screen, sx + 8, ty + 52, 14, false);
     std::snprintf(v, sizeof(v), "SQUARE %d", tot.blue);
-    say(screen, rect(sx + 22, kTrayCardY + 38, sw - 22, 28), v, f, fui::TextAlign::Left);
+    say(screen, rect(sx + 22, ty + 38, sw - 22, 28), v, f, fui::TextAlign::Left);
   } else if (g.pending.type == s::Pend::None && main) {
-    prose(screen, rect(sx, kTrayCardY + 6, sw, 64), "Tap the other half to pair", Face::Tile, 3);
+    prose(screen, rect(sx, ty + 6, sw, 64), "Tap the other half to pair", Face::Tile, 3);
   }
   // Buttons.
   const int half = (kW - 2 * kM - 10) / 2;
@@ -697,6 +713,8 @@ constexpr int kRulesPages = static_cast<int>(sizeof(kRules) / sizeof(kRules[0]))
 
 }  // namespace
 
+void setDrawLeft(const bool left) { gDrawLeft = left; }
+
 void useFonts(FontBinder* binder) { gFonts = binder; }
 
 int rulesPages() { return kRulesPages; }
@@ -709,7 +727,7 @@ Hit hitTest(const s::Game& g, const int x, const int y) {
   }
   for (int ch = 0; ch < s::kChars; ++ch)
     for (int half = 0; half < 2; ++half)
-      if (inside(miniRect(ch, half == 1), x, y)) return Hit{HitKind::Mini, ch * 2 + half};
+      if (inside(barHitRect(ch, half == 1), x, y)) return Hit{HitKind::Mini, ch * 2 + half};
   uint8_t hand[s::kCards];
   const int nh = s::playableHand(g, hand);
   for (int k = nh - 1; k >= 0; --k)
@@ -760,7 +778,8 @@ void buildMenu(toybox::Screen& screen, const MenuModel& model) {
     say(screen, rect(0, 372, kW, 24), line, Face::Button);
   }
   const char* labels[static_cast<int>(MenuRow::Count)] = {"CONTINUE", "NEW QUARTER", "RULES",
-                                                          model.lenient ? "EASIER MILCHICK: ON" : "EASIER MILCHICK: OFF"};
+                                                          model.lenient ? "EASIER MILCHICK: ON" : "EASIER MILCHICK: OFF",
+                                                          model.drawLeft ? "DRAW PILE: LEFT" : "DRAW PILE: RIGHT"};
   int y = 800 - kM - static_cast<int>(MenuRow::Count) * (58 + 10) + 10;
   for (int i = 0; i < static_cast<int>(MenuRow::Count); ++i) {
     const fui::Rect r = rect(kM, y, kW - 2 * kM, 58);

@@ -36,7 +36,7 @@ enum : fui::ActionId {
 };
 
 enum class Screen : uint8_t { Menu = 0, Board, Log, Rules };
-enum class MenuRow : int { Continue = 0, NewQuarter, Rules, Lenient, Count };
+enum class MenuRow : int { Continue = 0, NewQuarter, Rules, Lenient, DrawSide, Count };
 
 constexpr int kMaxSel = 24;
 
@@ -53,6 +53,7 @@ struct BoardModel {
 struct MenuModel {
   bool canContinue = false;
   bool lenient = false;
+  bool drawLeft = false;
   int played = 0;
   int won = 0;
 };
@@ -74,6 +75,8 @@ struct Hit {
 Hit hitTest(const sev::Game& g, int x, int y);
 
 void buildBoard(toybox::Screen& screen, const BoardModel& model);
+// Which side the draw pile and the drawn cards sit on; boards and hit tests follow it.
+void setDrawLeft(bool left);
 void buildMenu(toybox::Screen& screen, const MenuModel& model);
 void buildLog(toybox::Screen& screen, const sev::Game& g);
 void buildRules(toybox::Screen& screen, int page);
