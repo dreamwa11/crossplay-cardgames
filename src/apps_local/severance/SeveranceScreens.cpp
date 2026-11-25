@@ -526,41 +526,52 @@ void grid(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
 // to do now, with the standing effects after it.
 void status(toybox::Screen& screen, const BoardModel& m) {
   const s::Game& g = *m.game;
-  auto& t = screen.target();
-  char line[s::kLogLen + 64];
+  // Tap the message for the full log.
+  hotspot(screen, rect(0, kStatusY - 6, kW, 70), ActionLog);
+  // What just happened: a hint after a tap, the result, or the newest thing
+  // this turn (a plain draw report aside: the card is on the table).
+  const char* said = nullptr;
   if (m.note) {
-    std::snprintf(line, sizeof(line), "%s", m.note);
+    said = m.note;
   } else if (g.over == s::Over::Win) {
-    std::snprintf(line, sizeof(line), "Quota reached. Every innie has found their outie.");
+    said = "Quota reached. Every innie has found their outie.";
   } else if (g.over == s::Over::Lose) {
-    std::snprintf(line, sizeof(line), "The quarter is lost. Start a new one from the menu.");
+    said = "The quarter is lost. Start a new one from the menu.";
   } else {
-    int n = 0;
-    auto add = [&](const char* text) {
-      if (n < static_cast<int>(sizeof(line)) - 1) n += std::snprintf(line + n, sizeof(line) - n, "%s%s", n ? " · " : "", text);
-    };
-    if (g.hallPass) add("HALL PASS ACTIVE");
-    if (g.hallPending) add("HALL PASS AFTER NEXT PAIR");
-    if (g.lockZone != s::kNone) add("DRUMMOND'S LOCK");
-    if (g.hellyPause) add("HELLY CANNOT PAIR");
+    for (int k = g.nLog - 1; k >= 0 && g.log[k].turn == g.turn && !said; --k) {
+      const char* x = g.log[k].text;
+      if (std::strncmp(x, "You drew ", 9) != 0) said = x;
+    }
+    if (!said) said = "Refine round and square numbers with equal totals, pair revealed characters, or draw.";
+  }
+  // What stays in force, on its own grey line above it.
+  char effects[96];
+  int n = 0;
+  auto add = [&](const char* text) {
+    if (n < static_cast<int>(sizeof(effects)) - 1)
+      n += std::snprintf(effects + n, sizeof(effects) - n, "%s%s", n ? " · " : "", text);
+  };
+  effects[0] = '\0';
+  if (g.over == s::Over::No) {
+    char lock[24];
+    if (g.lockZone != s::kNone) {
+      std::snprintf(lock, sizeof(lock), "ZONE %d LOCKED", g.lockZone + 1);
+      add(lock);
+    }
+    if (g.hallPass) add("HALL PASS");
+    if (g.hallPending) add("HALL PASS SOON");
+    if (g.hellyPause) add("HELLY PAUSED");
     if (g.blocked != s::kNone) add("COBEL BLOCKING");
     bool helly = false;
     for (int k = 0; k < g.waiting.n; ++k) helly |= s::cardDef(g.waiting.c[k]).ch == 1;
     if (!g.defianceUsed && helly) add("DEFIANCE READY");
-    if (!n) {
-      // The newest thing that happened this turn, except a plain draw report:
-      // the drawn card is on the table for anyone to see.
-      const char* said = nullptr;
-      for (int k = g.nLog - 1; k >= 0 && g.log[k].turn == g.turn && !said; --k) {
-        const char* x = g.log[k].text;
-        if (std::strncmp(x, "You drew ", 9) != 0 && std::strncmp(x, "The unused draw", 15) != 0) said = x;
-      }
-      add(said ? said : "Refine round and square numbers with equal totals, pair revealed characters, or draw.");
-    }
   }
-  // Tap the message for the full log.
-  hotspot(screen, rect(0, kStatusY - 6, kW, 70), ActionLog);
-  prose(screen, rect(kM, kStatusY - 1, kW - 2 * kM, 64), line, Face::Tile, 3);
+  int y = kStatusY - 1;
+  if (n) {
+    sayGrey(screen, rect(kM, y, kW - 2 * kM, 20), effects, Face::Tile, fui::TextAlign::Left);
+    y += 22;
+  }
+  prose(screen, rect(kM, y, kW - 2 * kM, kStatusY + 63 - y), said, Face::Tile, n ? 2 : 3);
 }
 
 void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, const int nCand) {

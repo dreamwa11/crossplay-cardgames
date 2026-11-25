@@ -694,25 +694,30 @@ function grid(cand) {
   }
 }
 function status() {
-  let line;
-  if (note) line = note;
-  else if (G.over === 'win') line = 'Quota reached. Every innie has found their outie.';
-  else if (G.over === 'lose') line = 'The quarter is lost. Start a new one from the menu.';
-  else {
-    const f = [];
-    if (G.hallPass) f.push('HALL PASS ACTIVE');
-    if (G.hallPending) f.push('HALL PASS AFTER NEXT PAIR');
-    if (G.lockZone !== null) f.push("DRUMMOND'S LOCK");
-    if (G.hellyPause) f.push('HELLY CANNOT PAIR');
-    if (G.blocked) f.push('COBEL BLOCKING');
-    if (!G.defianceUsed && G.waiting.some(w => w.ch === 'Q')) f.push('DEFIANCE READY');
-    // The newest thing that happened this turn, except a plain draw report.
-    const said = G.log.filter(l => l.t === G.turn && !/^(You drew |The unused draw)/.test(l.x)).pop();
-    line = f.length ? f.join(' · ') : (said ? said.x : 'Refine round and square numbers with equal totals, pair revealed characters, or draw.');
-  }
-  wrap(M, STATUS_Y + 1, W - 2 * M, line, 'tile', 3);
   // Tap the message for the full log.
   hit(0, STATUS_Y - 6, W, 70, () => go('log'));
+  // What just happened: a hint, the result, or the newest thing this turn (a plain draw aside).
+  let said;
+  if (note) said = note;
+  else if (G.over === 'win') said = 'Quota reached. Every innie has found their outie.';
+  else if (G.over === 'lose') said = 'The quarter is lost. Start a new one from the menu.';
+  else {
+    const l = G.log.filter(x => x.t === G.turn && !/^You drew /.test(x.x)).pop();
+    said = l ? l.x : 'Refine round and square numbers with equal totals, pair revealed characters, or draw.';
+  }
+  // What stays in force, on its own grey line above it.
+  const f = [];
+  if (!G.over) {
+    if (G.lockZone !== null) f.push('ZONE ' + (G.lockZone + 1) + ' LOCKED');
+    if (G.hallPass) f.push('HALL PASS');
+    if (G.hallPending) f.push('HALL PASS SOON');
+    if (G.hellyPause) f.push('HELLY PAUSED');
+    if (G.blocked) f.push('COBEL BLOCKING');
+    if (!G.defianceUsed && G.waiting.some(w => w.ch === 'Q')) f.push('DEFIANCE READY');
+  }
+  let y = STATUS_Y - 1;
+  if (f.length) { sayGrey(M, y, W - 2 * M, 20, f.join(' · '), 'tile', 'left'); y += 22; }
+  wrap(M, y + 2, W - 2 * M, said, 'tile', f.length ? 2 : 3);
 }
 function tray(cand) {
   fill(M, TRAY_Y - 8, W - 2 * M, 1, '#000');
