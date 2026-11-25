@@ -222,7 +222,7 @@ void bigPlaying(toybox::Screen& screen, const fui::Rect& r, const uint8_t id) {
   cardFrame(screen, r);
   if (tt::isJoker(id)) {
     say(screen, rect(r.x, r.y + 14, r.width, 40), "JOKER", Face::Ui);
-    iconAt(screen, r.x + r.width / 2, r.y + (r.height - 96) / 2 + 10, icon_tt_joker_96);
+    iconAt(screen, r.x + r.width / 2, r.y + 54 + (r.height - 54 - 220) / 2, icon_tt_joker_220);
     return;
   }
   const char* rank = tt::rankShort(tt::playingRank(id));
