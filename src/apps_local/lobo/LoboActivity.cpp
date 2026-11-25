@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "../ui/GameGlow.h"
 #include "../Shelf.h"
 #include "../scoundrel/ScoundrelFonts.h"
 #include "../ui/Toybox.h"
@@ -183,7 +184,12 @@ void LoboActivity::afterHand() {
     if (!recorded) {
       recorded = true;
       ++matches;
-      if (lb::youWonMatch(match)) ++won;
+      if (lb::youWonMatch(match)) {
+        ++won;
+        gameglow::win();
+      } else {
+        gameglow::lose();
+      }
     }
     hasMatch = false;
     save();

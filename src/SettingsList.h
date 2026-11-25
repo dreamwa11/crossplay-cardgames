@@ -318,6 +318,10 @@ inline std::vector<SettingInfo> getSettingsList(const SdCardFontRegistry* regist
         SettingInfo::Toggle(StrId::STR_RESTORE_LIGHT_ON_WAKE, &CrossPointSettings::frontlightRestoreOnWake,
                             "frontlightRestoreOnWake", StrId::STR_CAT_DISPLAY),
 #endif
+#if FREEINK_CAP_FRONTLIGHT || FREEINK_CAP_LED
+        SettingInfo::Toggle(StrId::STR_GAME_LIGHT_FX, &CrossPointSettings::gameLightFx, "gameLightFx",
+                            StrId::STR_CAT_DISPLAY),
+#endif
         // Night mode = inverted output polarity everywhere (ActivityManager
         // applies it to every activity), so it lives in the Display category.
         SettingInfo::Toggle(StrId::STR_NIGHT_MODE, &CrossPointSettings::screenInverted, "screenInverted",

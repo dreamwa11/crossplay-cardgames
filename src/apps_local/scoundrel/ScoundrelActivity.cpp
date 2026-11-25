@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "../ui/GameGlow.h"
 #include "../Shelf.h"
 #include "../ui/Toybox.h"
 #include "../ui/ToyboxFonts.h"
@@ -152,7 +153,12 @@ void ScoundrelActivity::recordResult() {
   if (resultRecorded) return;
   resultRecorded = true;
   ++played;
-  if (game.won) ++survived;
+  if (game.won) {
+    ++survived;
+    gameglow::win();
+  } else {
+    gameglow::lose();
+  }
   newBest = !hasBest || game.score > best;
   if (newBest) {
     best = game.score;

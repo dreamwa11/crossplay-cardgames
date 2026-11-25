@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "../ui/GameGlow.h"
 #include "../Shelf.h"
 #include "../ui/Toybox.h"
 #include "../ui/ToyboxFonts.h"
@@ -180,6 +181,16 @@ void SeveranceActivity::pruneSelection() {
   nSel = m;
 }
 
+// The quarter's result panel, with the light's word on it.
+void SeveranceActivity::showResult() {
+  showEnd = true;
+  if (game->over == sev::Over::Win) {
+    gameglow::win();
+  } else {
+    gameglow::lose();
+  }
+}
+
 void SeveranceActivity::afterAction() {
   sev::Game& g = *game;
   nSel = 0;
@@ -189,7 +200,7 @@ void SeveranceActivity::afterAction() {
     hasGame = false;
     ++played;
     if (g.over == sev::Over::Win) ++won;
-    if (annIndex < 0) showEnd = true;
+    if (annIndex < 0) showResult();
   }
   save();
   requestUpdate();
@@ -453,7 +464,7 @@ void SeveranceActivity::loop() {
     case ui::ActionContinue:
       if (annIndex >= 0 && ++annIndex >= g.nAnn) {
         annIndex = -1;
-        if (g.over != sev::Over::No) showEnd = true;
+        if (g.over != sev::Over::No) showResult();
       }
       requestUpdate();
       return;
