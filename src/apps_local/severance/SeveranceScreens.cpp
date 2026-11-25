@@ -90,7 +90,7 @@ void chevron(toybox::Screen& screen, const fui::Rect& r, const bool pointLeft) {
     const int d = dy < half ? half - dy : dy - half;  // 0 at the point
     const int off = d * (r.width - 4) / half;
     const int x = pointLeft ? r.x + off : r.x + r.width - 4 - off;
-    screen.target().fill(rect(x, r.y + dy, 4, 1), kBlack);
+    screen.target().fill(rect(x, r.y + dy, 5, 1), kLight);
   }
 }
 // Three or more drawn cards overlap so the totals keep their room.

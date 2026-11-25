@@ -725,10 +725,10 @@ function tray(cand) {
   hit(DRAW_X, TRAY_CY, TCW, TCH, tapDraw);
   // A tall chevron on the open side moves the pile across.
   const SIDE_W = 22, sideX = drawLeft ? W - M - SIDE_W : M, half0 = TCH / 2;
-  ctx.fillStyle = '#000';
+  ctx.fillStyle = light();
   for (let dy = 0; dy < TCH; dy++) {
     const dd = dy < half0 ? half0 - dy : dy - half0, off = Math.floor(dd * (SIDE_W - 4) / half0);
-    ctx.fillRect(drawLeft ? sideX + SIDE_W - 4 - off : sideX + off, TRAY_CY + dy, 4, 1);
+    ctx.fillRect(drawLeft ? sideX + SIDE_W - 4 - off : sideX + off, TRAY_CY + dy, 5, 1);
   }
   hit(sideX - 8, TRAY_CY - 6, SIDE_W + 16, TCH + 12, () => { if (G.pending || annIndex >= 0 || showEnd) return; drawLeft = !drawLeft; persist(); render(); });
   const hand = playableHand();
