@@ -336,8 +336,9 @@ function drawTarot() {
     d.current.forEach((c, i) => {
       const x = M + i * (kw + gap);
       tarotCard(x, top, kw, kh, c, false);
-      say(x, top + kh + 8, kw, 26, ['PAST', 'PRESENT', 'FUTURE'][i], 'button', 'center', false, true);
-      if (c.rev) say(x, top + kh + 36, kw, 22, 'REVERSED', 'tile');
+      // REVERSED right under its card, the place below that.
+      if (c.rev) say(x, top + kh + 8, kw, 22, 'REVERSED', 'tile');
+      say(x, top + kh + 34, kw, 26, ['PAST', 'PRESENT', 'FUTURE'][i], 'button', 'center', false, true);
     });
   }
   earlier(d, true, 556);

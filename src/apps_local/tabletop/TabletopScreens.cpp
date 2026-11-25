@@ -541,8 +541,9 @@ void buildTarot(toybox::Screen& screen, const tt::Table& t) {
       const int x = m + i * (kW + gap);
       const fui::Rect card = rect(x, top, kW, kH);
       tarotCard(screen, card, deck.current[i], false);
-      sayGrey(screen, rect(x, card.bottom() + 8, kW, 26), places[i], Face::Button);
-      if (deck.current[i].reversed) say(screen, rect(x, card.bottom() + 36, kW, 22), "REVERSED", Face::Tile);
+      // REVERSED right under its card, the place below that.
+      if (deck.current[i].reversed) say(screen, rect(x, card.bottom() + 8, kW, 22), "REVERSED", Face::Tile);
+      sayGrey(screen, rect(x, card.bottom() + 34, kW, 26), places[i], Face::Button);
     }
   }
   earlier(screen, deck, true, 556);
