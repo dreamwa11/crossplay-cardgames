@@ -20,14 +20,14 @@ FontBinder* gFonts = nullptr;
 // ---- geometry ----
 
 constexpr int kW = 480;
-constexpr int kTopH = 48;
-constexpr int kTrackY = 56;
+constexpr int kTopH = 42;
+constexpr int kTrackY = 48;
 constexpr int kTrackH = 34;  // a name over two bars, innie then outie
 constexpr int kBoxW = 107;
 constexpr int kBoxGap = 6;
 constexpr int kBarH = 7;
 constexpr int kCardW = 96;
-constexpr int kCardH = 92;
+constexpr int kCardH = 100;
 constexpr int kCardGap = 6;
 constexpr int kZoneW = 2 * kCardW + kCardGap;
 constexpr int kZoneGapX = 16;
@@ -39,10 +39,10 @@ constexpr int kZoneGapY = 12;
 // The message bar, then the tray, each with air around it. The draw pile is on
 // the right, under the right thumb; the drawn cards on the left.
 constexpr int kStatusY = kGridY + 2 * kZoneH + kZoneGapY + 14;  // 548
-constexpr int kTrayY = kStatusY + 76;
+constexpr int kTrayY = kStatusY + 70;
 constexpr int kTrayCardY = kTrayY + 6;
 constexpr int kTrayCardW = 62;
-constexpr int kTrayCardH = 88;
+constexpr int kTrayCardH = 86;
 constexpr int kButtonsY = 752;
 constexpr int kButtonH = 42;
 constexpr int kM = 16;
@@ -282,6 +282,15 @@ void smallPill(toybox::Screen& screen, const fui::Rect& r, const char* label, co
   screen.target().stroke(r, kBlack, 2, 6);
   say(screen, r, label, Face::Button);
 }
+// A blank tap target; what it stands for is drawn over it afterwards.
+void hotspot(toybox::Screen& screen, const fui::Rect& r, const fui::ActionId action) {
+  fui::ButtonProps b;
+  b.label = "";
+  b.action = action;
+  b.styles = toybox::rowStyles();
+  screen.button(b, r);
+  screen.target().fill(r, kWhite);
+}
 void pillOff(toybox::Screen& screen, const fui::Rect& r, const char* label) {
   screen.target().stroke(r, kGrey, 2, 6);
   sayGrey(screen, r, label, Face::Ui);
@@ -407,10 +416,12 @@ bool selected(const BoardModel& m, const int v) {
 
 void topBar(toybox::Screen& screen) {
   auto& t = screen.target();
-  sayGrey(screen, rect(kM, 2, 240, 18), "MACRODATA REFINEMENT", Face::Tile, fui::TextAlign::Left);
-  say(screen, rect(kM, 18, 240, 30), "SEVERANCE", Face::Ui, fui::TextAlign::Left);
-  smallPill(screen, rect(kW - kM - 70 - 8 - 80, 6, 70, 36), "LOG", ActionLog);
-  smallPill(screen, rect(kW - kM - 80, 6, 80, 36), "MENU", ActionMenu);
+  say(screen, rect(kM, 2, 240, 22), "Severance", Face::Button, fui::TextAlign::Left);
+  sayGrey(screen, rect(kM, 22, 240, 18), "the card game", Face::Tile, fui::TextAlign::Left);
+  // The menu: a burger at the top right.
+  const fui::Rect burger = rect(kW - 64, 0, 64, kTopH);
+  hotspot(screen, burger, ActionMenu);
+  for (int k = 0; k < 3; ++k) t.fill(rect(kW - kM - 30, 10 + k * 9, 30, 4), kBlack, 2);
   t.fill(rect(0, kTopH, kW, 2), kBlack);
 }
 
@@ -547,6 +558,8 @@ void status(toybox::Screen& screen, const BoardModel& m) {
       add(said ? said : "Refine round and square numbers with equal totals, pair revealed characters, or draw.");
     }
   }
+  // Tap the message for the full log.
+  hotspot(screen, rect(0, kStatusY - 6, kW, 70), ActionLog);
   prose(screen, rect(kM, kStatusY - 1, kW - 2 * kM, 64), line, Face::Tile, 3);
 }
 
@@ -560,8 +573,8 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
     cardBack(screen, pile, false);
     // The Administration keycard's drop, white on the dark back, bottom right
     // above the count.
-    drop(screen, pile.x + pile.width - 19, pile.y + pile.height - 40, 27, kBlack);
-    drop(screen, pile.x + pile.width - 19, pile.y + pile.height - 38, 23, kWhite);
+    drop(screen, pile.x + pile.width / 2, pile.y + pile.height / 2 - 15, 29, kBlack);
+    drop(screen, pile.x + pile.width / 2, pile.y + pile.height / 2 - 13, 25, kWhite);
     // What is left, in a pill on the pile's bottom corner away from the edge.
     char left[8];
     std::snprintf(left, sizeof(left), "%d", g.draw.n);
