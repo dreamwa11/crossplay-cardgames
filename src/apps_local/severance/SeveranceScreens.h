@@ -67,7 +67,7 @@ struct FontBinder {
 void useFonts(FontBinder* binder);
 
 // Hit tests, against the geometry the board is drawn with.
-enum class HitKind : uint8_t { None = 0, Stack, Mini, Hand, Draw };
+enum class HitKind : uint8_t { None = 0, Stack, Mini, Hand, Draw, Side };
 struct Hit {
   HitKind kind = HitKind::None;
   int index = 0;  // stack, hand slot, or employee * 2 + (outie ? 1 : 0)

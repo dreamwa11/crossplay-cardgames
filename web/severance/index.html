@@ -715,11 +715,19 @@ function tray(cand) {
   fill(M, TRAY_Y - 8, W - 2 * M, 1, '#000');
   const DRAW_X = drawX();
   if (G.draw.length) { fill(DRAW_X + 4, TRAY_CY + 4, TCW, TCH, '#000', 4); cardBack(DRAW_X, TRAY_CY, TCW, TCH, false);
-    drop(DRAW_X + TCW - 19, TRAY_CY + TCH - 46, 27); drop(DRAW_X + TCW - 19, TRAY_CY + TCH - 44, 23, '#fff');
+    drop(DRAW_X + TCW - 19, TRAY_CY + TCH - 40, 27); drop(DRAW_X + TCW - 19, TRAY_CY + TCH - 38, 23, '#fff');
     const n = String(G.draw.length), pw = widthOf(n, 'button') + 16, px = drawLeft ? DRAW_X - 10 : DRAW_X + TCW - pw + 10, py = TRAY_CY + TCH - 14;
     fill(px, py, pw, 26, '#fff', 13); stroke(px, py, pw, 26, '#000', 2, 13); txt(px, py, pw, 26, n, 'button'); }
   else dashed(DRAW_X, TRAY_CY, TCW, TCH, 1);
   hit(DRAW_X, TRAY_CY, TCW, TCH, tapDraw);
+  // A tall chevron on the open side moves the pile across.
+  const SIDE_W = 22, sideX = drawLeft ? W - M - SIDE_W : M, half0 = TCH / 2;
+  ctx.fillStyle = '#000';
+  for (let dy = 0; dy < TCH; dy++) {
+    const dd = dy < half0 ? half0 - dy : dy - half0, off = Math.floor(dd * (SIDE_W - 4) / half0);
+    ctx.fillRect(drawLeft ? sideX + SIDE_W - 4 - off : sideX + off, TRAY_CY + dy, 4, 1);
+  }
+  hit(sideX - 8, TRAY_CY - 6, SIDE_W + 16, TCH + 12, () => { if (G.pending || annIndex >= 0 || showEnd) return; drawLeft = !drawLeft; persist(); render(); });
   const hand = playableHand();
   const far = handRect(0, hand.length || 1);
   if (!hand.length) { const r = handRect(0, 1); dashed(r[0], r[1], r[2], r[3], 1); }
@@ -731,7 +739,7 @@ function tray(cand) {
     cardFace(c, r, { selected: isSel(c.id), candidate: cand.indexOf(c.id) >= 0, visibleW: covered ? handStep(hand.length) : 0, visibleRight: drawLeft }, true);
     hit(r[0], r[1], r[2], r[3], () => tapCard(c.id, false));
   });
-  const sx = drawLeft ? far[0] + TCW + 16 : M, sw = drawLeft ? W - M - sx : far[0] - 12 - sx, ty = TRAY_CY + (TCH - 72) / 2;
+  const sx = drawLeft ? far[0] + TCW + 16 : M + 22 + 12, sw = drawLeft ? W - M - 22 - 12 - sx : far[0] - 12 - sx, ty = TRAY_CY + (TCH - 72) / 2;
   const t = selectionTotals(sel), main = selMain();
   if (sel.length && !main) {
     const f = fitFace('SQUARE 88', sw - 22, ['button', 'tile']);
@@ -984,6 +992,8 @@ cv.addEventListener('click', e => {
 window.addEventListener('resize', fit);
 
 restore();
+// A quarter in progress picks up where it was left; the menu is for starting one.
+if (hasGame) screen = 'board';
 document.fonts.load('20px Rubik', 'SEVERANCE 0123456789').then(() => {
   fit();
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {

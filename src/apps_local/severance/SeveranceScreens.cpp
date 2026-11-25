@@ -81,6 +81,18 @@ fui::Rect barHitRect(const int ch, const bool outie) {
 bool gDrawLeft = false;
 int drawX() { return gDrawLeft ? kM : kW - kM - kTrayCardW - 4; }
 fui::Rect drawRect() { return rect(drawX(), kTrayCardY, kTrayCardW, kTrayCardH); }
+// A tall chevron on the open side moves the pile across.
+constexpr int kSideW = 22;
+fui::Rect sideRect() { return rect(gDrawLeft ? kW - kM - kSideW : kM, kTrayCardY, kSideW, kTrayCardH); }
+void chevron(toybox::Screen& screen, const fui::Rect& r, const bool pointLeft) {
+  const int half = r.height / 2;
+  for (int dy = 0; dy < r.height; ++dy) {
+    const int d = dy < half ? half - dy : dy - half;  // 0 at the point
+    const int off = d * (r.width - 4) / half;
+    const int x = pointLeft ? r.x + off : r.x + r.width - 4 - off;
+    screen.target().fill(rect(x, r.y + dy, 4, 1), kBlack);
+  }
+}
 // Three or more drawn cards overlap so the totals keep their room.
 int handStep(const int n) { return n > 3 ? 40 : n > 2 ? 50 : kTrayCardW + 6; }
 fui::Rect handRect(const int k, const int n) {
@@ -548,8 +560,8 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
     cardBack(screen, pile, false);
     // The Administration keycard's drop, white on the dark back, bottom right
     // above the count.
-    drop(screen, pile.x + pile.width - 19, pile.y + pile.height - 46, 27, kBlack);
-    drop(screen, pile.x + pile.width - 19, pile.y + pile.height - 44, 23, kWhite);
+    drop(screen, pile.x + pile.width - 19, pile.y + pile.height - 40, 27, kBlack);
+    drop(screen, pile.x + pile.width - 19, pile.y + pile.height - 38, 23, kWhite);
     // What is left, in a pill on the pile's bottom corner away from the edge.
     char left[8];
     std::snprintf(left, sizeof(left), "%d", g.draw.n);
@@ -585,8 +597,9 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
   }
   // The selection's totals on the open side: round over square, or what a
   // chosen employee needs.
-  const int sx = gDrawLeft ? far.x + far.width + 16 : kM;
-  const int sw = gDrawLeft ? kW - kM - sx : far.x - 12 - sx;
+  chevron(screen, sideRect(), !gDrawLeft);
+  const int sx = gDrawLeft ? far.x + far.width + 16 : kM + kSideW + 12;
+  const int sw = gDrawLeft ? kW - kM - kSideW - 12 - sx : far.x - 12 - sx;
   const int ty = kTrayCardY + (kTrayCardH - 72) / 2;
   const s::Totals tot = s::selectionTotals(g, m.sel, m.nSel);
   bool main = false;
@@ -753,6 +766,8 @@ Hit hitTest(const s::Game& g, const int x, const int y) {
   for (int k = nh - 1; k >= 0; --k)
     if (inside(handRect(k, nh), x, y)) return Hit{HitKind::Hand, k};
   if (inside(drawRect(), x, y)) return Hit{HitKind::Draw, 0};
+  const fui::Rect sr = sideRect();
+  if (inside(rect(sr.x - 8, sr.y - 6, sr.width + 16, sr.height + 12), x, y)) return Hit{HitKind::Side, 0};
   return h;
 }
 

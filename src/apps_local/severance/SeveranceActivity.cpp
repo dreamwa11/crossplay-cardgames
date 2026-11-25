@@ -63,7 +63,8 @@ void SeveranceActivity::onEnter() {
     return;
   }
   load();
-  screen = ui::Screen::Menu;
+  // A quarter in progress picks up where it was left; the menu is for starting one.
+  screen = hasGame ? ui::Screen::Board : ui::Screen::Menu;
   requestUpdate();
 }
 
@@ -265,6 +266,13 @@ void SeveranceActivity::tapBoard(const int x, const int y) {
   const ui::Hit hit = ui::hitTest(g, x, y);
   switch (hit.kind) {
     case ui::HitKind::None:
+      return;
+    case ui::HitKind::Side:
+      if (g.pending.type != sev::Pend::None || annIndex >= 0 || showEnd) return;
+      drawLeft = !drawLeft;
+      ui::setDrawLeft(drawLeft);
+      save();
+      requestUpdate();
       return;
     case ui::HitKind::Draw:
       if (g.over != sev::Over::No) return;
