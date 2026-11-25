@@ -819,6 +819,7 @@ void buildMenu(toybox::Screen& screen, const MenuModel& model) {
     t.stroke(o, kBlack, 2, 4);
     t.fill(r, kBlack, 4);
     prose(screen, rect(r.x + 4, r.y + 16, r.width - 8, 44), s::charName(ch), Face::Tile, 2, fui::TextAlign::Center, true);
+    drop(screen, r.x + r.width - 16, r.y + r.height - 30, 22, kWhite);
   }
   if (model.played) {
     char line[48];

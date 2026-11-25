@@ -819,7 +819,7 @@ function drawMenu() {
   CHAR_ORDER.forEach((ch, k) => {
     const x = 48 + k * 100, y = 236;
     fill(x + 10, y + 14, 84, 96, '#fff', 4); stroke(x + 10, y + 14, 84, 96, '#000', 2, 4);
-    fill(x, y, 84, 96, '#000', 4); wrap(x + 4, y + 16, 76, CHARS[ch], 'tile', 2, 'center', true);
+    fill(x, y, 84, 96, '#000', 4); wrap(x + 4, y + 16, 76, CHARS[ch], 'tile', 2, 'center', true); drop(x + 84 - 16, y + 96 - 30, 22, '#fff');
   });
   if (played) txt(0, 372, W, 24, played + ' QUARTERS  ' + won + ' AT QUOTA', 'button');
   const rows = [['CONTINUE', () => { if (hasGame) go('board'); }], ['NEW QUARTER', newQuarter],

@@ -1,6 +1,6 @@
 /* Offline copy of the CrossPlay (PaperMono) version of Severance. The game is one file with
    everything inside it, so once index.html is cached it works offline; the page is fetched fresh when online. */
-var CACHE = 'cardgames-severance-v16';
+var CACHE = 'cardgames-severance-v17';
 var FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-severance-180.png', 'icon-severance-512.png'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(FILES); }).then(function () { return self.skipWaiting(); }));
