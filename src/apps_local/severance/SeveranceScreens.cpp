@@ -210,7 +210,7 @@ void colourMark(toybox::Screen& screen, const int cx, const int cy, const int si
 }
 
 // The Administration drop (the phone version's keycard mark): a point over a round base.
-void drop(toybox::Screen& screen, const int cx, const int top, const int h) {
+void drop(toybox::Screen& screen, const int cx, const int top, const int h, const fui::Paint& paint = kBlack) {
   const int r = h * 36 / 100;
   const int cy = top + h - r - 1;
   for (int y = top; y < top + h; ++y) {
@@ -221,7 +221,7 @@ void drop(toybox::Screen& screen, const int cx, const int top, const int h) {
       w = 0;
       while ((w + 1) * (w + 1) + (y - cy) * (y - cy) <= r * r) ++w;
     }
-    screen.target().fill(rect(cx - w, y, 2 * w + 1, 1), kBlack);
+    screen.target().fill(rect(cx - w, y, 2 * w + 1, 1), paint);
   }
 }
 
@@ -546,6 +546,10 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
   if (g.draw.n) {
     t.fill(rect(pile.x + 4, pile.y + 4, pile.width, pile.height), kBlack, 4);
     cardBack(screen, pile, false);
+    // The Administration keycard's drop, white on the dark back, bottom right
+    // above the count.
+    drop(screen, pile.x + pile.width - 19, pile.y + pile.height - 46, 27, kBlack);
+    drop(screen, pile.x + pile.width - 19, pile.y + pile.height - 44, 23, kWhite);
     // What is left, in a pill on the pile's bottom corner away from the edge.
     char left[8];
     std::snprintf(left, sizeof(left), "%d", g.draw.n);
@@ -578,8 +582,6 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
       t.fill(rect(r.x + 4, r.y + 4, r.width, r.height), kBlack, 4);
     }
     cardFace(screen, r, g, id, look, true);
-    // Drawn cards wear the Administration drop, bottom right.
-    if (s::cardDef(id).type == s::Type::Num) drop(screen, r.x + r.width - 12, r.y + r.height - 23 - (look.selected ? 6 : 0), 16);
   }
   // The selection's totals on the open side: round over square, or what a
   // chosen employee needs.
