@@ -145,6 +145,11 @@ void TabletopActivity::loop() {
       // The deck changes size, so it is gathered and shuffled.
       tt::shuffle(table, table.cards, false);
       break;
+    case ui::ActionArcana:
+      table.arcana = static_cast<tt::Arcana>((static_cast<int>(table.arcana) + 1) % static_cast<int>(tt::Arcana::Count));
+      // The deck changes, so it is gathered and shuffled.
+      tt::shuffle(table, table.tarot, true);
+      break;
     case ui::ActionReversals:
       table.reversals = !table.reversals;
       break;

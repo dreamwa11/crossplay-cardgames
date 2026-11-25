@@ -514,10 +514,12 @@ void buildTarot(toybox::Screen& screen, const tt::Table& t) {
   header(screen, "TAROT", right);
   const int16_t w = screen.device().width;
   const int m = toybox::kMargin;
-  chip(screen, rect(m, 96, 104, 44), "ONE", !t.spread, ActionSpread, 0);
-  chip(screen, rect(m + 112, 96, 104, 44), "THREE", t.spread, ActionSpread, 1);
-  chip(screen, rect(w - m - 200, 96, 200, 44), t.reversals ? "REVERSED ON" : "REVERSED OFF", t.reversals,
-       ActionReversals);
+  chip(screen, rect(m, 96, 84, 44), "ONE", !t.spread, ActionSpread, 0);
+  chip(screen, rect(m + 92, 96, 96, 44), "THREE", t.spread, ActionSpread, 1);
+  // Which arcana the deck holds, a tap stepping through all, major and minor.
+  const char* arcana = t.arcana == tt::Arcana::Major ? "MAJOR" : t.arcana == tt::Arcana::Minor ? "MINOR" : "ALL";
+  chip(screen, rect(m + 196, 96, 104, 44), arcana, t.arcana != tt::Arcana::All, ActionArcana);
+  chip(screen, rect(w - m - 140, 96, 140, 44), "REVERSED", t.reversals, ActionReversals);
 
   if (deck.shown == 0) {
     const fui::Rect card = rect((w - 236) / 2, 156, 236, 360);

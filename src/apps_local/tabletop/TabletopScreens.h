@@ -27,6 +27,7 @@ enum : fui::ActionId {
   ActionRemoveDie = 9,  // value = slot
   ActionRoll = 10,
   ActionClear = 11,
+  ActionArcana = 12,  // the tarot deck: all, the majors, the minors, in turn
 };
 
 enum class Screen : uint8_t { Menu = 0, Cards, Tarot, Dice };

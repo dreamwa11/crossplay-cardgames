@@ -27,8 +27,15 @@ const char* const kPlayingSuits[4] = {"SPADES", "HEARTS", "DIAMONDS", "CLUBS"};
 constexpr int kSides[kDieKinds] = {4, 6, 8, 10, 12, 20, 100};
 
 void fill(Table& t, Deck& deck, const bool tarot) {
-  deck.size = static_cast<uint8_t>(tarot ? kTarotCards : kPlayingCards + (t.jokers ? kJokers : 0));
-  for (int i = 0; i < deck.size; ++i) deck.order[i] = static_cast<uint8_t>(i);
+  int first = 0;
+  if (tarot) {
+    first = t.arcana == Arcana::Minor ? kMajors : 0;
+    const int last = t.arcana == Arcana::Major ? kMajors : kTarotCards;
+    deck.size = static_cast<uint8_t>(last - first);
+  } else {
+    deck.size = static_cast<uint8_t>(kPlayingCards + (t.jokers ? kJokers : 0));
+  }
+  for (int i = 0; i < deck.size; ++i) deck.order[i] = static_cast<uint8_t>(first + i);
   for (int i = deck.size - 1; i > 0; --i) {
     const int j = t.rng.below(i + 1);
     const uint8_t c = deck.order[i];
@@ -93,18 +100,18 @@ bool readDeck(const char*& p, Deck& d, const int maxSize, const bool hasBack) {
   d.shown = static_cast<uint8_t>(v[2]);
   long c;
   for (int i = 0; i < d.left; ++i) {
-    if (!num(p, c) || c < 0 || c >= d.size) return false;
+    if (!num(p, c) || c < 0 || c >= maxSize) return false;
     d.order[i] = static_cast<uint8_t>(c);
   }
   for (int i = 0; i < d.shown; ++i) {
-    if (!num(p, c) || c < 0 || c >= 2 * d.size) return false;
+    if (!num(p, c) || c < 0 || c >= 2 * maxSize) return false;
     d.current[i] = Drawn{static_cast<uint8_t>(c / 2), (c & 1) != 0};
   }
   long h;
   if (!num(p, h) || h < 0 || h > kHistory) return false;
   d.historyLen = static_cast<uint8_t>(h);
   for (int i = 0; i < d.historyLen; ++i) {
-    if (!num(p, c) || c < 0 || c >= 2 * d.size) return false;
+    if (!num(p, c) || c < 0 || c >= 2 * maxSize) return false;
     d.history[i] = Drawn{static_cast<uint8_t>(c / 2), (c & 1) != 0};
   }
   return true;
@@ -214,13 +221,13 @@ void cardName(const uint8_t id, const bool tarot, char* out, const int size) {
   std::snprintf(out, size, "%s OF %s", kPlayingRanks[playingRank(id) - 1], playingSuitName(playingSuit(id)));
 }
 
-// T1 seed jokers reversals spread
+// T3 seed jokers reversals spread arcana (T2 has no arcana, T1 no card backs)
 // <cards deck>
 // <tarot deck>
 // count picks... rolled values... totalsLen totals...
 int serialize(const Table& t, char* out, const int size) {
-  int used = std::snprintf(out, size, "T2 %lu %d %d %d\n", static_cast<unsigned long>(t.rng.s), t.jokers ? 1 : 0,
-                           t.reversals ? 1 : 0, t.spread ? 1 : 0);
+  int used = std::snprintf(out, size, "T3 %lu %d %d %d %d\n", static_cast<unsigned long>(t.rng.s), t.jokers ? 1 : 0,
+                           t.reversals ? 1 : 0, t.spread ? 1 : 0, static_cast<int>(t.arcana));
   if (used < 0 || used >= size) return -1;
   for (const Deck* d : {&t.cards, &t.tarot}) {
     const int n = writeDeck(*d, out + used, size - used - 1);
@@ -260,8 +267,9 @@ int serialize(const Table& t, char* out, const int size) {
 }
 
 bool parse(const char* in, Table& out) {
-  // T1 is the same file without the card backs.
-  const bool hasBack = std::strncmp(in, "T2 ", 3) == 0;
+  // T2 is the same file without the arcana, T1 without the card backs too.
+  const bool hasArcana = std::strncmp(in, "T3 ", 3) == 0;
+  const bool hasBack = hasArcana || std::strncmp(in, "T2 ", 3) == 0;
   if (!hasBack && std::strncmp(in, "T1 ", 3) != 0) return false;
   const char* p = in + 3;
   Table t;
@@ -272,10 +280,18 @@ bool parse(const char* in, Table& out) {
   t.jokers = v[1] != 0;
   t.reversals = v[2] != 0;
   t.spread = v[3] != 0;
+  if (hasArcana) {
+    long a;
+    if (!num(p, a) || a < 0 || a >= static_cast<long>(Arcana::Count)) return false;
+    t.arcana = static_cast<Arcana>(a);
+  }
   if (!readDeck(p, t.cards, kPlayingCards + kJokers, hasBack)) return false;
   if (!readDeck(p, t.tarot, kTarotCards, hasBack)) return false;
   if (t.cards.size != kPlayingCards && t.cards.size != kPlayingCards + kJokers) return false;
-  if (t.tarot.size != kTarotCards) return false;
+  const int tarotSize = t.arcana == Arcana::Major   ? kMajors
+                        : t.arcana == Arcana::Minor ? kTarotCards - kMajors
+                                                    : kTarotCards;
+  if (t.tarot.size != tarotSize) return false;
   t.tarot.back = kTarotBack;
   if (t.cards.back == kTarotBack) t.cards.back = 0;
   long c;

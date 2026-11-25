@@ -113,10 +113,10 @@ const SIDES = [4, 6, 8, 10, 12, 20, 100];
 const SAVE = 'crossplay-tabletop-v1';
 
 const rnd = n => { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % n; };
-function newDeck(size) {
-  const order = [...Array(size).keys()];
+function newDeck(size, first = 0) {
+  const order = [...Array(size).keys()].map(i => i + first);
   for (let i = size - 1; i > 0; --i) { const j = rnd(i + 1); [order[i], order[j]] = [order[j], order[i]]; }
-  return { size, order, current: [], history: [], back: size === 78 ? 2 : rnd(2) };
+  return { size, order, current: [], history: [], back: first > 0 || size === 78 || size === 22 ? 2 : rnd(2) };
 }
 let t = null;
 function fresh() {
@@ -129,7 +129,9 @@ function load() {
 }
 function persist() { try { localStorage.setItem(SAVE, JSON.stringify(t)); } catch (e) {} }
 function shuffle(which) {
-  t[which] = newDeck(which === 'tarot' ? 78 : 52 + (t.jokers ? 2 : 0));
+  // The tarot deck holds all 78, the 22 majors or the 56 minors.
+  if (which === 'tarot') t.tarot = t.arcana === 1 ? newDeck(22) : t.arcana === 2 ? newDeck(56, 22) : newDeck(78);
+  else t.cards = newDeck(52 + (t.jokers ? 2 : 0));
 }
 function draw(which, n) {
   const d = t[which];
@@ -287,7 +289,7 @@ function drawMenu() {
     } else if (i === 1) {
       const cx = x + 36, cy = y + 18; cardFrame(cx, cy, 108, 160);
       icon('rws_menu_00', cx + 6, cy);
-      a = `${t.tarot.order.length} of 78 left`; b = t.spread ? 'Three-card spread' : 'One card at a time';
+      a = `${t.tarot.order.length} of ${t.tarot.size} left`; b = t.spread ? 'Three-card spread' : 'One card at a time';
     } else {
       die(x + 24, y + 24, 5, '20');
       icon('d6_48', x + 96, y + 120); say(x + 96, y + 120, 48, 48, '6', 'ui');
@@ -318,10 +320,12 @@ function drawCards() {
 function drawTarot() {
   const d = t.tarot;
   header('TAROT', `${d.order.length} LEFT`);
-  chip(M, 96, 104, 44, 'ONE', !t.spread, act(() => { t.spread = false; }));
-  chip(M + 112, 96, 104, 44, 'THREE', t.spread, act(() => { t.spread = true; }));
-  chip(W - M - 200, 96, 200, 44, t.reversals ? 'REVERSED ON' : 'REVERSED OFF', t.reversals,
-    act(() => { t.reversals = !t.reversals; }));
+  chip(M, 96, 84, 44, 'ONE', !t.spread, act(() => { t.spread = false; }));
+  chip(M + 92, 96, 96, 44, 'THREE', t.spread, act(() => { t.spread = true; }));
+  // Which arcana the deck holds, a tap stepping through all, major and minor.
+  chip(M + 196, 96, 104, 44, ['ALL', 'MAJOR', 'MINOR'][t.arcana || 0], !!t.arcana,
+    act(() => { t.arcana = ((t.arcana || 0) + 1) % 3; shuffle('tarot'); }));
+  chip(W - M - 140, 96, 140, 44, 'REVERSED', t.reversals, act(() => { t.reversals = !t.reversals; }));
   if (!d.current.length) {
     const x = (W - 236) / 2, y = 156;
     cardBack(x, y, 236, 360, d.back);

@@ -25,6 +25,9 @@ constexpr int kSpread = 3;      // past, present, future
 constexpr int kBacks = 3;       // The Pale Motel's diamonds, chevrons and rays
 constexpr int kTarotBack = 2;   // the rays are tarot's; the other two are the playing deck's
 
+// Which tarot cards the deck holds: all 78, the 22 majors or the 56 minors.
+enum class Arcana : uint8_t { All = 0, Major, Minor, Count };
+
 enum class Die : uint8_t { D4 = 0, D6, D8, D10, D12, D20, D100, Count };
 constexpr int kDieKinds = static_cast<int>(Die::Count);
 constexpr int kMaxDice = 12;
@@ -80,13 +83,14 @@ struct Table {
   bool jokers = false;
   bool reversals = true;
   bool spread = false;  // tarot draws three at a time
+  Arcana arcana = Arcana::All;  // which part of the tarot deck is shuffled in
 };
 
 // A fresh table: both decks full and shuffled, two six-sided dice.
 void start(Table& t, uint32_t seed);
 
 // Gather every card back and shuffle. The playing deck takes the jokers
-// setting as it stands.
+// setting as it stands, the tarot deck the arcana one.
 void shuffle(Table& t, Deck& deck, bool tarot);
 
 // Draw `n` cards (1 or 3). The cards on the table move to the history strip.
