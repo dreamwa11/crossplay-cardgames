@@ -28,5 +28,8 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web
+      # deploy-pages sometimes asks for the artifact before GitHub lists it
+      # ("No artifacts named github-pages"); a short wait lets it appear.
+      - run: sleep 20
       - id: deployment
         uses: actions/deploy-pages@v4
