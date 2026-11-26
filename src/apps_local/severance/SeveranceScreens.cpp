@@ -340,9 +340,9 @@ void numFace(toybox::Screen& screen, const fui::Rect& r, const s::Game& g, const
   const int vw = look.visibleW > 0 && look.visibleW < r.width ? look.visibleW : r.width;
   const int vx = look.visibleRight ? r.x + r.width - vw : r.x;
   const Face vf = !small ? Face::Ui : fit(screen, v, vw - 8, {Face::Ui, Face::Button});
-  // The number sits a little off centre, by a few pixels left or right that
+  // The number sits 5px off centre, left or right, a side that
   // stay with the card; its mark stays centred. Not on a covered card's strip.
-  const int nudge = vw < r.width ? 0 : (static_cast<int>((id * 37u) % 5u) - 2) * 5;
+  const int nudge = vw < r.width ? 0 : ((id * 37u) & 1u ? 5 : -5);
   say(screen, rect(vx + nudge, r.y + 4, vw, valueH), v, vf);
   // The mark under the number, clear of the stack count in the bottom corner.
   const int cy = r.y + valueH + 10;

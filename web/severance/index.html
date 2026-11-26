@@ -615,8 +615,8 @@ const idNum = id => { const m = /^n(\d+)$/.exec(id); return m ? +m[1] : 7; };
 function numFace(c, x0, y, w, h, selected, small, visW, visRight) {
   const v = c.wild && !c.val ? '?' : String(c.val);
   const vh = Math.floor(h * 58 / 100), vw = visW > 0 && visW < w ? visW : w, x = visRight ? x0 + w - vw : x0;
-  // The number a little off centre, by a few pixels that stay with the card; its mark stays centred.
-  const nudge = vw < w ? 0 : ((idNum(c.id) * 37) % 5 - 2) * 5;
+  // The number 5px off centre, left or right, a side that stays with the card; its mark stays centred.
+  const nudge = vw < w ? 0 : ((idNum(c.id) * 37) & 1 ? 5 : -5);
   txt(x + nudge, y + 4, vw, vh, v, small ? fitFace(v, vw - 8, ['ui', 'button']) : 'ui');
   const cy = y + vh + 10, mark = small ? 10 : 14;  // under the number, clear of the stack count
   if (c.wild) {
