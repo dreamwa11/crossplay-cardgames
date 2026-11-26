@@ -658,9 +658,11 @@ const isSel = v => sel.indexOf(v) >= 0;
 function topBar() {
   txt(M, 2, 240, 22, 'Severance', 'button', 'left');
   sayGrey(M, 22, 240, 18, 'the card game', 'tile', 'left');
-  // The menu: a burger at the top right.
-  for (let k = 0; k < 3; k++) fill(W - M - 30, 10 + k * 9, 30, 4, '#000', 2);
-  hit(W - 64, 0, 64, TOP_H, () => { persist(); go('menu'); });
+  // The menu: a burger in a rounded box, as Scoundrel and Lobo have it.
+  const bx = W - M - 38, by = 2;
+  stroke(bx, by, 38, 37, '#000', 2, 8);
+  for (let k = 0; k < 3; k++) fill(bx + 10, by + 11 + k * 7, 18, 2, '#000');
+  hit(W - 72, 0, 72, TOP_H, () => { persist(); go('menu'); });
   fill(0, TOP_H, W, 2, '#000');
 }
 function track() {

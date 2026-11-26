@@ -418,10 +418,11 @@ void topBar(toybox::Screen& screen) {
   auto& t = screen.target();
   say(screen, rect(kM, 2, 240, 22), "Severance", Face::Button, fui::TextAlign::Left);
   sayGrey(screen, rect(kM, 22, 240, 18), "the card game", Face::Tile, fui::TextAlign::Left);
-  // The menu: a burger at the top right.
-  const fui::Rect burger = rect(kW - 64, 0, 64, kTopH);
-  hotspot(screen, burger, ActionMenu);
-  for (int k = 0; k < 3; ++k) t.fill(rect(kW - kM - 30, 10 + k * 9, 30, 4), kBlack, 2);
+  // The menu: a burger in a rounded box, as Scoundrel and Lobo have it.
+  const fui::Rect burger = rect(kW - kM - 38, 2, 38, 37);
+  hotspot(screen, rect(kW - 72, 0, 72, kTopH), ActionMenu);
+  t.stroke(burger, kBlack, 2, 8);
+  for (int k = 0; k < 3; ++k) t.fill(rect(burger.x + 10, burger.y + 11 + k * 7, 18, 2), kBlack);
   t.fill(rect(0, kTopH, kW, 2), kBlack);
 }
 
