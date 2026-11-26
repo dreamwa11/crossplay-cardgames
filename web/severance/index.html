@@ -658,8 +658,10 @@ function cardFace(c, r, look = {}, small = false) {
 /* ---------------- the board ---------------- */
 const isSel = v => sel.indexOf(v) >= 0;
 function topBar() {
-  txt(M, 2, 240, 22, 'Severance', 'button', 'left');
-  sayGrey(M, 22, 240, 18, 'the card game', 'tile', 'left');
+  // The title with its subtitle beside it, on one line.
+  const tw = widthOf('Severance', 'ui');
+  txt(M, 4, tw + 4, 34, 'Severance', 'ui', 'left');
+  sayGrey(M + tw + 10, 13, 160, 22, 'the card game', 'button', 'left');
   // The menu: a burger in a rounded box, as Scoundrel and Lobo have it.
   const bx = W - M - 38, by = 2;
   stroke(bx, by, 38, 37, '#000', 2, 8);
@@ -771,8 +773,8 @@ function tray(cand) {
   // One button the width of the screen; a tap on empty space clears the selection.
   const half = W - 2 * M, rx = M;
   if (G.over) { button(M, BUTTONS_Y, W - 2 * M, BUTTON_H, 'NEW QUARTER', newQuarter); return; }
-  // REFINE carries the totals: round and square while they differ, the shared total once they match.
-  if (t.ok && !main) button(rx, BUTTONS_Y, half, BUTTON_H, 'REFINE ' + t.r, refine);
+  // REFINE once round and square match; until then the button shows the two totals.
+  if (t.ok && !main) button(rx, BUTTONS_Y, half, BUTTON_H, 'REFINE', refine);
   else if (sel.length && !main && !G.pending) {
     stroke(rx, BUTTONS_Y, half, BUTTON_H, grey(), 2, 6);
     const a = String(t.r), b = String(t.b), wa = widthOf(a, 'ui'), wb = widthOf(b, 'ui'), cy = BUTTONS_Y + BUTTON_H / 2;

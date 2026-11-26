@@ -425,8 +425,11 @@ bool selected(const BoardModel& m, const int v) {
 
 void topBar(toybox::Screen& screen) {
   auto& t = screen.target();
-  say(screen, rect(kM, 2, 240, 22), "Severance", Face::Button, fui::TextAlign::Left);
-  sayGrey(screen, rect(kM, 22, 240, 18), "the card game", Face::Tile, fui::TextAlign::Left);
+  // The title with its subtitle beside it, on one line.
+  const int tw = widthOf(screen, "Severance", Face::Ui);
+  say(screen, rect(kM, 4, tw + 4, 34), "Severance", Face::Ui, fui::TextAlign::Left);
+  sayGrey(screen, rect(kM + tw + 10, 13, widthOf(screen, "the card game", Face::Button) + 6, 22), "the card game",
+          Face::Button, fui::TextAlign::Left);
   // The menu: a burger in a rounded box, as Scoundrel and Lobo have it.
   const fui::Rect burger = rect(kW - kM - 38, 2, 38, 37);
   hotspot(screen, rect(kW - 72, 0, 72, kTopH), ActionMenu);
@@ -642,12 +645,9 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
     button(screen, right, "NEW QUARTER", ActionNewQuarter);
     return;
   }
-  // REFINE carries the selection's totals: round and square while they differ,
-  // the shared total once they match.
+  // REFINE once round and square match; until then the button shows the two totals.
   if (tot.ok && !main) {
-    char v[24];
-    std::snprintf(v, sizeof(v), "REFINE %d", tot.green);
-    button(screen, right, v, ActionRefine);
+    button(screen, right, "REFINE", ActionRefine);
   } else if (m.nSel && !main && g.pending.type == s::Pend::None) {
     t.stroke(right, kGrey, 2, 6);
     char a[8], b[8];
