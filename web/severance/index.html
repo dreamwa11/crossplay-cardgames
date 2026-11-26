@@ -631,7 +631,8 @@ function mainFace(c, x, y, w, h, small) {
   const innie = c.red;
   if (innie) fill(x + 2, y + 2, w - 4, h - 4, '#000', 3);
   if (small) { txt(x, y, w, h, innie ? 'IN' : 'OUT', 'tile', 'center', innie); return; }
-  wrap(x + 6, y + 12, w - 12, c.name, widthOf(c.name, 'button') <= w - 12 ? 'button' : 'tile', 2, 'center', innie);
+  // The name on one line, in the smaller cut when the larger will not fit.
+  txt(x + 2, y + 14, w - 4, 26, c.name, widthOf(c.name, 'button') <= w - 8 ? 'button' : 'tile', 'center', innie);
   const tx = x + (w - 50) / 2, ty = y + h - 46;  // centred above the stack count
   stroke(tx, ty, 50, 20, innie ? '#fff' : '#000', 1);
   txt(tx, ty, 50, 20, innie ? 'INNIE' : 'OUTIE', 'tile', 'center', innie);
@@ -655,7 +656,12 @@ function cardFace(c, r, look = {}, small = false) {
   else if (c.type === 'main') mainFace(c, x, y, w, h, small);
   else specialFace(c, x, y, w, h);
   stroke(x, y, w, h, '#000', look.selected ? 4 : 2, 4);
-  if (look.blocked) { fill(x - 1, y + h / 2 - 12, w + 2, 24, '#000'); txt(x - 1, y + h / 2 - 12, w + 2, 24, 'COBEL', fitFace('COBEL', w - 2, ['button', 'tile']), 'center', true); }
+  if (look.blocked) {
+    // Cobel's banner, slapped on at a slant: rising to the right, the word level.
+    const cy = y + h / 2;
+    for (let xx = x - 3; xx < x + w + 3; xx++) fill(xx, cy - 13 - Math.trunc((xx - (x + w / 2)) * 2 / 9), 1, 26, '#000');
+    txt(x, cy - 12, w, 24, 'COBEL', fitFace('COBEL', w - 8, ['button', 'tile']), 'center', true);
+  }
   if (look.outOfUse) stripes(x, y, w, h);
   if (look.candidate) dashed(x - 5, y - 5, w + 10, h + 10);
 }

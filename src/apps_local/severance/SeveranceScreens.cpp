@@ -369,10 +369,10 @@ void mainFace(toybox::Screen& screen, const fui::Rect& r, const int id, const bo
     say(screen, r, innie ? "IN" : "OUT", Face::Tile, fui::TextAlign::Center, innie);
     return;
   }
-  // The name on one line in the button cut if it fits, else two smaller ones.
+  // The name on one line, in the smaller cut when the larger will not fit.
   const char* name = s::cardName(id);
-  const Face f = widthOf(screen, name, Face::Button) <= r.width - 12 ? Face::Button : Face::Tile;
-  prose(screen, rect(r.x + 6, r.y + 12, r.width - 12, 40), name, f, 2, fui::TextAlign::Center, innie);
+  const Face f = widthOf(screen, name, Face::Button) <= r.width - 8 ? Face::Button : Face::Tile;
+  say(screen, rect(r.x + 2, r.y + 14, r.width - 4, 26), name, f, fui::TextAlign::Center, innie);
   // Centred above the stack count, which takes the bottom corner.
   const fui::Rect tag = rect(r.x + (r.width - 50) / 2, r.y + r.height - 46, 50, 20);
   screen.target().stroke(tag, innie ? kWhite : kBlack, 1, 0);
@@ -411,9 +411,14 @@ void cardFace(toybox::Screen& screen, fui::Rect r, const s::Game& g, const int i
   }
   t.stroke(r, kBlack, look.selected ? 4 : 2, 4);
   if (look.blocked) {
-    const fui::Rect band = rect(r.x - 1, r.y + r.height / 2 - 12, r.width + 2, 24);
-    t.fill(band, kBlack);
-    say(screen, band, "COBEL", fit(screen, "COBEL", band.width - 4, {Face::Button, Face::Tile}), fui::TextAlign::Center,
+    // Cobel's banner, slapped on at a slant: rising to the right, the word level.
+    const int cy = r.y + r.height / 2;
+    for (int x = r.x - 3; x < r.x + r.width + 3; ++x) {
+      const int lift = (x - (r.x + r.width / 2)) * 2 / 9;
+      t.fill(rect(x, cy - 13 - lift, 1, 26), kBlack);
+    }
+    const fui::Rect band = rect(r.x, cy - 12, r.width, 24);
+    say(screen, band, "COBEL", fit(screen, "COBEL", band.width - 8, {Face::Button, Face::Tile}), fui::TextAlign::Center,
         true);
   }
   if (look.outOfUse) stripes(screen, r);
