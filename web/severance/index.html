@@ -804,7 +804,7 @@ function announcement(a) {
   txt(tx, PANEL_Y + 12, tw, 32, a.card.name, fitFace(a.card.name, tw, ['ui', 'button']), 'left');
   fill(tx, PANEL_Y + 64, tw, 1, '#000');
   wrap(tx, PANEL_Y + 70, tw, a.text, 'tile', 6);
-  button(W - M - 200, BUTTONS_Y, 200, BUTTON_H, 'CONTINUE', () => {
+  button((W - 200) / 2, BUTTONS_Y, 200, BUTTON_H, 'CONTINUE', () => {
     if (++annIndex >= anns.length) { annIndex = -1; if (G.over) showEnd = true; }
     render();
   });

@@ -341,7 +341,7 @@ void numFace(toybox::Screen& screen, const fui::Rect& r, const s::Game& g, const
   const int vx = look.visibleRight ? r.x + r.width - vw : r.x;
   const Face vf = !small ? Face::Ui : fit(screen, v, vw - 8, {Face::Ui, Face::Button});
   // The number sits 5px off centre, left or right, a side that
-  // stay with the card; its mark stays centred. Not on a covered card's strip.
+  // stays with the card; its mark stays centred. Not on a covered card's strip.
   const int nudge = vw < r.width ? 0 : ((id * 37u) & 1u ? 5 : -5);
   say(screen, rect(vx + nudge, r.y + 4, vw, valueH), v, vf);
   // The mark under the number, clear of the stack count in the bottom corner.
@@ -697,7 +697,7 @@ void announcement(toybox::Screen& screen, const s::Game& g, const s::Ann& a) {
   t.fill(rect(tx, kPanelY + 64, tw, 1), kBlack);
   prose(screen, rect(tx, kPanelY + 70, tw, 130), a.text, Face::Tile, 6);
   (void)g;
-  button(screen, rect(kW - kM - 200, kButtonsY, 200, kButtonH), "CONTINUE", ActionContinue);
+  button(screen, rect((kW - 200) / 2, kButtonsY, 200, kButtonH), "CONTINUE", ActionContinue);
 }
 
 // A choice for Kier, Ms. Casey, Gemma or Reghabi, under the grid.
