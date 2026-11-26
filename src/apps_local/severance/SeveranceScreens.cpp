@@ -336,7 +336,6 @@ void numFace(toybox::Screen& screen, const fui::Rect& r, const s::Game& g, const
   } else {
     std::snprintf(v, sizeof(v), "%d", g.card[id].val);
   }
-  const int valueH = r.height * 58 / 100;
   const int vw = look.visibleW > 0 && look.visibleW < r.width ? look.visibleW : r.width;
   const int vx = look.visibleRight ? r.x + r.width - vw : r.x;
   const Face vf = !small ? Face::Ui : fit(screen, v, vw - 8, {Face::Ui, Face::Button});
@@ -345,12 +344,14 @@ void numFace(toybox::Screen& screen, const fui::Rect& r, const s::Game& g, const
   // the side that is visible.
   const bool right = vw < r.width ? look.visibleRight : ((id * 37u) & 1u) != 0;
   say(screen, rect(vx + 7, r.y + 4, vw - 14, 40), v, vf, right ? fui::TextAlign::Right : fui::TextAlign::Left);
-  // The mark under the number, clear of the stack count in the bottom corner.
-  const int cy = r.y + valueH + 10;
+  // The mark right under the number, in its corner.
+  const int nw = widthOf(screen, v, vf);
+  const int mx = right ? vx + vw - 7 - nw / 2 : vx + 7 + nw / 2;
+  const int cy = r.y + 58;
   const int mark = small ? 10 : 14;
   if (d.wild) {
     if (look.selected) {
-      colourMark(screen, vx + vw / 2, cy, mark, look.goatGreen);
+      colourMark(screen, mx, cy, mark, look.goatGreen);
     } else {
       const int tw = vw - 6 < 48 ? vw - 6 : 48;
       const fui::Rect tag = rect(vx + vw / 2 - tw / 2, cy - 10, tw, 20);
@@ -359,7 +360,7 @@ void numFace(toybox::Screen& screen, const fui::Rect& r, const s::Game& g, const
     }
     return;
   }
-  colourMark(screen, vx + vw / 2, cy, mark, g.card[id].red);
+  colourMark(screen, mx, cy, mark, g.card[id].red);
 }
 
 void mainFace(toybox::Screen& screen, const fui::Rect& r, const int id, const bool small) {

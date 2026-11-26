@@ -628,15 +628,18 @@ function numFace(c, x0, y, w, h, selected, small, visW, visRight) {
   // The number in a top corner, left or right, a side that stays with the card; its mark stays
   // centred below. A covered card's strip shows it on the side that is visible.
   const right = vw < w ? !!visRight : ((idNum(c.id) * 37) & 1) === 1;
-  txt(x + 7, y + 4, vw - 14, 40, v, small ? fitFace(v, vw - 8, ['ui', 'button']) : 'ui', right ? 'right' : 'left');
-  const cy = y + vh + 10, mark = small ? 10 : 14;  // under the number, clear of the stack count
+  const vf = small ? fitFace(v, vw - 8, ['ui', 'button']) : 'ui';
+  txt(x + 7, y + 4, vw - 14, 40, v, vf, right ? 'right' : 'left');
+  // The mark right under the number, in its corner.
+  const nw = widthOf(v, vf), mx = right ? x + vw - 7 - nw / 2 : x + 7 + nw / 2;
+  const cy = y + 58, mark = small ? 10 : 14;
   if (c.wild) {
     const tw = Math.min(48, vw - 6);
-    if (selected) colourMark(x + vw / 2, cy, mark, c.red);
+    if (selected) colourMark(mx, cy, mark, c.red);
     else { stroke(x + vw / 2 - tw / 2, cy - 10, tw, 20, '#000', 1); txt(x + vw / 2 - tw / 2, cy - 10, tw, 20, 'GOAT', 'tile'); }
     return;
   }
-  colourMark(x + vw / 2, cy, mark, c.red);
+  colourMark(mx, cy, mark, c.red);
 }
 function mainFace(c, x, y, w, h, small) {
   const innie = c.red;
