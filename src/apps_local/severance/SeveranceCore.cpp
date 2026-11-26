@@ -572,12 +572,16 @@ void applySpecial(Game& g, const int id, const int at) {
           return;
         }
         const int nn = gridNums(g, tops);
-        if (nn) {
+        // Never the only number card on the grid: that would leave nothing to refine with.
+        if (nn + (g.blocked != kNone ? 1 : 0) >= 2 && nn) {
           const Top o = tops[g.rng.below(nn)];
           std::snprintf(text, sizeof(text), "Nobody is paired, so Cobel blocks %s in Zone %d until your next refined pair.",
                         lab(g, o.c), zoneOf(o.i) + 1);
           say(g, id, "Kier, Chosen One, Kier!", text, Kind::Bad);
           g.blocked = static_cast<int8_t>(o.c);
+        } else if (nn) {
+          say(g, id, "Kier, Chosen One, Kier!",
+              "Nobody is paired, and Cobel will not block the only numerical card on the grid. No effect.", Kind::Plain);
         } else {
           say(g, id, "Kier, Chosen One, Kier!", "Cobel finds no pair to split and no numerical card to block. No effect.",
               Kind::Plain);
@@ -992,10 +996,19 @@ int usableNums(const Game& g, uint8_t* out) {
 }
 
 bool liftStaleLock(Game& g) {
-  if (g.lockZone == kNone || numsOutside(g, g.lockZone)) return false;
-  logLine(g, Kind::Good, "No face-up number card is left outside Zone %d, so Drummond's lock is lifted.", g.lockZone + 1);
-  g.lockZone = kNone;
-  return true;
+  if (g.lockZone != kNone && !numsOutside(g, g.lockZone)) {
+    logLine(g, Kind::Good, "No face-up number card is left outside Zone %d, so Drummond's lock is lifted.",
+            g.lockZone + 1);
+    g.lockZone = kNone;
+    return true;
+  }
+  Top tops[kStacks];
+  if (g.blocked != kNone && !gridNums(g, tops)) {
+    logLine(g, Kind::Good, "Cobel's block lifts: it was holding the only number card left on the grid.");
+    g.blocked = kNone;
+    return true;
+  }
+  return false;
 }
 
 int playableHand(const Game& g, uint8_t* out) {

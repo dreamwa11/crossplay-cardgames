@@ -263,9 +263,11 @@ function applySpecial(c,at){
         return {stacks:ks};
       }
       var nn=gridNums();
-      if(nn.length){var o=pick(nn);
+      // never the only number card on the grid: that would leave nothing to refine with
+      if(nn.length&&nn.length+(G.blocked?1:0)>=2){var o=pick(nn);
         say(c,'Kier, Chosen One, Kier!','Nobody is paired, so Cobel blocks '+lab(o.c)+' in Zone '+(zoneOf(o.i)+1)+' until your next refined pair.','bad',{spots:[o.c.id]});
         G.blocked=o.c.id;}
+      else if(nn.length)say(c,'Kier, Chosen One, Kier!','Nobody is paired, and Cobel will not block the only numerical card on the grid. No effect.','');
       else say(c,'Kier, Chosen One, Kier!','Cobel finds no pair to split and no numerical card to block. No effect.','');
     }else{
       var cards=(G.lastPair||[]).filter(function(x){return G.gone.indexOf(x)>=0;});
@@ -311,9 +313,15 @@ function numsOutside(z){
 }
 // Safety net: Drummond's lock may never leave the grid without a usable number card.
 function liftStaleLock(){
-  if(G.lockZone===null||numsOutside(G.lockZone))return false;
-  log('No face-up number card is left outside Zone '+(G.lockZone+1)+', so Drummond\'s lock is lifted.','good');
-  G.lockZone=null;return true;
+  if(G.lockZone!==null&&!numsOutside(G.lockZone)){
+    log('No face-up number card is left outside Zone '+(G.lockZone+1)+', so Drummond\'s lock is lifted.','good');
+    G.lockZone=null;return true;
+  }
+  if(G.blocked&&!gridNums().length){
+    log('Cobel\'s block lifts: it was holding the only number card left on the grid.','good');
+    G.blocked=null;return true;
+  }
+  return false;
 }
 // An employee whose innie and outie both wait aside is reunited at once.
 function pairWaiting(){

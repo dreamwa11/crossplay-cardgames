@@ -340,10 +340,11 @@ void numFace(toybox::Screen& screen, const fui::Rect& r, const s::Game& g, const
   const int vw = look.visibleW > 0 && look.visibleW < r.width ? look.visibleW : r.width;
   const int vx = look.visibleRight ? r.x + r.width - vw : r.x;
   const Face vf = !small ? Face::Ui : fit(screen, v, vw - 8, {Face::Ui, Face::Button});
-  // The number sits 5px off centre, left or right, a side that
-  // stays with the card; its mark stays centred. Not on a covered card's strip.
-  const int nudge = vw < r.width ? 0 : ((id * 37u) & 1u ? 5 : -5);
-  say(screen, rect(vx + nudge, r.y + 4, vw, valueH), v, vf);
+  // The number in a top corner, left or right, a side that stays with the
+  // card; its mark stays centred below. A covered card's strip shows it on
+  // the side that is visible.
+  const bool right = vw < r.width ? look.visibleRight : ((id * 37u) & 1u) != 0;
+  say(screen, rect(vx + 7, r.y + 4, vw - 14, 40), v, vf, right ? fui::TextAlign::Right : fui::TextAlign::Left);
   // The mark under the number, clear of the stack count in the bottom corner.
   const int cy = r.y + valueH + 10;
   const int mark = small ? 10 : 14;
@@ -803,7 +804,7 @@ const RulesPage kRules[] = {
     {"More figures",
      "Graner sends a revealed employee to the bottom of the last Zone 4 stack. Jame cancels Helly's Defiance, pauses "
      "her, and replays Milchick and Cobel. Reghabi searches stacks you choose for hidden employees. Milchick returns "
-     "your last refined cards to the grid. Cobel splits a pair, or blocks a number. Emile the Goat is wild: tap "
+     "your last refined cards to the grid. Cobel splits a pair, or blocks a number (never the grid's only one). Emile the Goat is wild: tap "
      "once for round, again for square."},
     {"Credits",
      "Severance: The Card Game, designed by u/DREAMWALL, CC BY-NC-SA 4.0. An unofficial fan version of the Version 2 "
