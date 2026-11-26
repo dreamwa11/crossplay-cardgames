@@ -30,6 +30,7 @@ class SeveranceActivity final : public Activity {
   void tapCard(int id, bool mini);
   void afterAction();
   void showResult();
+  void clearSelection();
   void pruneSelection();
   void setNote(const char* text);
   bool toggle(int v, int max);

@@ -633,18 +633,11 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
   const s::Totals tot = s::selectionTotals(g, m.sel, m.nSel);
   bool main = false;
   for (int k = 0; k < m.nSel; ++k) main |= s::cardDef(m.sel[k]).type == s::Type::Main;
-  // Buttons.
-  const int half = (kW - 2 * kM - 10) / 2;
-  const fui::Rect left = rect(kM, kButtonsY, half, kButtonH);
-  const fui::Rect right = rect(kW - kM - half, kButtonsY, half, kButtonH);
+  // One button the width of the screen; a tap on empty space clears the selection.
+  const fui::Rect right = rect(kM, kButtonsY, kW - 2 * kM, kButtonH);
   if (g.over != s::Over::No) {
-    button(screen, rect(kM, kButtonsY, kW - 2 * kM, kButtonH), "NEW QUARTER", ActionNewQuarter);
+    button(screen, right, "NEW QUARTER", ActionNewQuarter);
     return;
-  }
-  if (m.nSel) {
-    button(screen, left, "CLEAR", ActionClear, false);
-  } else {
-    pillOff(screen, left, "CLEAR");
   }
   // REFINE carries the selection's totals: round and square while they differ,
   // the shared total once they match.

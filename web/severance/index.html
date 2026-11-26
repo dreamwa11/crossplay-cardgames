@@ -768,12 +768,10 @@ function tray(cand) {
     hit(r[0], r[1], r[2], r[3], () => tapCard(c.id, false));
   });
   const t = selectionTotals(sel), main = selMain();
-  const half = Math.floor((W - 2 * M - 10) / 2);
+  // One button the width of the screen; a tap on empty space clears the selection.
+  const half = W - 2 * M, rx = M;
   if (G.over) { button(M, BUTTONS_Y, W - 2 * M, BUTTON_H, 'NEW QUARTER', newQuarter); return; }
-  if (sel.length) button(M, BUTTONS_Y, half, BUTTON_H, 'CLEAR', () => { sel = []; note = ''; render(); }, false);
-  else buttonOff(M, BUTTONS_Y, half, BUTTON_H, 'CLEAR');
   // REFINE carries the totals: round and square while they differ, the shared total once they match.
-  const rx = W - M - half;
   if (t.ok && !main) button(rx, BUTTONS_Y, half, BUTTON_H, 'REFINE ' + t.r, refine);
   else if (sel.length && !main && !G.pending) {
     stroke(rx, BUTTONS_Y, half, BUTTON_H, grey(), 2, 6);
@@ -978,6 +976,7 @@ function tapCard(id, mini) {
   else { if (selMain()) sel = []; toggle(id, 99); }
   render();
 }
+function clearSel() { if (!sel.length && !note) return; sel = []; note = ''; render(); }
 function tapStack(i) {
   if (G.over || annIndex >= 0 || showEnd) return;
   if (G.pending && G.pending.type === 'reghabi') {
@@ -987,7 +986,7 @@ function tapStack(i) {
     return render();
   }
   const st = G.stacks[i], c = st[st.length - 1];
-  if (c && c.faceUp) tapCard(c.id, false);
+  if (c && c.faceUp) tapCard(c.id, false); else clearSel();
 }
 function tapDraw() {
   if (G.over) return;
@@ -1030,6 +1029,8 @@ cv.addEventListener('click', e => {
     const h = hits[i];
     if (x >= h.x && x < h.x + h.w && y >= h.y && y < h.y + h.h) { h.fn(); return; }
   }
+  // A tap on empty space puts the selection down.
+  if (screen === 'board' && annIndex < 0 && !showEnd) clearSel();
 });
 window.addEventListener('resize', fit);
 

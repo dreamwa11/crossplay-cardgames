@@ -272,11 +272,20 @@ void SeveranceActivity::tapCard(const int id, const bool mini) {
   requestUpdate();
 }
 
+void SeveranceActivity::clearSelection() {
+  if (!nSel && !note[0]) return;
+  nSel = 0;
+  note[0] = '\0';
+  requestUpdate();
+}
+
 void SeveranceActivity::tapBoard(const int x, const int y) {
   sev::Game& g = *game;
   const ui::Hit hit = ui::hitTest(g, x, y);
   switch (hit.kind) {
     case ui::HitKind::None:
+      // A tap on empty space puts the selection down.
+      clearSelection();
       return;
     case ui::HitKind::Side:
       if (g.pending.type != sev::Pend::None || annIndex >= 0 || showEnd) return;
@@ -311,7 +320,11 @@ void SeveranceActivity::tapBoard(const int x, const int y) {
         return;
       }
       const int top = sev::topOf(g, hit.index);
-      if (top != sev::kNone && g.card[top].faceUp) tapCard(top, false);
+      if (top != sev::kNone && g.card[top].faceUp) {
+        tapCard(top, false);
+      } else {
+        clearSelection();
+      }
       return;
     }
     case ui::HitKind::Hand:
@@ -469,9 +482,7 @@ void SeveranceActivity::loop() {
       requestUpdate();
       return;
     case ui::ActionClear:
-      nSel = 0;
-      note[0] = '\0';
-      requestUpdate();
+      clearSelection();
       return;
     case ui::ActionRefine: {
       if (!sev::selectionTotals(g, sel, nSel).ok) return;
