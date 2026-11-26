@@ -553,7 +553,7 @@ function restore() {
 
 /* ---------------- geometry (as SeveranceScreens.cpp) ---------------- */
 const M = 16, TOP_H = 42, TRACK_Y = 48, TRACK_H = 34, BOX_W = 107, BOX_GAP = 6, BAR_H = 7;
-const CW = 96, CH = 100, CGAP = 6, ZONE_W = 2 * CW + CGAP, ZGAP_X = 16, GRID_X = (W - 2 * ZONE_W - ZGAP_X) / 2;
+const CW = 72, CH = 100, CGAP = 10, ZONE_W = 2 * CW + CGAP, ZGAP_X = 36, GRID_X = (W - 2 * ZONE_W - ZGAP_X) / 2;
 const GRID_Y = TRACK_Y + TRACK_H + 8, ZLABEL = 22, ZONE_H = ZLABEL + 2 * CH + CGAP, ZGAP_Y = 12;
 // Under the grid: drawn cards and pile as big as the grid's, two lines of message, then the buttons.
 const GRID_BOTTOM = GRID_Y + 2 * ZONE_H + ZGAP_Y, TRAY_CY = GRID_BOTTOM + 12, TCW = CW, TCH = CH, STATUS_Y = TRAY_CY + TCH + 16;
@@ -610,11 +610,15 @@ function cardBack(x, y, w, h, locked) {
   fill(x, y, w, h, '#fff', 4); stroke(x, y, w, h, '#000', 2, 4);
   fill(x + 5, y + 5, w - 10, h - 10, locked ? light() : grey(), 2); stroke(x + 5, y + 5, w - 10, h - 10, '#000', 1, 2);
 }
+// The firmware's card numbers: the phone engine names its cards n0.., GT and so on.
+const idNum = id => { const m = /^n(\d+)$/.exec(id); return m ? +m[1] : 7; };
 function numFace(c, x0, y, w, h, selected, small, visW, visRight) {
   const v = c.wild && !c.val ? '?' : String(c.val);
   const vh = Math.floor(h * 58 / 100), vw = visW > 0 && visW < w ? visW : w, x = visRight ? x0 + w - vw : x0;
-  txt(x, y + 4, vw, vh, v, small ? fitFace(v, vw - 8, ['ui', 'button']) : 'ui');
-  const cy = y + 4 + vh + Math.floor((h - vh - 4) / 2) - 2, mark = small ? 10 : 14;
+  // The number a little off centre, by a few pixels that stay with the card; its mark stays centred.
+  const nudge = vw < w ? 0 : ((idNum(c.id) * 37) % 5 - 2) * 5;
+  txt(x + nudge, y + 4, vw, vh, v, small ? fitFace(v, vw - 8, ['ui', 'button']) : 'ui');
+  const cy = y + vh + 10, mark = small ? 10 : 14;  // under the number, clear of the stack count
   if (c.wild) {
     const tw = Math.min(48, vw - 6);
     if (selected) colourMark(x + vw / 2, cy, mark, c.red);
@@ -627,9 +631,10 @@ function mainFace(c, x, y, w, h, small) {
   const innie = c.red;
   if (innie) fill(x + 2, y + 2, w - 4, h - 4, '#000', 3);
   if (small) { txt(x, y, w, h, innie ? 'IN' : 'OUT', 'tile', 'center', innie); return; }
-  wrap(x + 6, y + 14, w - 12, c.name, widthOf(c.name, 'button') <= w - 12 ? 'button' : 'tile', 2, 'center', innie);
-  stroke(x + 7, y + h - 28, 54, 20, innie ? '#fff' : '#000', 1);
-  txt(x + 7, y + h - 28, 54, 20, innie ? 'INNIE' : 'OUTIE', 'tile', 'center', innie);
+  wrap(x + 6, y + 12, w - 12, c.name, widthOf(c.name, 'button') <= w - 12 ? 'button' : 'tile', 2, 'center', innie);
+  const tx = x + (w - 50) / 2, ty = y + h - 46;  // centred above the stack count
+  stroke(tx, ty, 50, 20, innie ? '#fff' : '#000', 1);
+  txt(tx, ty, 50, 20, innie ? 'INNIE' : 'OUTIE', 'tile', 'center', innie);
 }
 function specialFace(c, x, y, w, h) {
   const bad = !!BAD[c.fx];
@@ -650,7 +655,7 @@ function cardFace(c, r, look = {}, small = false) {
   else if (c.type === 'main') mainFace(c, x, y, w, h, small);
   else specialFace(c, x, y, w, h);
   stroke(x, y, w, h, '#000', look.selected ? 4 : 2, 4);
-  if (look.blocked) { fill(x - 1, y + h / 2 - 12, w + 2, 24, '#000'); txt(x - 1, y + h / 2 - 12, w + 2, 24, 'COBEL', 'button', 'center', true); }
+  if (look.blocked) { fill(x - 1, y + h / 2 - 12, w + 2, 24, '#000'); txt(x - 1, y + h / 2 - 12, w + 2, 24, 'COBEL', fitFace('COBEL', w - 2, ['button', 'tile']), 'center', true); }
   if (look.outOfUse) stripes(x, y, w, h);
   if (look.candidate) dashed(x - 5, y - 5, w + 10, h + 10);
 }
@@ -746,7 +751,7 @@ function status() {
 function tray(cand) {
   const DRAW_X = drawX();
   if (G.draw.length) { fill(DRAW_X + 4, TRAY_CY + 4, TCW, TCH, '#000', 4); cardBack(DRAW_X, TRAY_CY, TCW, TCH, false);
-    drop(DRAW_X + TCW / 2, TRAY_CY + TCH / 2 - 19, 37); drop(DRAW_X + TCW / 2, TRAY_CY + TCH / 2 - 17, 33, '#fff');
+    drop(DRAW_X + TCW - 20, TRAY_CY + TCH - 49, 29); drop(DRAW_X + TCW - 20, TRAY_CY + TCH - 47, 25, '#fff');
     const n = String(G.draw.length), pw = widthOf(n, 'button') + 16, px = drawLeft ? DRAW_X - 10 : DRAW_X + TCW - pw + 10, py = TRAY_CY + TCH - 14;
     fill(px, py, pw, 26, '#fff', 13); stroke(px, py, pw, 26, '#000', 2, 13); txt(px, py, pw, 26, n, 'button'); }
   else dashed(DRAW_X, TRAY_CY, TCW, TCH, 1);

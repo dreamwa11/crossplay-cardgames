@@ -26,11 +26,11 @@ constexpr int kTrackH = 34;  // a name over two bars, innie then outie
 constexpr int kBoxW = 107;
 constexpr int kBoxGap = 6;
 constexpr int kBarH = 7;
-constexpr int kCardW = 96;
+constexpr int kCardW = 72;  // portrait, like a playing card
 constexpr int kCardH = 100;
-constexpr int kCardGap = 6;
+constexpr int kCardGap = 10;
 constexpr int kZoneW = 2 * kCardW + kCardGap;
-constexpr int kZoneGapX = 16;
+constexpr int kZoneGapX = 36;
 constexpr int kGridX = (kW - 2 * kZoneW - kZoneGapX) / 2;
 constexpr int kGridY = kTrackY + kTrackH + 8;
 constexpr int kZoneLabelH = 22;
@@ -340,8 +340,12 @@ void numFace(toybox::Screen& screen, const fui::Rect& r, const s::Game& g, const
   const int vw = look.visibleW > 0 && look.visibleW < r.width ? look.visibleW : r.width;
   const int vx = look.visibleRight ? r.x + r.width - vw : r.x;
   const Face vf = !small ? Face::Ui : fit(screen, v, vw - 8, {Face::Ui, Face::Button});
-  say(screen, rect(vx, r.y + 4, vw, valueH), v, vf);
-  const int cy = r.y + 4 + valueH + (r.height - valueH - 4) / 2 - 2;
+  // The number sits a little off centre, by a few pixels left or right that
+  // stay with the card; its mark stays centred. Not on a covered card's strip.
+  const int nudge = vw < r.width ? 0 : (static_cast<int>((id * 37u) % 5u) - 2) * 5;
+  say(screen, rect(vx + nudge, r.y + 4, vw, valueH), v, vf);
+  // The mark under the number, clear of the stack count in the bottom corner.
+  const int cy = r.y + valueH + 10;
   const int mark = small ? 10 : 14;
   if (d.wild) {
     if (look.selected) {
@@ -368,9 +372,9 @@ void mainFace(toybox::Screen& screen, const fui::Rect& r, const int id, const bo
   // The name on one line in the button cut if it fits, else two smaller ones.
   const char* name = s::cardName(id);
   const Face f = widthOf(screen, name, Face::Button) <= r.width - 12 ? Face::Button : Face::Tile;
-  prose(screen, rect(r.x + 6, r.y + 14, r.width - 12, 44), name, f, 2, fui::TextAlign::Center, innie);
-  // Bottom left, clear of the stack count in the other corner.
-  const fui::Rect tag = rect(r.x + 7, r.y + r.height - 28, 54, 20);
+  prose(screen, rect(r.x + 6, r.y + 12, r.width - 12, 40), name, f, 2, fui::TextAlign::Center, innie);
+  // Centred above the stack count, which takes the bottom corner.
+  const fui::Rect tag = rect(r.x + (r.width - 50) / 2, r.y + r.height - 46, 50, 20);
   screen.target().stroke(tag, innie ? kWhite : kBlack, 1, 0);
   say(screen, tag, innie ? "INNIE" : "OUTIE", Face::Tile, fui::TextAlign::Center, innie);
 }
@@ -409,7 +413,8 @@ void cardFace(toybox::Screen& screen, fui::Rect r, const s::Game& g, const int i
   if (look.blocked) {
     const fui::Rect band = rect(r.x - 1, r.y + r.height / 2 - 12, r.width + 2, 24);
     t.fill(band, kBlack);
-    say(screen, band, "COBEL", Face::Button, fui::TextAlign::Center, true);
+    say(screen, band, "COBEL", fit(screen, "COBEL", band.width - 4, {Face::Button, Face::Tile}), fui::TextAlign::Center,
+        true);
   }
   if (look.outOfUse) stripes(screen, r);
   if (look.candidate) dashed(screen, rect(r.x - 5, r.y - 5, r.width + 10, r.height + 10));
@@ -600,9 +605,9 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
     t.fill(rect(pile.x + 4, pile.y + 4, pile.width, pile.height), kBlack, 4);
     cardBack(screen, pile, false);
     // The Administration keycard's drop, white on the dark back, bottom right
-    // above the count.
-    drop(screen, pile.x + pile.width / 2, pile.y + pile.height / 2 - 19, 37, kBlack);
-    drop(screen, pile.x + pile.width / 2, pile.y + pile.height / 2 - 17, 33, kWhite);
+    // and clear of the count pill below it.
+    drop(screen, pile.x + pile.width - 20, pile.y + pile.height - 49, 29, kBlack);
+    drop(screen, pile.x + pile.width - 20, pile.y + pile.height - 47, 25, kWhite);
     // What is left, in a pill on the pile's bottom corner away from the edge.
     char left[8];
     std::snprintf(left, sizeof(left), "%d", g.draw.n);
