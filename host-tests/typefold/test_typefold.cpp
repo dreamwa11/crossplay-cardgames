@@ -51,8 +51,8 @@
 // here to be MEASURED, because this change's scope rests on what they carry.
 #include "builtinFonts/notosans_8_regular.h"
 #include "builtinFonts/notoserif_16_regular.h"
-#include "builtinFonts/ubuntu_10_regular.h"
-#include "builtinFonts/ubuntu_12_regular.h"
+#include "builtinFonts/rubik_10_regular.h"
+#include "builtinFonts/rubik_12_regular.h"
 
 static int checks = 0;
 static int failed = 0;
@@ -503,8 +503,8 @@ int main() {
       const EpdFontData* data;
     };
     const SystemCut kSystem[] = {
-        {"ubuntu_10_regular", &ubuntu_10_regular},        // UI_10: list subtitles, OPDS authors
-        {"ubuntu_12_regular", &ubuntu_12_regular},        // UI_12: list titles, OPDS titles, SSIDs
+        {"rubik_10_regular", &rubik_10_regular},        // UI_10: list subtitles, OPDS authors
+        {"rubik_12_regular", &rubik_12_regular},        // UI_12: list titles, OPDS titles, SSIDs
         {"notosans_8_regular", &notosans_8_regular},      // SMALL
         {"notoserif_16_regular", &notoserif_16_regular},  // a reader body face
     };
@@ -530,8 +530,8 @@ int main() {
     // with Noto Sans as their fallback, which brought U+FFFD with it: in the
     // system UI a missing mark is now a visible replacement box, not a hole.
     // The toybox cuts above are still subset and still draw nothing.
-    ok(draws(&ubuntu_12_regular, 0xFFFD),
-       "ubuntu_12_regular carries a replacement glyph, so a missing codepoint there is a box, not a hole");
+    ok(draws(&rubik_12_regular, 0xFFFD),
+       "rubik_12_regular carries a replacement glyph, so a missing codepoint there is a box, not a hole");
     ok(draws(&notoserif_16_regular, 0xFFFD), "the Noto faces do have one, which is where the belief came from");
     for (const SystemCut& cut : kSystem) {
       int missing = 0;

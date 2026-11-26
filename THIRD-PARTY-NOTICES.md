@@ -25,6 +25,13 @@ notice and permission notice in all copies, and the icons are rasterised into
 bitmaps at build time, so this entry is how that notice reaches a flashed
 device.
 
+**Rubik**, SIL Open Font License 1.1, by Hubert and Fischer, Meir Sadan and
+Cyreal. The system UI (rubik_10/12 in `lib/EpdFont/builtinFonts/`) and the games'
+toybox cuts are rasterised from it; the static instances the UI cuts come from
+are in `lib/EpdFont/builtinFonts/source/Rubik/`, made by
+`tools_local/uifonts/gen_rubik_ui.sh`. Full licence text:
+https://openfontlicense.org.
+
 **Noto Sans Symbols 2**, SIL Open Font License 1.1. The Solitaire suit glyphs
 are drawn from it. Full text at `src/apps_local/solitaire/art/OFL.txt`, with the
 derivation documented in `src/apps_local/solitaire/art/README.md`.

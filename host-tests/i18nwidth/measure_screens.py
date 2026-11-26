@@ -19,10 +19,10 @@ FONTS = REPO / "lib/EpdFont/builtinFonts"
 # Slot -> face files. From src/main.cpp, where UI_10_FONT_ID binds to
 # ui10FontFamily and UI_12_FONT_ID to ui12FontFamily. Verified, not assumed.
 FACES = {
-    ("10", False): FONTS / "ubuntu_10_regular.h",
-    ("10", True): FONTS / "ubuntu_10_bold.h",
-    ("12", False): FONTS / "ubuntu_12_regular.h",
-    ("12", True): FONTS / "ubuntu_12_bold.h",
+    ("10", False): FONTS / "rubik_10_regular.h",
+    ("10", True): FONTS / "rubik_10_bold.h",
+    ("12", False): FONTS / "rubik_12_regular.h",
+    ("12", True): FONTS / "rubik_12_bold.h",
 }
 
 # drawCenteredText(<font id>, ..., tr(STR_X) [, ..., EpdFontFamily::BOLD])
