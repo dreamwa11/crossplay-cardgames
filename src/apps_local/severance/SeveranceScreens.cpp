@@ -36,18 +36,18 @@ constexpr int kGridY = kTrackY + kTrackH + 8;
 constexpr int kZoneLabelH = 22;
 constexpr int kZoneH = kZoneLabelH + 2 * kCardH + kCardGap;
 constexpr int kZoneGapY = 12;
-// The message bar, then the tray, each with air around it. The draw pile is on
-// the right, under the right thumb; the drawn cards on the left.
-constexpr int kStatusY = kGridY + 2 * kZoneH + kZoneGapY + 14;  // 548
-constexpr int kTrayY = kStatusY + 70;
-constexpr int kTrayCardY = kTrayY + 6;
-constexpr int kTrayCardW = 62;
-constexpr int kTrayCardH = 86;
-constexpr int kButtonsY = 752;
-constexpr int kButtonH = 42;
+// Under the grid: the drawn cards and the pile, as big as the grid's cards;
+// then two lines of message; then the buttons, Scoundrel's and Lobo's height.
+constexpr int kGridBottom = kGridY + 2 * kZoneH + kZoneGapY;  // 558
+constexpr int kTrayCardY = kGridBottom + 12;
+constexpr int kTrayCardW = kCardW;
+constexpr int kTrayCardH = kCardH;
+constexpr int kStatusY = kTrayCardY + kTrayCardH + 16;
+constexpr int kButtonH = 52;  // toybox::kPillHeight
+constexpr int kButtonsY = 800 - 8 - kButtonH;
 constexpr int kM = 16;
-constexpr int kPanelY = kStatusY - 40;  // a special figure's announcement and the result
-constexpr int kChoiceY = kStatusY - 4;
+constexpr int kPanelY = kGridBottom - 26;  // a special figure's announcement and the result
+constexpr int kChoiceY = kGridBottom + 10;
 
 fui::Rect rect(const int x, const int y, const int w, const int h) {
   return fui::makeRect(static_cast<int16_t>(x), static_cast<int16_t>(y), static_cast<int16_t>(w),
@@ -93,8 +93,14 @@ void chevron(toybox::Screen& screen, const fui::Rect& r, const bool pointLeft) {
     screen.target().fill(rect(x, r.y + dy, 5, 1), kLight);
   }
 }
-// Three or more drawn cards overlap so the totals keep their room.
-int handStep(const int n) { return n > 3 ? 40 : n > 2 ? 50 : kTrayCardW + 6; }
+// The drawn cards share the row beside the pile and the chevron, overlapping
+// only when they no longer fit side by side.
+constexpr int kHandRoom = kW - 2 * kM - 22 - 10 - kTrayCardW - 4 - 12;
+int handStep(const int n) {
+  if (n <= 1) return kTrayCardW + 6;
+  const int fit = (kHandRoom - kTrayCardW) / (n - 1);
+  return fit < kTrayCardW + 6 ? fit : kTrayCardW + 6;
+}
 fui::Rect handRect(const int k, const int n) {
   const int off = 12 + (n - 1 - k) * handStep(n);
   if (gDrawLeft) return rect(drawX() + kTrayCardW + off, kTrayCardY, kTrayCardW, kTrayCardH);
@@ -528,12 +534,17 @@ void grid(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
 void status(toybox::Screen& screen, const BoardModel& m) {
   const s::Game& g = *m.game;
   // Tap the message for the full log.
-  hotspot(screen, rect(0, kStatusY - 6, kW, 70), ActionLog);
+  hotspot(screen, rect(0, kStatusY - 6, kW, kButtonsY - kStatusY), ActionLog);
+  screen.target().fill(rect(kM, kStatusY - 8, kW - 2 * kM, 1), kBlack);
+  bool mainSel = false;
+  for (int k = 0; k < m.nSel; ++k) mainSel |= s::cardDef(m.sel[k]).type == s::Type::Main;
   // What just happened: a hint after a tap, the result, or the newest thing
   // this turn (a plain draw report aside: the card is on the table).
   const char* said = nullptr;
   if (m.note) {
     said = m.note;
+  } else if (mainSel && g.pending.type == s::Pend::None) {
+    said = "Tap the other half to pair.";
   } else if (g.over == s::Over::Win) {
     said = "Quota reached. Every innie has found their outie.";
   } else if (g.over == s::Over::Lose) {
@@ -572,21 +583,20 @@ void status(toybox::Screen& screen, const BoardModel& m) {
     sayGrey(screen, rect(kM, y, kW - 2 * kM, 20), effects, Face::Tile, fui::TextAlign::Left);
     y += 22;
   }
-  prose(screen, rect(kM, y, kW - 2 * kM, kStatusY + 63 - y), said, Face::Tile, n ? 2 : 3);
+  prose(screen, rect(kM, y, kW - 2 * kM, kStatusY + 44 - y), said, Face::Tile, n ? 1 : 2);
 }
 
 void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, const int nCand) {
   const s::Game& g = *m.game;
   auto& t = screen.target();
-  t.fill(rect(kM, kTrayY - 8, kW - 2 * kM, 1), kBlack);
   const fui::Rect pile = drawRect();
   if (g.draw.n) {
     t.fill(rect(pile.x + 4, pile.y + 4, pile.width, pile.height), kBlack, 4);
     cardBack(screen, pile, false);
     // The Administration keycard's drop, white on the dark back, bottom right
     // above the count.
-    drop(screen, pile.x + pile.width / 2, pile.y + pile.height / 2 - 15, 29, kBlack);
-    drop(screen, pile.x + pile.width / 2, pile.y + pile.height / 2 - 13, 25, kWhite);
+    drop(screen, pile.x + pile.width / 2, pile.y + pile.height / 2 - 19, 37, kBlack);
+    drop(screen, pile.x + pile.width / 2, pile.y + pile.height / 2 - 17, 33, kWhite);
     // What is left, in a pill on the pile's bottom corner away from the edge.
     char left[8];
     std::snprintf(left, sizeof(left), "%d", g.draw.n);
@@ -601,7 +611,6 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
   }
   uint8_t hand[s::kCards];
   const int nh = s::playableHand(g, hand);
-  const fui::Rect far = handRect(0, nh ? nh : 1);
   if (!nh) dashed(screen, handRect(0, 1), 1);
   for (int k = 0; k < nh; ++k) {
     const int id = hand[k];
@@ -618,29 +627,12 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
     if (!g.card[id].keep && s::wasteDepth(g) > 1) {
       t.fill(rect(r.x + 4, r.y + 4, r.width, r.height), kBlack, 4);
     }
-    cardFace(screen, r, g, id, look, true);
+    cardFace(screen, r, g, id, look, false);
   }
-  // The selection's totals on the open side: round over square, or what a
-  // chosen employee needs.
   chevron(screen, sideRect(), !gDrawLeft);
-  const int sx = gDrawLeft ? far.x + far.width + 16 : kM + kSideW + 12;
-  const int sw = gDrawLeft ? kW - kM - kSideW - 12 - sx : far.x - 12 - sx;
-  const int ty = kTrayCardY + (kTrayCardH - 72) / 2;
   const s::Totals tot = s::selectionTotals(g, m.sel, m.nSel);
   bool main = false;
   for (int k = 0; k < m.nSel; ++k) main |= s::cardDef(m.sel[k]).type == s::Type::Main;
-  if (g.pending.type == s::Pend::None && m.nSel && !main) {
-    char v[24];
-    const Face f = fit(screen, "SQUARE 88", sw - 22, {Face::Button, Face::Tile});
-    colourMark(screen, sx + 8, ty + 18, 14, true);
-    std::snprintf(v, sizeof(v), "ROUND %d", tot.green);
-    say(screen, rect(sx + 22, ty + 4, sw - 22, 28), v, f, fui::TextAlign::Left);
-    colourMark(screen, sx + 8, ty + 52, 14, false);
-    std::snprintf(v, sizeof(v), "SQUARE %d", tot.blue);
-    say(screen, rect(sx + 22, ty + 38, sw - 22, 28), v, f, fui::TextAlign::Left);
-  } else if (g.pending.type == s::Pend::None && main) {
-    prose(screen, rect(sx, ty + 6, sw, 64), "Tap the other half to pair", Face::Tile, 3);
-  }
   // Buttons.
   const int half = (kW - 2 * kM - 10) / 2;
   const fui::Rect left = rect(kM, kButtonsY, half, kButtonH);
@@ -654,8 +646,27 @@ void tray(toybox::Screen& screen, const BoardModel& m, const uint8_t* cand, cons
   } else {
     pillOff(screen, left, "CLEAR");
   }
+  // REFINE carries the selection's totals: round and square while they differ,
+  // the shared total once they match.
   if (tot.ok && !main) {
-    button(screen, right, "REFINE", ActionRefine);
+    char v[24];
+    std::snprintf(v, sizeof(v), "REFINE %d", tot.green);
+    button(screen, right, v, ActionRefine);
+  } else if (m.nSel && !main && g.pending.type == s::Pend::None) {
+    t.stroke(right, kGrey, 2, 6);
+    char a[8], b[8];
+    std::snprintf(a, sizeof(a), "%d", tot.green);
+    std::snprintf(b, sizeof(b), "%d", tot.blue);
+    const int wa = widthOf(screen, a, Face::Ui);
+    const int wb = widthOf(screen, b, Face::Ui);
+    const int total = 16 + 6 + wa + 26 + 16 + 6 + wb;
+    int x = right.x + (right.width - total) / 2;
+    const int cy = right.y + right.height / 2;
+    colourMark(screen, x + 8, cy, 14, true);
+    say(screen, rect(x + 22, right.y, wa + 4, right.height), a, Face::Ui, fui::TextAlign::Left);
+    x += 16 + 6 + wa + 26;
+    colourMark(screen, x + 8, cy, 14, false);
+    say(screen, rect(x + 22, right.y, wb + 4, right.height), b, Face::Ui, fui::TextAlign::Left);
   } else {
     pillOff(screen, right, "REFINE");
   }
@@ -706,18 +717,43 @@ void choice(toybox::Screen& screen, const BoardModel& m) {
   }
 }
 
+// An employee as the menu shows them: the innie's black card over the outie's
+// white one. Not reunited: two dashed outlines where the cards would be.
+void employeeCards(toybox::Screen& screen, const int ch, const int x, const int y, const bool paired) {
+  auto& t = screen.target();
+  const fui::Rect r = rect(x, y, 84, 96);
+  const fui::Rect o = rect(r.x + 10, r.y + 14, r.width, r.height);
+  if (!paired) {
+    dashed(screen, o, 1);
+    t.fill(r, kWhite, 4);
+    dashed(screen, r, 2);
+    prose(screen, rect(r.x + 4, r.y + 16, r.width - 8, 44), s::charName(ch), Face::Tile, 2, fui::TextAlign::Center);
+    return;
+  }
+  t.fill(o, kWhite, 4);
+  t.stroke(o, kBlack, 2, 4);
+  t.fill(r, kBlack, 4);
+  prose(screen, rect(r.x + 4, r.y + 16, r.width - 8, 44), s::charName(ch), Face::Tile, 2, fui::TextAlign::Center, true);
+  drop(screen, r.x + r.width - 16, r.y + r.height - 30, 22, kWhite);
+}
+
+// The quarter's result, over the whole screen: who was reunited, and what next.
 void ending(toybox::Screen& screen, const s::Game& g) {
   auto& t = screen.target();
-  const fui::Rect panel = rect(0, kPanelY, kW, 800 - kPanelY);
-  t.fill(panel, kWhite);
-  t.fill(rect(0, kPanelY, kW, 3), kBlack);
+  t.fill(rect(0, 0, kW, 800), kWhite);
   const bool won = g.over == s::Over::Win;
-  say(screen, rect(kM, kPanelY + 24, kW - 2 * kM, 50), won ? "You hit quota!" : "The quarter is lost", Face::Display);
-  prose(screen, rect(kM + 10, kPanelY + 90, kW - 2 * kM - 20, 90),
+  sayGrey(screen, rect(0, 60, kW, 24), "MACRODATA REFINEMENT", Face::Button);
+  say(screen, rect(kM, 96, kW - 2 * kM, 64), won ? "You hit quota!" : "The quarter is lost", Face::Display);
+  t.fill(rect(60, 176, kW - 120, 2), kBlack);
+  char line[40];
+  std::snprintf(line, sizeof(line), "%d OF 4 REUNITED", g.nPaired);
+  say(screen, rect(0, 192, kW, 26), line, Face::Button);
+  for (int ch = 0; ch < s::kChars; ++ch) employeeCards(screen, ch, 48 + ch * 100, 250, s::isPaired(g, ch));
+  prose(screen, rect(kM + 20, 400, kW - 2 * kM - 40, 120),
         won ? "All main characters are paired. You receive a caricature portrait."
             : "No valid moves were left before all main characters were paired. Please remain seated while we "
               "process your transfer.",
-        Face::Button, 3, fui::TextAlign::Center);
+        Face::Button, 4, fui::TextAlign::Center);
   const int half = (kW - 2 * kM - 10) / 2;
   button(screen, rect(kM, kButtonsY, half, kButtonH), "VIEW GRID", ActionViewGrid, false);
   button(screen, rect(kW - kM - half, kButtonsY, half, kButtonH), "NEW QUARTER", ActionNewQuarter);
@@ -801,13 +837,15 @@ void buildBoard(toybox::Screen& screen, const BoardModel& m) {
   toybox::absoluteChrome(screen);
   uint8_t cand[s::kCards];
   const int nCand = m.annIndex < 0 && !m.showEnd ? s::pendingCandidates(g, cand) : 0;
+  if (m.showEnd && m.annIndex < 0) {
+    ending(screen, g);
+    return;
+  }
   topBar(screen);
   track(screen, m);
   grid(screen, m, cand, nCand);
   if (m.annIndex >= 0 && m.annIndex < g.nAnn) {
     announcement(screen, g, g.ann[m.annIndex]);
-  } else if (m.showEnd) {
-    ending(screen, g);
   } else if (g.pending.type != s::Pend::None) {
     choice(screen, m);
   } else {
@@ -824,15 +862,7 @@ void buildMenu(toybox::Screen& screen, const MenuModel& model) {
   t.fill(rect(60, 176, kW - 120, 2), kBlack);
   say(screen, rect(0, 186, kW, 26), "The card game", Face::Button);
   // Four employees, innie over outie, as an ornament made of the game's cards.
-  for (int ch = 0; ch < s::kChars; ++ch) {
-    const fui::Rect r = rect(48 + ch * 100, 236, 84, 96);
-    const fui::Rect o = rect(r.x + 10, r.y + 14, r.width, r.height);
-    t.fill(o, kWhite, 4);
-    t.stroke(o, kBlack, 2, 4);
-    t.fill(r, kBlack, 4);
-    prose(screen, rect(r.x + 4, r.y + 16, r.width - 8, 44), s::charName(ch), Face::Tile, 2, fui::TextAlign::Center, true);
-    drop(screen, r.x + r.width - 16, r.y + r.height - 30, 22, kWhite);
-  }
+  for (int ch = 0; ch < s::kChars; ++ch) employeeCards(screen, ch, 48 + ch * 100, 236, true);
   if (model.played) {
     char line[48];
     std::snprintf(line, sizeof(line), "%d QUARTERS  %d AT QUOTA", model.played, model.won);

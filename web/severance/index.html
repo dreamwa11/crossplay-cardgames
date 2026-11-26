@@ -555,8 +555,9 @@ function restore() {
 const M = 16, TOP_H = 42, TRACK_Y = 48, TRACK_H = 34, BOX_W = 107, BOX_GAP = 6, BAR_H = 7;
 const CW = 96, CH = 100, CGAP = 6, ZONE_W = 2 * CW + CGAP, ZGAP_X = 16, GRID_X = (W - 2 * ZONE_W - ZGAP_X) / 2;
 const GRID_Y = TRACK_Y + TRACK_H + 8, ZLABEL = 22, ZONE_H = ZLABEL + 2 * CH + CGAP, ZGAP_Y = 12;
-const STATUS_Y = GRID_Y + 2 * ZONE_H + ZGAP_Y + 14, TRAY_Y = STATUS_Y + 70, TRAY_CY = TRAY_Y + 6, TCW = 62, TCH = 86;
-const BUTTONS_Y = 752, BUTTON_H = 42, PANEL_Y = STATUS_Y - 40, CHOICE_Y = STATUS_Y - 4;
+// Under the grid: drawn cards and pile as big as the grid's, two lines of message, then the buttons.
+const GRID_BOTTOM = GRID_Y + 2 * ZONE_H + ZGAP_Y, TRAY_CY = GRID_BOTTOM + 12, TCW = CW, TCH = CH, STATUS_Y = TRAY_CY + TCH + 16;
+const BUTTON_H = 52, BUTTONS_Y = 800 - 8 - BUTTON_H, PANEL_Y = GRID_BOTTOM - 26, CHOICE_Y = GRID_BOTTOM + 10;
 const zoneTop = r => GRID_Y + r * (ZONE_H + ZGAP_Y), zoneLeft = c => GRID_X + c * (ZONE_W + ZGAP_X);
 function stackRect(i) {
   const z = Math.floor(i / 4), k = i % 4;
@@ -567,7 +568,8 @@ function barRect(ch, outie) { const b = boxRect(ch), w = Math.floor((b[2] - 6) /
 // The draw pile at the right edge, or the left by choice; drawn cards beside it,
 // the newest nearest; three or more overlap.
 const drawX = () => drawLeft ? M : W - M - TCW - 4;
-const handStep = n => n > 3 ? 40 : n > 2 ? 50 : TCW + 6;
+const HAND_ROOM = W - 2 * M - 22 - 10 - TCW - 4 - 12;
+const handStep = n => n <= 1 ? TCW + 6 : Math.min(TCW + 6, Math.floor((HAND_ROOM - TCW) / (n - 1)));
 function handRect(k, n) {
   const off = 12 + (n - 1 - k) * handStep(n);
   return [drawLeft ? drawX() + TCW + off : drawX() - TCW - off, TRAY_CY, TCW, TCH];
@@ -713,10 +715,12 @@ function grid(cand) {
 }
 function status() {
   // Tap the message for the full log.
-  hit(0, STATUS_Y - 6, W, 70, () => go('log'));
+  hit(0, STATUS_Y - 6, W, BUTTONS_Y - STATUS_Y, () => go('log'));
+  fill(M, STATUS_Y - 8, W - 2 * M, 1, '#000');
   // What just happened: a hint, the result, or the newest thing this turn (a plain draw aside).
   let said;
   if (note) said = note;
+  else if (selMain() && !G.pending) said = 'Tap the other half to pair.';
   else if (G.over === 'win') said = 'Quota reached. Every innie has found their outie.';
   else if (G.over === 'lose') said = 'The quarter is lost. Start a new one from the menu.';
   else {
@@ -735,13 +739,12 @@ function status() {
   }
   let y = STATUS_Y - 1;
   if (f.length) { sayGrey(M, y, W - 2 * M, 20, f.join(' · '), 'tile', 'left'); y += 22; }
-  wrap(M, y + 2, W - 2 * M, said, 'tile', f.length ? 2 : 3);
+  wrap(M, y + 2, W - 2 * M, said, 'tile', f.length ? 1 : 2);
 }
 function tray(cand) {
-  fill(M, TRAY_Y - 8, W - 2 * M, 1, '#000');
   const DRAW_X = drawX();
   if (G.draw.length) { fill(DRAW_X + 4, TRAY_CY + 4, TCW, TCH, '#000', 4); cardBack(DRAW_X, TRAY_CY, TCW, TCH, false);
-    drop(DRAW_X + TCW / 2, TRAY_CY + TCH / 2 - 15, 29); drop(DRAW_X + TCW / 2, TRAY_CY + TCH / 2 - 13, 25, '#fff');
+    drop(DRAW_X + TCW / 2, TRAY_CY + TCH / 2 - 19, 37); drop(DRAW_X + TCW / 2, TRAY_CY + TCH / 2 - 17, 33, '#fff');
     const n = String(G.draw.length), pw = widthOf(n, 'button') + 16, px = drawLeft ? DRAW_X - 10 : DRAW_X + TCW - pw + 10, py = TRAY_CY + TCH - 14;
     fill(px, py, pw, 26, '#fff', 13); stroke(px, py, pw, 26, '#000', 2, 13); txt(px, py, pw, 26, n, 'button'); }
   else dashed(DRAW_X, TRAY_CY, TCW, TCH, 1);
@@ -755,29 +758,31 @@ function tray(cand) {
   }
   hit(sideX - 8, TRAY_CY - 6, SIDE_W + 16, TCH + 12, () => { if (G.pending || annIndex >= 0 || showEnd) return; drawLeft = !drawLeft; persist(); render(); });
   const hand = playableHand();
-  const far = handRect(0, hand.length || 1);
   if (!hand.length) { const r = handRect(0, 1); dashed(r[0], r[1], r[2], r[3], 1); }
   hand.forEach((c, k) => {
     const r = handRect(k, hand.length);
     // Earlier draws wait under the top one: show them as a card's edge behind it.
     if (!c.keep && wasteDepth() > 1) fill(r[0] + 4, r[1] + 4, r[2], r[3], '#000', 4);
     const covered = k < hand.length - 1 && handStep(hand.length) < TCW + 6;
-    cardFace(c, r, { selected: isSel(c.id), candidate: cand.indexOf(c.id) >= 0, visibleW: covered ? handStep(hand.length) : 0, visibleRight: drawLeft }, true);
+    cardFace(c, r, { selected: isSel(c.id), candidate: cand.indexOf(c.id) >= 0, visibleW: covered ? handStep(hand.length) : 0, visibleRight: drawLeft }, false);
     hit(r[0], r[1], r[2], r[3], () => tapCard(c.id, false));
   });
-  const sx = drawLeft ? far[0] + TCW + 16 : M + 22 + 12, sw = drawLeft ? W - M - 22 - 12 - sx : far[0] - 12 - sx, ty = TRAY_CY + (TCH - 72) / 2;
   const t = selectionTotals(sel), main = selMain();
-  if (sel.length && !main) {
-    const f = fitFace('SQUARE 88', sw - 22, ['button', 'tile']);
-    colourMark(sx + 8, ty + 18, 14, true); txt(sx + 22, ty + 4, sw - 22, 28, 'ROUND ' + t.r, f, 'left');
-    colourMark(sx + 8, ty + 52, 14, false); txt(sx + 22, ty + 38, sw - 22, 28, 'SQUARE ' + t.b, f, 'left');
-  } else if (main) wrap(sx, ty + 6, sw, 'Tap the other half to pair', 'tile', 3);
   const half = Math.floor((W - 2 * M - 10) / 2);
   if (G.over) { button(M, BUTTONS_Y, W - 2 * M, BUTTON_H, 'NEW QUARTER', newQuarter); return; }
   if (sel.length) button(M, BUTTONS_Y, half, BUTTON_H, 'CLEAR', () => { sel = []; note = ''; render(); }, false);
   else buttonOff(M, BUTTONS_Y, half, BUTTON_H, 'CLEAR');
-  if (t.ok && !main) button(W - M - half, BUTTONS_Y, half, BUTTON_H, 'REFINE', refine);
-  else buttonOff(W - M - half, BUTTONS_Y, half, BUTTON_H, 'REFINE');
+  // REFINE carries the totals: round and square while they differ, the shared total once they match.
+  const rx = W - M - half;
+  if (t.ok && !main) button(rx, BUTTONS_Y, half, BUTTON_H, 'REFINE ' + t.r, refine);
+  else if (sel.length && !main && !G.pending) {
+    stroke(rx, BUTTONS_Y, half, BUTTON_H, grey(), 2, 6);
+    const a = String(t.r), b = String(t.b), wa = widthOf(a, 'ui'), wb = widthOf(b, 'ui'), cy = BUTTONS_Y + BUTTON_H / 2;
+    let x = rx + Math.floor((half - (16 + 6 + wa + 26 + 16 + 6 + wb)) / 2);
+    colourMark(x + 8, cy, 14, true); txt(x + 22, BUTTONS_Y, wa + 4, BUTTON_H, a, 'ui', 'left');
+    x += 16 + 6 + wa + 26;
+    colourMark(x + 8, cy, 14, false); txt(x + 22, BUTTONS_Y, wb + 4, BUTTON_H, b, 'ui', 'left');
+  } else buttonOff(rx, BUTTONS_Y, half, BUTTON_H, 'REFINE');
 }
 function announcement(a) {
   fill(0, PANEL_Y, W, H - PANEL_Y, '#fff'); fill(0, PANEL_Y, W, 3, '#000');
@@ -813,12 +818,27 @@ function choice() {
   if (sel.length) button(W - M - half, BUTTONS_Y, half, BUTTON_H, 'CONFIRM', () => { const s = sel.slice(); act(() => actResolve(s)); });
   else buttonOff(W - M - half, BUTTONS_Y, half, BUTTON_H, 'CONFIRM');
 }
+// An employee as the menu shows them: the innie's black card over the outie's white one;
+// not reunited, two dashed outlines where the cards would be.
+function employeeCards(ch, x, y, paired) {
+  if (!paired) {
+    dashed(x + 10, y + 14, 84, 96, 1); fill(x, y, 84, 96, '#fff', 4); dashed(x, y, 84, 96, 2);
+    wrap(x + 4, y + 16, 76, CHARS[ch], 'tile', 2, 'center'); return;
+  }
+  fill(x + 10, y + 14, 84, 96, '#fff', 4); stroke(x + 10, y + 14, 84, 96, '#000', 2, 4);
+  fill(x, y, 84, 96, '#000', 4); wrap(x + 4, y + 16, 76, CHARS[ch], 'tile', 2, 'center', true); drop(x + 84 - 16, y + 96 - 30, 22, '#fff');
+}
+// The quarter's result, over the whole screen: who was reunited, and what next.
 function ending() {
-  fill(0, PANEL_Y, W, H - PANEL_Y, '#fff'); fill(0, PANEL_Y, W, 3, '#000');
+  fill(0, 0, W, H, '#fff');
   const win = G.over === 'win';
-  txt(M, PANEL_Y + 24, W - 2 * M, 50, win ? 'You hit quota!' : 'The quarter is lost', 'display');
-  wrap(M + 10, PANEL_Y + 90, W - 2 * M - 20, win ? 'All main characters are paired. You receive a caricature portrait.'
-    : 'No valid moves were left before all main characters were paired. Please remain seated while we process your transfer.', 'button', 3, 'center');
+  sayGrey(0, 60, W, 24, 'MACRODATA REFINEMENT', 'button');
+  txt(M, 96, W - 2 * M, 64, win ? 'You hit quota!' : 'The quarter is lost', 'display');
+  fill(60, 176, W - 120, 2, '#000');
+  txt(0, 192, W, 26, G.paired.length + ' OF 4 REUNITED', 'button');
+  CHAR_ORDER.forEach((ch, k) => employeeCards(ch, 48 + k * 100, 250, isPaired(ch)));
+  wrap(M + 20, 400, W - 2 * M - 40, win ? 'All main characters are paired. You receive a caricature portrait.'
+    : 'No valid moves were left before all main characters were paired. Please remain seated while we process your transfer.', 'button', 4, 'center');
   const half = Math.floor((W - 2 * M - 10) / 2);
   button(M, BUTTONS_Y, half, BUTTON_H, 'VIEW GRID', () => { showEnd = false; render(); }, false);
   button(W - M - half, BUTTONS_Y, half, BUTTON_H, 'NEW QUARTER', newQuarter);
@@ -826,9 +846,9 @@ function ending() {
 function drawBoard() {
   pruneSel();
   const cand = annIndex < 0 && !showEnd ? pendingCandidates() : [];
+  if (showEnd && annIndex < 0) { ending(); return; }
   topBar(); track(); grid(cand);
   if (annIndex >= 0) { hits = hits.filter(h => h.y < 50); announcement(anns[annIndex]); }
-  else if (showEnd) { hits = hits.filter(h => h.y < 50); ending(); }
   else if (G.pending) choice();
   else { status(); tray(cand); }
 }
@@ -839,11 +859,7 @@ function drawMenu() {
   txt(0, 92, W, 70, 'SEVERANCE', 'large');
   fill(60, 176, W - 120, 2, '#000');
   txt(0, 186, W, 26, 'The card game', 'button');
-  CHAR_ORDER.forEach((ch, k) => {
-    const x = 48 + k * 100, y = 236;
-    fill(x + 10, y + 14, 84, 96, '#fff', 4); stroke(x + 10, y + 14, 84, 96, '#000', 2, 4);
-    fill(x, y, 84, 96, '#000', 4); wrap(x + 4, y + 16, 76, CHARS[ch], 'tile', 2, 'center', true); drop(x + 84 - 16, y + 96 - 30, 22, '#fff');
-  });
+  CHAR_ORDER.forEach((ch, k) => employeeCards(ch, 48 + k * 100, 236, true));
   if (played) txt(0, 372, W, 24, played + ' QUARTERS  ' + won + ' AT QUOTA', 'button');
   const rows = [['CONTINUE', () => { if (hasGame) go('board'); }], ['NEW QUARTER', newQuarter],
     ['RULES', () => { rulesPage = 0; rulesReturn = 'menu'; go('rules'); }],
