@@ -744,7 +744,7 @@ const RulesPage kRules[] = {
      "beside it; only the top one can be used, and once it is, the one under it can."},
     {"Pairing",
      "Tap an employee's innie and outie when both are on the grid and they pair at once. If one half already waits "
-     "aside, one tap on the other half pairs them.\n\nWhen the draw pile runs out while Zone 3 still hides cards, "
+     "aside, one tap on the other half pairs them; if both wait aside, they pair on their own.\n\nWhen the draw pile runs out while Zone 3 still hides cards, "
      "its used cards are reshuffled once. After your next pair, employees get the Hall Pass and step aside when they "
      "appear.\n\nYou lose if no move is left and the pile is empty."},
     {"Zones",

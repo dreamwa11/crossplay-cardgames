@@ -695,11 +695,35 @@ void drawOne(Game& g, const int dieter) {
   applySpecial(g, c, -1);
 }
 
+// An employee whose innie and outie both wait aside is reunited at once:
+// there is nothing left for the player to choose.
+bool pairWaiting(Game& g) {
+  for (int ch = 0; ch < kChars; ++ch) {
+    if (isPaired(g, ch) || (ch == 1 && g.hellyPause)) continue;
+    Pair p{static_cast<uint8_t>(ch), {0, 0}, 0};
+    for (int k = 0; k < g.waiting.n && p.n < 2; ++k)
+      if (cardDef(g.waiting.c[k]).ch == ch) p.cards[p.n++] = g.waiting.c[k];
+    if (p.n < 2) continue;
+    for (int k = 0; k < 2; ++k) g.waiting.remove(p.cards[k]);
+    g.paired[g.nPaired++] = p;
+    logLine(g, Kind::Good, "%s's innie and outie both wait aside, so they are reunited (%d of 4).", charName(ch),
+            g.nPaired);
+    if (g.nPaired == kChars) {
+      g.over = Over::Win;
+      g.nQueue = 0;
+      logLine(g, Kind::Good, "You hit quota! All main characters are paired.");
+    }
+    return true;
+  }
+  return false;
+}
+
 void settle(Game& g) {
   for (;;) {
     if (g.over != Over::No) return;
     if (g.pending.type != Pend::None) return;
     if (liftStaleLock(g)) continue;
+    if (pairWaiting(g)) continue;
     if (revealOne(g)) continue;
     if (!g.draw.n && canReshuffle(g)) {
       reshuffle(g);

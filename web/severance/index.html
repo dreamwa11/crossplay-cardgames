@@ -348,11 +348,27 @@ function liftStaleLock(){
   log('No face-up number card is left outside Zone '+(G.lockZone+1)+', so Drummond\'s lock is lifted.','good');
   G.lockZone=null;return true;
 }
+// An employee whose innie and outie both wait aside is reunited at once.
+function pairWaiting(){
+  for(var n=0;n<CHAR_ORDER.length;n++){
+    var ch=CHAR_ORDER[n];
+    if(isPaired(ch)||(ch==='Q'&&G.hellyPause))continue;
+    var both=G.waiting.filter(function(w){return w.ch===ch;}).slice(0,2);
+    if(both.length<2)continue;
+    G.waiting=G.waiting.filter(function(w){return both.indexOf(w)<0;});
+    G.paired.push({ch:ch,cards:both});
+    log(CHARS[ch]+'\'s innie and outie both wait aside, so they are reunited ('+G.paired.length+' of 4).','good');snap('pair');
+    if(G.paired.length===4){G.over='win';G.queue=[];log('You hit quota! All main characters are paired.','good');snap('end');}
+    return true;
+  }
+  return false;
+}
 function settle(){
   for(;;){
     if(G.over)return;
     if(G.pending)return;
     if(liftStaleLock()){snap('unlock');continue;}
+    if(pairWaiting())continue;
     if(revealOne())continue;
     if(!G.draw.length&&canReshuffle()){reshuffle();continue;}
     if(G.queue.length){drawOne(G.queue.shift());continue;}
@@ -863,7 +879,7 @@ const RULES = [
   ['Refining', ['Tap face-up numbers so the round total equals the square total (7 + 3 round with 10 square), then REFINE.',
     'When identical cards are free, the one in the earliest position (Zone 1 first, left to right) must be used.',
     'Removing a card turns over the one beneath it. Tap the draw pile when you like. Unused draws pile up beside it; only the top one can be used, and once it is, the one under it can.']],
-  ['Pairing', ["Tap an employee's innie and outie when both are on the grid and they pair at once. If one half already waits aside, one tap on the other half pairs them.",
+  ['Pairing', ["Tap an employee's innie and outie when both are on the grid and they pair at once. If one half already waits aside, one tap on the other half pairs them; if both wait aside, they pair on their own.",
     'When the draw pile runs out while Zone 3 still hides cards, its used cards are reshuffled once. After your next pair, employees get the Hall Pass and step aside when they appear.',
     'You lose if no move is left and the pile is empty.']],
   ['Zones', ['Zone 1 starts open. Zone 2 opens when two number cards remain in Zone 1.',

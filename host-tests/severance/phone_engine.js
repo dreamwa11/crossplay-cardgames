@@ -315,11 +315,27 @@ function liftStaleLock(){
   log('No face-up number card is left outside Zone '+(G.lockZone+1)+', so Drummond\'s lock is lifted.','good');
   G.lockZone=null;return true;
 }
+// An employee whose innie and outie both wait aside is reunited at once.
+function pairWaiting(){
+  for(var n=0;n<CHAR_ORDER.length;n++){
+    var ch=CHAR_ORDER[n];
+    if(isPaired(ch)||(ch==='Q'&&G.hellyPause))continue;
+    var both=G.waiting.filter(function(w){return w.ch===ch;}).slice(0,2);
+    if(both.length<2)continue;
+    G.waiting=G.waiting.filter(function(w){return both.indexOf(w)<0;});
+    G.paired.push({ch:ch,cards:both});
+    log(CHARS[ch]+'\'s innie and outie both wait aside, so they are reunited ('+G.paired.length+' of 4).','good');snap('pair');
+    if(G.paired.length===4){G.over='win';G.queue=[];log('You hit quota! All main characters are paired.','good');snap('end');}
+    return true;
+  }
+  return false;
+}
 function settle(){
   for(;;){
     if(G.over)return;
     if(G.pending)return;
     if(liftStaleLock()){snap('unlock');continue;}
+    if(pairWaiting())continue;
     if(revealOne())continue;
     if(!G.draw.length&&canReshuffle()){reshuffle();continue;}
     if(G.queue.length){drawOne(G.queue.shift());continue;}
