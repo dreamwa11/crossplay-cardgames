@@ -367,13 +367,18 @@ void onReveal(Game& g, int id, int i) {
   applySpecial(g, id, i);
 }
 
+// Cards that come face up together all turn before any special figure among
+// them acts, so an ability (Kier's choice, say) sees every card it could pick.
 bool revealOne(Game& g) {
-  for (int i = 0; i < kStacks; ++i) {
-    const int c = g.stacks[i].top();
-    if (c != kNone && !g.card[c].faceUp && g.unlocked[zoneOf(i)]) {
-      g.card[c].faceUp = true;
-      onReveal(g, c, i);
-      return true;
+  for (int pass = 0; pass < 2; ++pass) {
+    for (int i = 0; i < kStacks; ++i) {
+      const int c = g.stacks[i].top();
+      if (c != kNone && !g.card[c].faceUp && g.unlocked[zoneOf(i)] &&
+          (pass == 1 || cardDef(c).type != Type::Special)) {
+        g.card[c].faceUp = true;
+        onReveal(g, c, i);
+        return true;
+      }
     }
   }
   return updateUnlocks(g);
