@@ -750,11 +750,11 @@ function tray(cand) {
   else dashed(DRAW_X, TRAY_CY, TCW, TCH, 1);
   hit(DRAW_X, TRAY_CY, TCW, TCH, tapDraw);
   // A tall chevron on the open side moves the pile across.
-  const SIDE_W = 22, sideX = drawLeft ? W - M - SIDE_W : M, half0 = TCH / 2;
+  const SIDE_W = 22, SIDE_H = 56, sideX = drawLeft ? W - M - SIDE_W : M, sideY = TRAY_CY + (TCH - SIDE_H) / 2, half0 = SIDE_H / 2;
   ctx.fillStyle = light();
-  for (let dy = 0; dy < TCH; dy++) {
+  for (let dy = 0; dy < SIDE_H; dy++) {
     const dd = dy < half0 ? half0 - dy : dy - half0, off = Math.floor(dd * (SIDE_W - 4) / half0);
-    ctx.fillRect(drawLeft ? sideX + SIDE_W - 4 - off : sideX + off, TRAY_CY + dy, 5, 1);
+    ctx.fillRect(drawLeft ? sideX + SIDE_W - 4 - off : sideX + off, sideY + dy, 5, 1);
   }
   hit(sideX - 8, TRAY_CY - 6, SIDE_W + 16, TCH + 12, () => { if (G.pending || annIndex >= 0 || showEnd) return; drawLeft = !drawLeft; persist(); render(); });
   const hand = playableHand();
@@ -831,7 +831,7 @@ function ending() {
   fill(0, 0, W, H, '#fff');
   const win = G.over === 'win';
   sayGrey(0, 60, W, 24, 'MACRODATA REFINEMENT', 'button');
-  txt(M, 96, W - 2 * M, 64, win ? 'You hit quota!' : 'The quarter is lost', 'display');
+  const title = win ? 'You hit quota!' : 'The quarter is lost'; txt(M, 96, W - 2 * M, 64, title, fitFace(title, W - 2 * M, ['display', 'ui']));
   fill(60, 176, W - 120, 2, '#000');
   txt(0, 192, W, 26, G.paired.length + ' OF 4 REUNITED', 'button');
   CHAR_ORDER.forEach((ch, k) => employeeCards(ch, 48 + k * 100, 250, isPaired(ch)));
@@ -872,8 +872,8 @@ function drawMenu() {
   txt(0, H - 22, W, 18, '', 'tile');
 }
 function drawLog() {
-  txt(M, 8, 300, 36, 'THE LOG', 'ui', 'left');
-  smallPill(W - M - 90, 6, 90, 36, 'BACK', () => go('board'));
+  txt(M, 4, 300, 34, 'THE LOG', 'ui', 'left');
+  smallPill(W - M - 90, 3, 90, 32, 'BACK', () => go('board'));
   fill(0, TOP_H, W, 2, '#000');
   let y = TOP_H + 10;
   for (let k = G.log.length - 1; k >= 0; k--) {

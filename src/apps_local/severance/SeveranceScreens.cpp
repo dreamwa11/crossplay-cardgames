@@ -83,7 +83,10 @@ int drawX() { return gDrawLeft ? kM : kW - kM - kTrayCardW - 4; }
 fui::Rect drawRect() { return rect(drawX(), kTrayCardY, kTrayCardW, kTrayCardH); }
 // A tall chevron on the open side moves the pile across.
 constexpr int kSideW = 22;
-fui::Rect sideRect() { return rect(gDrawLeft ? kW - kM - kSideW : kM, kTrayCardY, kSideW, kTrayCardH); }
+constexpr int kSideH = 56;
+fui::Rect sideRect() {
+  return rect(gDrawLeft ? kW - kM - kSideW : kM, kTrayCardY + (kTrayCardH - kSideH) / 2, kSideW, kSideH);
+}
 void chevron(toybox::Screen& screen, const fui::Rect& r, const bool pointLeft) {
   const int half = r.height / 2;
   for (int dy = 0; dy < r.height; ++dy) {
@@ -736,7 +739,8 @@ void ending(toybox::Screen& screen, const s::Game& g) {
   t.fill(rect(0, 0, kW, 800), kWhite);
   const bool won = g.over == s::Over::Win;
   sayGrey(screen, rect(0, 60, kW, 24), "MACRODATA REFINEMENT", Face::Button);
-  say(screen, rect(kM, 96, kW - 2 * kM, 64), won ? "You hit quota!" : "The quarter is lost", Face::Display);
+  const char* title = won ? "You hit quota!" : "The quarter is lost";
+  say(screen, rect(kM, 96, kW - 2 * kM, 64), title, fit(screen, title, kW - 2 * kM, {Face::Display, Face::Ui}));
   t.fill(rect(60, 176, kW - 120, 2), kBlack);
   char line[40];
   std::snprintf(line, sizeof(line), "%d OF 4 REUNITED", g.nPaired);
@@ -821,7 +825,7 @@ Hit hitTest(const s::Game& g, const int x, const int y) {
     if (inside(handRect(k, nh), x, y)) return Hit{HitKind::Hand, k};
   if (inside(drawRect(), x, y)) return Hit{HitKind::Draw, 0};
   const fui::Rect sr = sideRect();
-  if (inside(rect(sr.x - 8, sr.y - 6, sr.width + 16, sr.height + 12), x, y)) return Hit{HitKind::Side, 0};
+  if (inside(rect(sr.x - 8, kTrayCardY, sr.width + 16, kTrayCardH), x, y)) return Hit{HitKind::Side, 0};
   return h;
 }
 
@@ -881,8 +885,8 @@ void buildMenu(toybox::Screen& screen, const MenuModel& model) {
 void buildLog(toybox::Screen& screen, const s::Game& g) {
   auto& t = screen.target();
   toybox::absoluteChrome(screen);
-  say(screen, rect(kM, 8, 300, 36), "THE LOG", Face::Ui, fui::TextAlign::Left);
-  smallPill(screen, rect(kW - kM - 90, 6, 90, 36), "BACK", ActionBack);
+  say(screen, rect(kM, 4, 300, 34), "THE LOG", Face::Ui, fui::TextAlign::Left);
+  smallPill(screen, rect(kW - kM - 90, 3, 90, 32), "BACK", ActionBack);
   t.fill(rect(0, kTopH, kW, 2), kBlack);
   int y = kTopH + 10;
   // Newest first, until the page is full.
