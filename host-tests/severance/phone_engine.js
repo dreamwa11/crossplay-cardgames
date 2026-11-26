@@ -286,11 +286,13 @@ function applySpecial(c,at){
   return null;
 }
 function reshuffle(){
-  var back=G.gone.filter(function(x){return x.adm;});
+  // Cobel's card lies on the card she blocks, so while she blocks it stays out.
+  var cobelStays=!!G.blocked&&G.gone.some(function(x){return x.adm&&x.fx==='cobel';});
+  var back=G.gone.filter(function(x){return x.adm&&!(G.blocked&&x.fx==='cobel');});
   say({id:'GM',type:'special',fx:'casey',name:'Gemma',faceUp:true},'Administration reshuffled',
-    'The draw pile ran out while Zone 3 still hides cards, so its '+back.length+' used cards, Gemma among them, are reshuffled and used once more.'+
+    'The draw pile ran out while Zone 3 still hides cards, so its '+back.length+' used cards, Gemma among them, are reshuffled and used once more.'+(cobelStays?' Cobel stays on the card she blocks.':'')+
     (G.hallPass?'':' After your next refined pair, main characters get the Hall Pass and exit their stacks when they appear.'),'good',{draw:true});
-  G.gone=G.gone.filter(function(x){return !x.adm;});
+  G.gone=G.gone.filter(function(x){return back.indexOf(x)<0;});
   back.forEach(function(x){x.faceUp=false;x.keep=false;});
   G.draw=shuffle(back);G.reshuffled=true;
   if(!G.hallPass)G.hallPending=true;

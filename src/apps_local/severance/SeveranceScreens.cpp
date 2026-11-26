@@ -790,7 +790,7 @@ const RulesPage kRules[] = {
     {"Pairing",
      "Tap an employee's innie and outie when both are on the grid and they pair at once. If one half already waits "
      "aside, one tap on the other half pairs them; if both wait aside, they pair on their own.\n\nWhen the draw pile runs out while Zone 3 still hides cards, "
-     "its used cards are reshuffled once. After your next pair, employees get the Hall Pass and step aside when they "
+     "its used cards are reshuffled once (Cobel stays out while she blocks a card). After your next pair, employees get the Hall Pass and step aside when they "
      "appear.\n\nYou lose if no move is left and the pile is empty."},
     {"Zones",
      "Zone 1 starts open. Zone 2 opens when two number cards remain in Zone 1.\n\nZones 3 and 4 open when only one "

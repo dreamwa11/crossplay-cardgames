@@ -319,11 +319,13 @@ function applySpecial(c,at){
   return null;
 }
 function reshuffle(){
-  var back=G.gone.filter(function(x){return x.adm;});
+  // Cobel's card lies on the card she blocks, so while she blocks it stays out.
+  var cobelStays=!!G.blocked&&G.gone.some(function(x){return x.adm&&x.fx==='cobel';});
+  var back=G.gone.filter(function(x){return x.adm&&!(G.blocked&&x.fx==='cobel');});
   say({id:'GM',type:'special',fx:'casey',name:'Gemma',faceUp:true},'Administration reshuffled',
-    'The draw pile ran out while Zone 3 still hides cards, so its '+back.length+' used cards, Gemma among them, are reshuffled and used once more.'+
+    'The draw pile ran out while Zone 3 still hides cards, so its '+back.length+' used cards, Gemma among them, are reshuffled and used once more.'+(cobelStays?' Cobel stays on the card she blocks.':'')+
     (G.hallPass?'':' After your next refined pair, main characters get the Hall Pass and exit their stacks when they appear.'),'good',{draw:true});
-  G.gone=G.gone.filter(function(x){return !x.adm;});
+  G.gone=G.gone.filter(function(x){return back.indexOf(x)<0;});
   back.forEach(function(x){x.faceUp=false;x.keep=false;});
   G.draw=shuffle(back);G.reshuffled=true;
   if(!G.hallPass)G.hallPending=true;
@@ -918,7 +920,7 @@ const RULES = [
     'When identical cards are free, the one in the earliest position (Zone 1 first, left to right) must be used.',
     'Removing a card turns over the one beneath it. Tap the draw pile when you like. Unused draws pile up beside it; only the top one can be used, and once it is, the one under it can.']],
   ['Pairing', ["Tap an employee's innie and outie when both are on the grid and they pair at once. If one half already waits aside, one tap on the other half pairs them; if both wait aside, they pair on their own.",
-    'When the draw pile runs out while Zone 3 still hides cards, its used cards are reshuffled once. After your next pair, employees get the Hall Pass and step aside when they appear.',
+    'When the draw pile runs out while Zone 3 still hides cards, its used cards are reshuffled once (Cobel stays out while she blocks a card). After your next pair, employees get the Hall Pass and step aside when they appear.',
     'You lose if no move is left and the pile is empty.']],
   ['Zones', ['Zone 1 starts open. Zone 2 opens when two number cards remain in Zone 1.',
     'Zones 3 and 4 open when only one stack in the zone before still hides a card.', 'If no number is face up anywhere, the next locked zone opens.']],

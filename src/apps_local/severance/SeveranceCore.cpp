@@ -644,13 +644,23 @@ bool canReshuffle(const Game& g) {
 void reshuffle(Game& g) {
   uint8_t back[kCards];
   int n = 0;
-  for (int k = 0; k < g.gone.n; ++k)
-    if (cardDef(g.gone.c[k]).adm) back[n++] = g.gone.c[k];
+  // Cobel's card lies on the card she blocks, so while she blocks it stays out.
+  bool cobelStays = false;
+  for (int k = 0; k < g.gone.n; ++k) {
+    const CardDef d = cardDef(g.gone.c[k]);
+    if (!d.adm) continue;
+    if (d.fx == Fx::Cobel && g.blocked != kNone) {
+      cobelStays = true;
+      continue;
+    }
+    back[n++] = g.gone.c[k];
+  }
   char text[kLogLen];
   Text t(text, sizeof(text));
   t.add("The draw pile ran out while Zone 3 still hides cards, so its %d used cards, Gemma among them, are reshuffled "
         "and used once more.",
         n);
+  if (cobelStays) t.add(" Cobel stays on the card she blocks.");
   if (!g.hallPass)
     t.add(" After your next refined pair, main characters get the Hall Pass and exit their stacks when they appear.");
   say(g, kGemma, "Administration reshuffled", text, Kind::Good);
