@@ -16,6 +16,7 @@ Each table keeps its die weights: `cum` holds each row's upper bound on a d100
 folded to ASCII so the device fonts have every glyph.
 """
 import json
+import re
 import os
 import sys
 
@@ -23,10 +24,11 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 
 # name -> list of (book, table id); one source keeps its weights, two merge flat.
 PICK = {
+    # Fantasy: Ironsworn and Delve.
     "action": [("classic", "action_and_theme/action")],
     "theme": [("classic", "action_and_theme/theme")],
-    "descriptor": [("starforged", "core/descriptor")],
-    "focus": [("starforged", "core/focus")],
+    "aspect": [("delve", "feature/aspect")],
+    "feature": [("delve", "feature/focus")],
     "name_a": [("classic", "name/ironlander/a")],
     "name_b": [("classic", "name/ironlander/b")],
     "name_elf": [("classic", "name/elf")],
@@ -37,14 +39,41 @@ PICK = {
     "disposition": [("delve", "character/disposition")],
     "place_desc": [("classic", "place/descriptor")],
     "location": [("classic", "place/location")],
-    "aspect": [("delve", "feature/aspect")],
-    "feature": [("delve", "feature/focus")],
-    "danger": [("delve", "moves/reveal_a_danger"), ("starforged", "misc/story_complication")],
+    "danger": [("delve", "moves/reveal_a_danger"), ("classic", "moves/pay_the_price")],
     "chance": [("delve", "moves/find_an_opportunity")],
+    # Sci-fi: Starforged.
+    "sf_action": [("starforged", "core/action")],
+    "sf_theme": [("starforged", "core/theme")],
+    "descriptor": [("starforged", "core/descriptor")],
+    "focus": [("starforged", "core/focus")],
+    "sf_given": [("starforged", "characters/name/given")],
+    "sf_family": [("starforged", "characters/name/family_name")],
+    "sf_callsign": [("starforged", "characters/name/callsign")],
+    "sf_look": [("starforged", "characters/first_look")],
+    "sf_role": [("starforged", "characters/role")],
+    "sf_goal": [("starforged", "characters/goal")],
+    "sf_disposition": [("starforged", "characters/initial_disposition")],
+    "set_name": [("starforged", "settlements/name")],
+    "set_where": [("starforged", "settlements/location")],
+    "set_look": [("starforged", "settlements/first_look")],
+    "set_trouble": [("starforged", "settlements/trouble")],
+    "planet_class": [("starforged", "planets/class")],
+    "ship_name": [("starforged", "starships/starship_name")],
+    "ship_type": [("starforged", "starships/type")],
+    "ship_look": [("starforged", "starships/first_look")],
+    "ship_contact": [("starforged", "starships/initial_contact")],
+    "sf_danger": [("starforged", "misc/story_complication"), ("starforged", "space/peril")],
+    "sf_chance": [("starforged", "space/opportunity")],
+    # Both.
     "twist": [("classic", "turning_point/major_plot_twist")],
     "clue": [("starforged", "misc/story_clue")],
     "fight": [("starforged", "misc/combat_action")],
 }
+
+# Tables made of one table per planet class, kept as one list whose `group`
+# says which class each row belongs to (the class's row in planet_class).
+PLANETS = ["desert", "furnace", "grave", "ice", "jovian", "jungle", "ocean", "rocky", "shattered", "tainted", "vital"]
+GROUPED = {"planet_name": "name", "planet_view": "observed_from_space"}
 
 DROP = ("roll twice", "roll again", "check the", "unusual role", "[", "](")
 
@@ -76,6 +105,11 @@ def find(node, suffix):
 
 
 def clean(text):
+    # A row that is only a link to another collection keeps the link's words:
+    # "[Desert World](id:...)" is "Desert World".
+    m = re.fullmatch(r"\[([^\]]+)\]\(id:[^)]*\)", text.strip())
+    if m:
+        text = m.group(1)
     for a, b in FOLD.items():
         text = text.replace(a, b)
     text = text.strip()
@@ -98,7 +132,10 @@ def main():
                 raise SystemExit(f"missing {book}/{tid}")
             for r in t["rows"]:
                 text = r.get("text") or ""
-                if not text or any(d in text.lower() for d in DROP):
+                if name == "planet_class":
+                    text = clean(text)
+                # "It is harmful" leans on a move's own wording; alone it says nothing.
+                if not text or any(d in text.lower() for d in DROP) or text.startswith("It "):
                     continue
                 weight = (r["max"] - r["min"] + 1) if len(sources) == 1 and r.get("min") is not None else 1
                 rows.append((clean(text), weight))
@@ -107,8 +144,21 @@ def main():
             run += w
             cum.append(run)
         tables[name] = {"text": [t for t, _ in rows], "cum": cum}
-    act = tables["action"]
-    tables["verb"] = {"text": [VERB.get(t, t.lower()) for t in act["text"]], "cum": act["cum"]}
+    for verb, act in (("verb", "action"), ("sf_verb", "sf_action")):
+        a = tables[act]
+        tables[verb] = {"text": [VERB.get(t, t.lower()) for t in a["text"]], "cum": a["cum"]}
+    if [t.split()[0].lower() for t in tables["planet_class"]["text"]] != PLANETS:
+        raise SystemExit(f"planet classes moved: {tables['planet_class']['text']}")
+    for name, tid in GROUPED.items():
+        text, group = [], []
+        for g, planet in enumerate(PLANETS):
+            t = find(books["starforged"]["oracles"], f"starforged/oracles/planets/{planet}/{tid}")
+            for r in t["rows"]:
+                row = r.get("text") or ""
+                if row and not any(d in row.lower() for d in DROP):
+                    text.append(clean(row))
+                    group.append(g)
+        tables[name] = {"text": text, "cum": list(range(1, len(text) + 1)), "group": group}
 
     # The device.
     h = [
@@ -126,6 +176,7 @@ def main():
         "  const char* const* text;",
         "  const uint8_t* cum;  // each row's upper bound; the last is the die",
         "  uint8_t size;",
+        "  const uint8_t* group = nullptr;  // planet class per row, for the grouped tables",
         "};",
         "",
     ]
@@ -135,7 +186,13 @@ def main():
             h.append("    " + json.dumps(s) + ",")
         h.append("};")
         h.append(f"inline constexpr uint8_t k_{name}_cum[] = {{" + ", ".join(str(c) for c in t["cum"]) + "};")
-        h.append(f"inline constexpr List k{''.join(p.capitalize() for p in name.split('_'))} = {{k_{name}_text, k_{name}_cum, {len(t['text'])}}};")
+        grp = "nullptr"
+        if "group" in t:
+            h.append(f"inline constexpr uint8_t k_{name}_group[] = {{" + ", ".join(str(g) for g in t["group"]) + "};")
+            grp = f"k_{name}_group"
+        if len(t["text"]) > 255:
+            raise SystemExit(f"{name} has {len(t['text'])} rows; picks are bytes")
+        h.append(f"inline constexpr List k{''.join(p.capitalize() for p in name.split('_'))} = {{k_{name}_text, k_{name}_cum, {len(t['text'])}, {grp}}};")
         h.append("")
     h.append("}  // namespace tabletop::oracle_tables")
     with open(os.path.join(ROOT, "src/apps_local/tabletop/OracleTables.h"), "w") as f:
@@ -150,7 +207,7 @@ def main():
     chars = sum(len(s) + 1 for t in tables.values() for s in t["text"])
     print(f"{len(tables)} tables, {total} rows, {chars} bytes of text")
     for n, t in tables.items():
-        print(f"  {n:12} {len(t['text']):3} rows, die {t['cum'][-1]}")
+        print(f"  {n:14} {len(t['text']):3} rows, die {t['cum'][-1]}")
 
 
 if __name__ == "__main__":

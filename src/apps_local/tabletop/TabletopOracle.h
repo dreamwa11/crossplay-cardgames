@@ -18,6 +18,10 @@ struct Rng;
 enum class Odds : uint8_t { Small = 0, Unlikely, Even, Likely, Sure, Count };
 constexpr int kOddsKinds = static_cast<int>(Odds::Count);
 
+// Which books the tables come from: Ironsworn and Delve, or Starforged.
+enum class Genre : uint8_t { Fantasy = 0, SciFi, Count };
+constexpr int kGenres = static_cast<int>(Genre::Count);
+
 enum class Kind : uint8_t { Ask = 0, Spark, Detail, Person, Place, Danger, Chance, Twist, Clue, Fight, Count };
 constexpr int kKinds = static_cast<int>(Kind::Count);
 
@@ -28,6 +32,7 @@ constexpr int kOracleLog = 12;
 constexpr int kPicks = 8;
 
 struct Reading {
+  uint8_t genre = 0;
   uint8_t kind = 0;
   uint8_t odds = 0;  // Ask only
   uint8_t roll = 0;  // Ask: the d100, 1..100
@@ -36,6 +41,7 @@ struct Reading {
 
 struct Oracle {
   Odds odds = Odds::Even;
+  Genre genre = Genre::Fantasy;
   Reading log[kOracleLog] = {};  // newest last
   uint8_t len = 0;
 };
@@ -44,8 +50,11 @@ int chanceOf(Odds odds);           // 10, 25, 50, 75, 90
 const char* oddsName(Odds odds);   // "Small chance" .. "Almost certain"
 const char* oddsShort(Odds odds);  // "SMALL" .. "SURE", for chips
 const char* kindName(Kind kind);   // "SPARK", for chips and titles
+const char* genreName(Genre genre);  // "FANTASY", "SCI-FI"
 
-// Roll a reading of `kind` (Ask uses the oracle's odds) and log it.
+// Roll a reading of `kind` (Ask uses the oracle's odds) from the oracle's
+// genre and log it. A reading keeps its genre, so the log reads the same after
+// a switch.
 const Reading& consult(Oracle& o, Rng& rng, Kind kind);
 
 Answer answerOf(const Reading& r);

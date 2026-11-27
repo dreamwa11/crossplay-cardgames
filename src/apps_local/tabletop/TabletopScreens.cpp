@@ -471,11 +471,10 @@ void buildMenu(toybox::Screen& screen, const tt::Table& t) {
       const tt::Oracle& o = t.oracle;
       if (o.len) {
         tt::title(o.log[o.len - 1], line, sizeof(line));
-        std::snprintf(sub, sizeof(sub), "%d in the log", o.len);
       } else {
         std::snprintf(line, sizeof(line), "Ask a question");
-        std::snprintf(sub, sizeof(sub), "Or roll a table");
       }
+      std::snprintf(sub, sizeof(sub), "%s", o.genre == tt::Genre::SciFi ? "Sci-fi" : "Fantasy");
     }
     say(screen, rect(r.x + 8, r.y + 194, r.width - 16, 44), title, Face::Display);
     say(screen, rect(r.x + 8, r.y + 238, r.width - 16, 28), line, fit(screen, line, r.width - 16, {Face::Ui, Face::Button, Face::Tile}));
@@ -742,6 +741,13 @@ void buildOracle(toybox::Screen& screen, const tt::Table& t) {
   const int16_t w = screen.device().width;
   const int x = toybox::kMargin;
   const int cw = w - 2 * x;
+  // The genre: paper on the black band, so it reads as a switch.
+  const char* genre = tt::genreName(o.genre);
+  const int gw = widthOf(screen, genre, Face::Button) + 36;
+  const fui::Rect g = rect(w - x - gw, 16, gw, 44);
+  hotspot(screen, g, ActionGenre);
+  screen.target().fill(g, kWhite, 10);
+  say(screen, g, genre, Face::Button);
   // The answer, then a row to ask and a grid to roll, then the last two.
   readingCard(screen, rect(x, 96, cw, 244), o);
   label(screen, 352, "ASK");

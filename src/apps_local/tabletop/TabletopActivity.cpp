@@ -152,6 +152,9 @@ void TabletopActivity::loop() {
       if (table.oracle.len == 0) return;
       tt::consult(table.oracle, table.rng, static_cast<tt::Kind>(table.oracle.log[table.oracle.len - 1].kind));
       break;
+    case ui::ActionGenre:
+      table.oracle.genre = static_cast<tt::Genre>((static_cast<int>(table.oracle.genre) + 1) % tt::kGenres);
+      break;
     case ui::ActionLog:
       goTo(ui::Screen::OracleLog);
       return;
