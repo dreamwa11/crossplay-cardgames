@@ -551,26 +551,52 @@ function drawOracle() {
   sectionLabel(444, 'ROLL');
   const gw = Math.floor((cw - 2 * 8) / 3);
   GRID.forEach((k, i) => key(x + (i % 3) * (gw + 8), 470 + Math.floor(i / 3) * 54, gw, 46, KINDS[k], false, act(() => consult(k))));
-  // The last two, under the grid, in a box that opens the log.
-  if (o.log.length > 1) { stroke(x, 638, cw, 72, '#000', 2, 10); hit(x, 638, cw, 72, () => go('oracleLog')); }
-  for (let i = 0; i < 2 && i + 1 < o.log.length; ++i) oneLine(x + 12, 643 + i * 30, cw - 24, 30, oBrief(o.log[o.log.length - 2 - i]), 'button');
-  bottomBar('LOG', () => go('oracleLog'), 'AGAIN', act(() => consult(o.log[o.log.length - 1].kind)), o.log.length > 0);
+  // The last two, under the grid; tapping them opens the log.
+  if (o.log.length > 1) hit(x, 638, cw, 72, () => { logPage = 0; go('oracleLog'); });
+  for (let i = 0; i < 2 && i + 1 < o.log.length; ++i) oneLine(x, 643 + i * 30, cw, 30, oBrief(o.log[o.log.length - 2 - i]), 'button');
+  bottomBar('LOG', () => { logPage = 0; go('oracleLog'); }, 'AGAIN', act(() => consult(o.log[o.log.length - 1].kind)), o.log.length > 0);
 }
+// Left-aligned lines broken at spaces; returns them.
+function wrap(text, w, f) {
+  const out = [];
+  let cur = '';
+  for (const wd of text.split(' ')) {
+    const tryIt = cur ? cur + ' ' + wd : wd;
+    if (widthOf(tryIt, f) <= w || !cur) cur = tryIt; else { out.push(cur); cur = wd; }
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+const LOG_TOP = 96, HEAD_H = 28, BODY_LINE = 21, ENTRY_GAP = 14, CREDIT_Y = BUTTONS_Y - 32;
+// One log entry: what it is, then everything it said.
+function entryLines(r) {
+  const b = oBody(r), m = oMeta(r);
+  return [...(b ? wrap(b, W - 2 * M, 'tile') : []), ...(m ? [m] : [])];
+}
+const entryH = r => HEAD_H + entryLines(r).length * BODY_LINE + ENTRY_GAP;
+let logPage = 0;  // the log's page, not saved
 function drawOracleLog() {
-  const o = t.oracle;
-  header('ORACLE LOG', String(o.log.length));
+  const o = t.oracle, list = o.log.slice().reverse(), room = CREDIT_Y - 8 - LOG_TOP;
+  // Newest first, as many whole entries as fit a page.
+  const starts = [];
+  let used = room;
+  list.forEach((r, i) => { const h = entryH(r); if (used + h > room && (used > 0 || !starts.length)) { starts.push(i); used = 0; } used += h; });
+  const pages = starts.length, shown = pages ? logPage % pages : 0;
+  header('ORACLE LOG', pages > 1 ? `${shown + 1}/${pages}` : String(o.log.length));
   if (!o.log.length) prose(M, 300, W - 2 * M, 80, 'Nothing asked yet.', 'ui');
-  o.log.slice().reverse().forEach((r, i) => {
-    const y = 96 + i * 52;
-    if (y + 50 > BUTTONS_Y - 36) return;
+  let y = LOG_TOP;
+  list.slice(pages ? starts[shown] : 0, pages ? (starts[shown + 1] ?? list.length) : 0).forEach(r => {
     const head = named(r) || r.kind === 0 ? `${KINDS[r.kind]}  ${oTitle(r)}` : oTitle(r);
-    say(M, y, W - 2 * M, 24, head, 'button', 'left');
-    oneLine(M, y + 24, W - 2 * M, 22, oBody(r) || oMeta(r), 'tile');
-    fill(M, y + 48, W - 2 * M, 1, grey());
+    say(M, y, W - 2 * M, HEAD_H, head, fitFace(head, W - 2 * M, ['button', 'tile']), 'left');
+    entryLines(r).forEach((l, i) => say(M, y + HEAD_H + i * BODY_LINE, W - 2 * M, BODY_LINE, l, 'tile', 'left'));
+    const h = entryH(r);
+    fill(M, y + h - ENTRY_GAP / 2, W - 2 * M, 1, grey());
+    y += h;
   });
   // CC BY asks for the credit where the tables are used.
-  say(M, BUTTONS_Y - 32, W - 2 * M, 22, 'Oracle tables: Ironsworn by Shawn Tomkin, CC BY 4.0', 'tile');
-  bottomBar('CLEAR', act(() => { o.log = []; }), 'DONE', () => go('oracle'), true);
+  say(M, CREDIT_Y, W - 2 * M, 22, 'Oracle tables: Ironsworn by Shawn Tomkin, CC BY 4.0', 'tile');
+  if (pages > 1) bottomBar('CLEAR', act(() => { o.log = []; logPage = 0; }), shown + 1 < pages ? 'NEXT' : 'FIRST', () => { logPage++; render(); }, true);
+  else bottomBar('CLEAR', act(() => { o.log = []; logPage = 0; }), 'DONE', () => go('oracle'), true);
   // Back from the log is back to the oracle.
   hits[0].fn = () => go('oracle');
 }

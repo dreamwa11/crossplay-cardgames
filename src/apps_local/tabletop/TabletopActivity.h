@@ -31,6 +31,7 @@ class TabletopActivity final : public Activity {
 
   tabletopui::Screen screen = tabletopui::Screen::Menu;
   tabletop::Table table{};
+  int logPage = 0;  // the oracle log's page, not saved
 
   toybox::Interactions interactions;
   bool interactionsReady = false;

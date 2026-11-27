@@ -754,53 +754,133 @@ void buildOracle(toybox::Screen& screen, const tt::Table& t) {
   oddsRow(screen, o, 378, 52);
   label(screen, 444, "ROLL");
   tableGrid(screen, 470, 3, 46);
-  // The last two, under the grid, in a box that opens the log.
-  if (o.len > 1) hotspot(screen, rect(x, 638, cw, 72), ActionLog);
+  // The last two, under the grid; tapping them opens the log.
+  if (o.len > 1) {
+    const fui::Rect last = rect(x, 638, cw, 72);
+    hotspot(screen, last, ActionLog);
+    screen.target().fill(last, kWhite);
+  }
   for (int i = 0; i < 2 && i + 1 < o.len; ++i) {
-    logLine(screen, rect(x + 12, 643 + i * 30, cw - 24, 30), o.log[o.len - 2 - i], Face::Button);
+    logLine(screen, rect(x, 643 + i * 30, cw, 30), o.log[o.len - 2 - i], Face::Button);
   }
   bottomBar(screen, "LOG", ActionLog, "AGAIN", ActionAgain, o.len > 0);
 }
 
 constexpr int kCreditY = kButtonsY - 32;
 
-void buildOracleLog(toybox::Screen& screen, const tt::Table& t) {
-  const tt::Oracle& o = t.oracle;
-  char right[16];
-  std::snprintf(right, sizeof(right), "%d", o.len);
-  header(screen, "ORACLE LOG", right);
-  const int16_t w = screen.device().width;
-  const int x = toybox::kMargin;
-  if (o.len == 0) {
-    prose(screen, rect(x, 300, w - 2 * x, 80), "Nothing asked yet.", Face::Ui, 2);
+namespace {
+
+// Left-aligned lines broken at spaces. Draws them when `draw` and returns how
+// many there are, so a caller can measure first.
+int wrapped(toybox::Screen& screen, const int x, const int y, const int width, const int lineH, const char* text,
+            const Face f, const bool draw) {
+  char line[128];
+  int lines = 0;
+  const char* p = text;
+  while (*p) {
+    // The longest run of whole words that fits; one word alone if none does.
+    int len = 0;
+    int fitLen = 0;
+    while (true) {
+      while (p[len] && p[len] != ' ') ++len;
+      if (len >= static_cast<int>(sizeof(line))) break;
+      std::memcpy(line, p, len);
+      line[len] = '\0';
+      if (fitLen && widthOf(screen, line, f) > width) break;
+      fitLen = len;
+      if (!p[len]) break;
+      ++len;
+    }
+    if (fitLen == 0) fitLen = len < static_cast<int>(sizeof(line)) ? len : static_cast<int>(sizeof(line)) - 1;
+    std::memcpy(line, p, fitLen);
+    line[fitLen] = '\0';
+    if (draw) say(screen, rect(x, y + lines * lineH, width, lineH), line, f, fui::TextAlign::Left);
+    ++lines;
+    p += fitLen;
+    while (*p == ' ') ++p;
   }
-  // Newest first, two lines each.
-  for (int i = 0; i < o.len && i < tt::kOracleLog; ++i) {
-    const tt::Reading& rd = o.log[o.len - 1 - i];
-    const int y = 96 + i * 52;
-    if (y + 50 > kCreditY - 4) break;
-    char t[64];
-    char b[256];
-    tt::title(rd, t, sizeof(t));
-    tt::body(rd, b, sizeof(b));
-    if (!b[0]) tt::meta(rd, b, sizeof(b));
+  return lines;
+}
+
+constexpr int kLogTop = 96;
+constexpr int kHeadH = 28;
+constexpr int kBodyLine = 21;
+constexpr int kEntryGap = 14;
+
+// One log entry: what it is, then everything it said. Returns its height.
+int logEntry(toybox::Screen& screen, const tt::Reading& rd, const int x, const int y, const int width,
+             const bool draw) {
+  char t[64];
+  char b[256];
+  char m[48];
+  tt::title(rd, t, sizeof(t));
+  tt::body(rd, b, sizeof(b));
+  tt::meta(rd, m, sizeof(m));
+  if (draw) {
     char line[96];
     if (tt::named(rd) || static_cast<tt::Kind>(rd.kind) == tt::Kind::Ask) {
       std::snprintf(line, sizeof(line), "%s  %s", tt::kindName(static_cast<tt::Kind>(rd.kind)), t);
     } else {
       std::snprintf(line, sizeof(line), "%s", t);
     }
-    say(screen, rect(x, y, w - 2 * x, 24), line, Face::Button, fui::TextAlign::Left);
-    if (b[0]) {
-      fui::TextStyle st = face(Face::Tile, fui::TextAlign::Left);
-      st.maxLines = 1;
-      screen.target().text(rect(x, y + 24, w - 2 * x, 22), b, st);
+    say(screen, rect(x, y, width, kHeadH), line, fit(screen, line, width, {Face::Button, Face::Tile}),
+        fui::TextAlign::Left);
+  }
+  int lines = b[0] ? wrapped(screen, x, y + kHeadH, width, kBodyLine, b, Face::Tile, draw) : 0;
+  if (m[0]) {
+    if (draw) say(screen, rect(x, y + kHeadH + lines * kBodyLine, width, kBodyLine), m, Face::Tile,
+                  fui::TextAlign::Left);
+    ++lines;
+  }
+  return kHeadH + lines * kBodyLine + kEntryGap;
+}
+
+}  // namespace
+
+void buildOracleLog(toybox::Screen& screen, const tt::Table& t, const int page) {
+  const tt::Oracle& o = t.oracle;
+  const int16_t w = screen.device().width;
+  const int x = toybox::kMargin;
+  const int width = w - 2 * x;
+  const int room = kCreditY - 8 - kLogTop;
+  // Newest first, as many whole entries as fit a page.
+  int starts[tt::kOracleLog + 1] = {};
+  int pages = 0;
+  for (int i = 0, used = room; i < o.len; ++i) {
+    const int h = logEntry(screen, o.log[o.len - 1 - i], x, 0, width, false);
+    if (used + h > room && (used > 0 || pages == 0)) {
+      starts[pages++] = i;
+      used = 0;
     }
-    screen.target().fill(rect(x, y + 48, w - 2 * x, 1), kGrey);
+    used += h;
+  }
+  starts[pages] = o.len;
+  const int shown = pages ? page % pages : 0;
+  // The page in the corner when there is more than one, else the count.
+  char right[16];
+  if (pages > 1) {
+    std::snprintf(right, sizeof(right), "%d/%d", shown + 1, pages);
+  } else {
+    std::snprintf(right, sizeof(right), "%d", o.len);
+  }
+  header(screen, "ORACLE LOG", right);
+  if (o.len == 0) {
+    prose(screen, rect(x, 300, width, 80), "Nothing asked yet.", Face::Ui, 2);
+  }
+  int y = kLogTop;
+  for (int i = pages ? starts[shown] : 0; i < (pages ? starts[shown + 1] : 0); ++i) {
+    const int h = logEntry(screen, o.log[o.len - 1 - i], x, y, width, true);
+    screen.target().fill(rect(x, y + h - kEntryGap / 2, width, 1), kGrey);
+    y += h;
   }
   // CC BY asks for the credit where the tables are used.
-  say(screen, rect(x, kCreditY, w - 2 * x, 22), "Oracle tables: Ironsworn by Shawn Tomkin, CC BY 4.0", Face::Tile);
-  bottomBar(screen, "CLEAR", ActionClear, "DONE", ActionBack, true);
+  say(screen, rect(x, kCreditY, width, 22), "Oracle tables: Ironsworn by Shawn Tomkin, CC BY 4.0", Face::Tile);
+  if (pages > 1) {
+    // The loud key turns the page; from the last it goes back to the first.
+    bottomBar(screen, "CLEAR", ActionClear, shown + 1 < pages ? "NEXT" : "FIRST", ActionLogPage, true);
+  } else {
+    bottomBar(screen, "CLEAR", ActionClear, "DONE", ActionBack, true);
+  }
 }
 
 }  // namespace tabletopui

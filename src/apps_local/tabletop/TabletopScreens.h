@@ -8,7 +8,7 @@
 // add, the total, the tray of rolled dice (tap one to take it away), the
 // earlier totals, then back, clear and roll. The oracle is the newest reading
 // in a card (its genre a chip in the header), a row of odds to ask at, a grid of tables to roll on, the last two
-// readings, then back, log and again; its log lists the readings newest first.
+// readings, then back, log and again; its log lists the readings newest first, in full, a page at a time.
 
 #include "../ui/ToyboxScreen.h"
 #include "TabletopCore.h"
@@ -35,6 +35,7 @@ enum : fui::ActionId {
   ActionAgain = 15,    // the last kind again, at the same odds
   ActionLog = 16,
   ActionGenre = 17,    // fantasy and sci-fi, in turn
+  ActionLogPage = 18,  // the log's next page, wrapping to the first
 };
 
 enum class Screen : uint8_t { Menu = 0, Cards, Tarot, Dice, Oracle, OracleLog };
@@ -53,6 +54,7 @@ void buildCards(toybox::Screen& screen, const tabletop::Table& table);
 void buildTarot(toybox::Screen& screen, const tabletop::Table& table);
 void buildDice(toybox::Screen& screen, const tabletop::Table& table);
 void buildOracle(toybox::Screen& screen, const tabletop::Table& table);
-void buildOracleLog(toybox::Screen& screen, const tabletop::Table& table);
+// `page` counts from 0 and wraps past the last.
+void buildOracleLog(toybox::Screen& screen, const tabletop::Table& table, int page);
 
 }  // namespace tabletopui

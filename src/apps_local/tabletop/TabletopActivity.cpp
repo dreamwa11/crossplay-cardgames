@@ -156,7 +156,12 @@ void TabletopActivity::loop() {
       table.oracle.genre = static_cast<tt::Genre>((static_cast<int>(table.oracle.genre) + 1) % tt::kGenres);
       break;
     case ui::ActionLog:
+      logPage = 0;
       goTo(ui::Screen::OracleLog);
+      return;
+    case ui::ActionLogPage:
+      ++logPage;
+      requestUpdate();
       return;
     case ui::ActionDraw:
       if (screen == ui::Screen::Cards) {
@@ -197,6 +202,7 @@ void TabletopActivity::loop() {
     case ui::ActionClear:
       if (screen == ui::Screen::OracleLog) {
         table.oracle.len = 0;
+        logPage = 0;
       } else {
         tt::clearDice(table.dice);
       }
@@ -241,7 +247,7 @@ void TabletopActivity::render(RenderLock&&) {
       ui::buildOracle(surface, table);
       break;
     case ui::Screen::OracleLog:
-      ui::buildOracleLog(surface, table);
+      ui::buildOracleLog(surface, table, logPage);
       break;
   }
 
