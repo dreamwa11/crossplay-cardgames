@@ -18,8 +18,9 @@ struct Rng;
 enum class Odds : uint8_t { Small = 0, Unlikely, Even, Likely, Sure, Count };
 constexpr int kOddsKinds = static_cast<int>(Odds::Count);
 
-// Which books the tables come from: Ironsworn and Delve, or Starforged.
-enum class Genre : uint8_t { Fantasy = 0, SciFi, Count };
+// Which tables a reading draws on: Ironsworn and Delve, Starforged, or this
+// app's own small-town mystery tables.
+enum class Genre : uint8_t { Fantasy = 0, SciFi, Mystery, Count };
 constexpr int kGenres = static_cast<int>(Genre::Count);
 
 enum class Kind : uint8_t { Ask = 0, Spark, Detail, Person, Place, Danger, Chance, Twist, Clue, Fight, Count };
@@ -28,7 +29,7 @@ constexpr int kKinds = static_cast<int>(Kind::Count);
 // How an answer lands. "and" and "but" are the far ends of each side.
 enum class Answer : uint8_t { NoAnd = 0, No, NoBut, YesBut, Yes, YesAnd };
 
-constexpr int kOracleLog = 12;
+constexpr int kOracleLog = 50;
 constexpr int kPicks = 8;
 
 struct Reading {
@@ -50,7 +51,7 @@ int chanceOf(Odds odds);           // 10, 25, 50, 75, 90
 const char* oddsName(Odds odds);   // "Small chance" .. "Almost certain"
 const char* oddsShort(Odds odds);  // "SMALL" .. "SURE", for chips
 const char* kindName(Kind kind);   // "SPARK", for chips and titles
-const char* genreName(Genre genre);  // "FANTASY", "SCI-FI"
+const char* genreName(Genre genre);  // "FANTASY", "SCI-FI", "MYSTERY"
 
 // Roll a reading of `kind` (Ask uses the oracle's odds) from the oracle's
 // genre and log it. A reading keeps its genre, so the log reads the same after

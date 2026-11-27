@@ -17,7 +17,7 @@ namespace ot = oracle_tables;
 constexpr int kChance[kOddsKinds] = {10, 25, 50, 75, 90};
 constexpr const char* kOddsName[kOddsKinds] = {"Small chance", "Unlikely", "50/50", "Likely", "Almost certain"};
 constexpr const char* kOddsShort[kOddsKinds] = {"SMALL", "UNLIKELY", "50/50", "LIKELY", "SURE"};
-constexpr const char* kGenreName[kGenres] = {"FANTASY", "SCI-FI"};
+constexpr const char* kGenreName[kGenres] = {"FANTASY", "SCI-FI", "MYSTERY"};
 constexpr const char* kKindName[kKinds] = {"ASK",    "SPARK",  "DETAIL", "PERSON", "PLACE",
                                            "DANGER", "CHANCE", "TWIST",  "CLUE",   "FIGHT"};
 
@@ -35,7 +35,8 @@ constexpr const char* kDetailAsk[] = {
 };
 constexpr int kDetailAsks = sizeof(kDetailAsk) / sizeof(kDetailAsk[0]);
 
-// The tables a genre swaps; twist, clue and fight are shared.
+// The tables a genre swaps. People and places differ in shape too, so they
+// are drawn genre by genre below.
 struct Set {
   const ot::List& action;
   const ot::List& verb;
@@ -44,10 +45,26 @@ struct Set {
   const ot::List& chance;
   const ot::List& detailA;  // a detail is A + B: "ancient threshold", "abandoned archive"
   const ot::List& detailB;
+  const ot::List& twist;
+  const ot::List& clue;
+  const ot::List& fight;
 };
-const Set kFantasy = {ot::kAction, ot::kVerb, ot::kTheme, ot::kDanger, ot::kChance, ot::kAspect, ot::kFeature};
-const Set kSciFi = {ot::kSfAction, ot::kSfVerb, ot::kSfTheme, ot::kSfDanger, ot::kSfChance, ot::kDescriptor, ot::kFocus};
-const Set& setOf(const uint8_t genre) { return genre == static_cast<uint8_t>(Genre::SciFi) ? kSciFi : kFantasy; }
+const Set kFantasy = {ot::kAction, ot::kVerb,   ot::kTheme, ot::kDanger, ot::kChance,
+                      ot::kAspect, ot::kFeature, ot::kTwist, ot::kClue,   ot::kFight};
+const Set kSciFi = {ot::kSfAction,   ot::kSfVerb, ot::kSfTheme, ot::kSfDanger, ot::kSfChance,
+                    ot::kDescriptor, ot::kFocus,  ot::kTwist,   ot::kClue,     ot::kFight};
+const Set kMystery = {ot::kMAction,  ot::kMVerb,    ot::kMTheme, ot::kMDanger, ot::kMChance,
+                      ot::kMDetailA, ot::kMDetailB, ot::kMTwist, ot::kMClue,   ot::kMFight};
+const Set& setOf(const uint8_t genre) {
+  switch (static_cast<Genre>(genre)) {
+    case Genre::SciFi:
+      return kSciFi;
+    case Genre::Mystery:
+      return kMystery;
+    default:
+      return kFantasy;
+  }
+}
 
 // A sci-fi place is one of three things, by its first pick (0..99).
 enum class SfPlace : uint8_t { Settlement, Planet, Starship };
@@ -131,6 +148,7 @@ const Reading& consult(Oracle& o, Rng& rng, const Kind kind) {
   r.roll = static_cast<uint8_t>(rng.below(100) + 1);
   const Set& set = setOf(r.genre);
   const bool sf = o.genre == Genre::SciFi;
+  const bool mystery = o.genre == Genre::Mystery;
   uint8_t* p = r.pick;
   switch (kind) {
     case Kind::Ask:
@@ -153,7 +171,15 @@ const Reading& consult(Oracle& o, Rng& rng, const Kind kind) {
       p[1] = pickFrom(rng, set.detailB);
       break;
     case Kind::Person:
-      if (sf) {
+      if (mystery) {
+        p[0] = pickFrom(rng, ot::kMGiven);
+        p[1] = pickFrom(rng, ot::kMFamily);
+        p[2] = pickFrom(rng, ot::kMRole);
+        p[3] = pickFrom(rng, ot::kMLook);
+        p[4] = pickFrom(rng, ot::kMDisposition);
+        p[5] = pickFrom(rng, ot::kMGoal);
+        p[6] = pickFrom(rng, ot::kMSecret);
+      } else if (sf) {
         p[0] = pickFrom(rng, ot::kSfGiven);
         p[1] = pickFrom(rng, ot::kSfFamily);
         p[2] = pickFrom(rng, ot::kSfRole);
@@ -172,7 +198,11 @@ const Reading& consult(Oracle& o, Rng& rng, const Kind kind) {
       }
       break;
     case Kind::Place:
-      if (sf) {
+      if (mystery) {
+        p[0] = pickFrom(rng, ot::kMPlaceDesc);
+        p[1] = pickFrom(rng, ot::kMPlace);
+        p[2] = pickFrom(rng, ot::kMWrong);
+      } else if (sf) {
         p[0] = static_cast<uint8_t>(rng.below(100));
         switch (sfPlace(p[0])) {
           case SfPlace::Settlement:
@@ -207,14 +237,14 @@ const Reading& consult(Oracle& o, Rng& rng, const Kind kind) {
       p[0] = pickFrom(rng, set.chance);
       break;
     case Kind::Twist:
-      p[0] = pickFrom(rng, ot::kTwist);
+      p[0] = pickFrom(rng, set.twist);
       break;
     case Kind::Clue:
-      p[0] = pickFrom(rng, ot::kClue);
+      p[0] = pickFrom(rng, set.clue);
       break;
     case Kind::Fight:
     default:
-      p[0] = pickFrom(rng, ot::kFight);
+      p[0] = pickFrom(rng, set.fight);
       break;
   }
   if (o.len == kOracleLog) {
@@ -255,6 +285,7 @@ void title(const Reading& r, char* out, const int size) {
   const uint8_t* p = r.pick;
   const Set& set = setOf(r.genre);
   const bool sf = r.genre == static_cast<uint8_t>(Genre::SciFi);
+  const bool mystery = r.genre == static_cast<uint8_t>(Genre::Mystery);
   char a[48];
   switch (static_cast<Kind>(r.kind)) {
     case Kind::Ask: {
@@ -270,13 +301,20 @@ void title(const Reading& r, char* out, const int size) {
       add(out, size, "%s %s", at(set.detailA, p[0]), a);
       return;
     case Kind::Person:
-      if (sf) {
+      if (mystery) {
+        add(out, size, "%s %s", at(ot::kMGiven, p[0]), at(ot::kMFamily, p[1]));
+      } else if (sf) {
         add(out, size, "%s %s", at(ot::kSfGiven, p[0]), at(ot::kSfFamily, p[1]));
       } else {
         add(out, size, "%s", at(nameList(p[0]), p[1]));
       }
       return;
     case Kind::Place:
+      if (mystery) {
+        lowerAll(at(ot::kMPlace, p[1]), a, sizeof(a));
+        add(out, size, "%s %s", at(ot::kMPlaceDesc, p[0]), a);
+        return;
+      }
       if (!sf) {
         lowerAll(at(ot::kLocation, p[1]), a, sizeof(a));
         add(out, size, "%s %s", at(ot::kPlaceDesc, p[0]), a);
@@ -305,6 +343,7 @@ void body(const Reading& r, char* out, const int size) {
   const uint8_t* p = r.pick;
   const Set& set = setOf(r.genre);
   const bool sf = r.genre == static_cast<uint8_t>(Genre::SciFi);
+  const bool mystery = r.genre == static_cast<uint8_t>(Genre::Mystery);
   char a[96];
   char b[48];
   switch (static_cast<Kind>(r.kind)) {
@@ -346,6 +385,19 @@ void body(const Reading& r, char* out, const int size) {
       add(out, size, "%s", kDetailAsk[(p[0] + p[1]) % kDetailAsks]);
       return;
     case Kind::Person:
+      if (mystery) {
+        // "Motel clerk, too friendly. Seems evasive. Wants to be forgiven.
+        //  Secret: they set the fire."
+        lowered(at(ot::kMLook, p[3]), b, sizeof(b));
+        add(out, size, "%s, %s. Seems ", at(ot::kMRole, p[2]), b);
+        lowered(at(ot::kMDisposition, p[4]), a, sizeof(a));
+        add(out, size, "%s. Wants to ", a);
+        lowered(at(ot::kMGoal, p[5]), a, sizeof(a));
+        add(out, size, "%s. Secret: ", a);
+        lowered(at(ot::kMSecret, p[6]), a, sizeof(a));
+        add(out, size, "%s.", a);
+        return;
+      }
       if (sf) {
         // "Engineer, augmented. Goes by Anvil. Seems wary. Wants to claim a resource."
         lowered(at(ot::kSfLook, p[3]), b, sizeof(b));
@@ -367,6 +419,11 @@ void body(const Reading& r, char* out, const int size) {
       add(out, size, "%s.", a);
       return;
     case Kind::Place:
+      if (mystery) {
+        lowered(at(ot::kMWrong, p[2]), a, sizeof(a));
+        add(out, size, "Something is off: %s.", a);
+        return;
+      }
       if (!sf) {
         lowerAll(at(ot::kAspect, p[2]), a, sizeof(a));
         lowerAll(at(ot::kFeature, p[3]), b, sizeof(b));
@@ -407,14 +464,14 @@ void body(const Reading& r, char* out, const int size) {
       add(out, size, "%s.", at(set.chance, p[0]));
       return;
     case Kind::Twist:
-      add(out, size, "%s.", at(ot::kTwist, p[0]));
+      add(out, size, "%s.", at(set.twist, p[0]));
       return;
     case Kind::Clue:
-      add(out, size, "%s.", at(ot::kClue, p[0]));
+      add(out, size, "%s.", at(set.clue, p[0]));
       return;
     case Kind::Fight:
     default:
-      add(out, size, "%s.", at(ot::kFight, p[0]));
+      add(out, size, "%s.", at(set.fight, p[0]));
       return;
   }
 }
@@ -443,7 +500,9 @@ void brief(const Reading& r, char* out, const int size) {
       return;
     case Kind::Person: {
       char b[32];
-      lowered(sf ? at(ot::kSfRole, r.pick[2]) : at(ot::kRole, r.pick[3]), b, sizeof(b));
+      const bool mystery = r.genre == static_cast<uint8_t>(Genre::Mystery);
+      lowered(mystery ? at(ot::kMRole, r.pick[2]) : sf ? at(ot::kSfRole, r.pick[2]) : at(ot::kRole, r.pick[3]), b,
+              sizeof(b));
       add(out, size, "%s, %s", t, b);
       return;
     }

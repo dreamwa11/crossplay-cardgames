@@ -20,8 +20,8 @@ namespace {
 constexpr char kSavePath[] = "/.crosspoint/tabletop.sav";
 #endif
 // Two decks of up to 78 cards at four bytes each, the dice, the settings and
-// the oracle's log of twelve readings.
-constexpr int kSaveBytes = 2048;
+// the oracle's log of fifty readings at up to 45 bytes each.
+constexpr int kSaveBytes = 4096;
 
 int faceId(const ui::Face face) {
   switch (face) {
@@ -69,7 +69,7 @@ void TabletopActivity::load() {
   tt::start(table, toybox::seed());
 #if defined(ARDUINO_ARCH_ESP32) || defined(SIMULATOR)
   if (!Storage.exists(kSavePath)) return;
-  // On the heap: 2 KB is too much for the loop task's stack.
+  // On the heap: 4 KB is too much for the loop task's stack.
   auto buffer = makeUniqueNoThrow<char[]>(kSaveBytes);
   if (!buffer) {
     LOG_ERR("TABLETOP", "OOM: %d bytes for the save", kSaveBytes);

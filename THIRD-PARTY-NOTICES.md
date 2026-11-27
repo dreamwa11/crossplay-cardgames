@@ -73,7 +73,8 @@ Datasworn JSON (github.com/rsek/datasworn) by
 `tools_local/tabletop/gen_oracle.py` into
 `src/apps_local/tabletop/OracleTables.h` and the web Tabletop. Rows that point
 at other tables are dropped and the text is folded to ASCII; the sentences
-around them are this app's.
+around them are this app's, and so are the mystery genre's tables
+(`tools_local/tabletop/mystery_tables.py`).
 
 **"celtic" chess pieces**, MIT, Copyright (c) Maurizio Monge, from
 [maurimo/chess-art](https://github.com/maurimo/chess-art). Chess's board art is

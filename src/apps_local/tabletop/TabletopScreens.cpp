@@ -474,7 +474,10 @@ void buildMenu(toybox::Screen& screen, const tt::Table& t) {
       } else {
         std::snprintf(line, sizeof(line), "Ask a question");
       }
-      std::snprintf(sub, sizeof(sub), "%s", o.genre == tt::Genre::SciFi ? "Sci-fi" : "Fantasy");
+      std::snprintf(sub, sizeof(sub), "%s",
+                    o.genre == tt::Genre::SciFi     ? "Sci-fi"
+                    : o.genre == tt::Genre::Mystery ? "Mystery"
+                                                    : "Fantasy");
     }
     say(screen, rect(r.x + 8, r.y + 194, r.width - 16, 44), title, Face::Display);
     say(screen, rect(r.x + 8, r.y + 238, r.width - 16, 28), line, fit(screen, line, r.width - 16, {Face::Ui, Face::Button, Face::Tile}));
