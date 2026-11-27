@@ -754,8 +754,10 @@ void buildOracle(toybox::Screen& screen, const tt::Table& t) {
   oddsRow(screen, o, 378, 52);
   label(screen, 444, "ROLL");
   tableGrid(screen, 470, 3, 46);
+  // The last two, under the grid, in a box that opens the log.
+  if (o.len > 1) hotspot(screen, rect(x, 638, cw, 72), ActionLog);
   for (int i = 0; i < 2 && i + 1 < o.len; ++i) {
-    logLine(screen, rect(x, 642 + i * 32, cw, 30), o.log[o.len - 2 - i], Face::Button);
+    logLine(screen, rect(x + 12, 643 + i * 30, cw - 24, 30), o.log[o.len - 2 - i], Face::Button);
   }
   bottomBar(screen, "LOG", ActionLog, "AGAIN", ActionAgain, o.len > 0);
 }

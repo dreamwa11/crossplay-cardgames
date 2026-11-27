@@ -551,7 +551,9 @@ function drawOracle() {
   sectionLabel(444, 'ROLL');
   const gw = Math.floor((cw - 2 * 8) / 3);
   GRID.forEach((k, i) => key(x + (i % 3) * (gw + 8), 470 + Math.floor(i / 3) * 54, gw, 46, KINDS[k], false, act(() => consult(k))));
-  for (let i = 0; i < 2 && i + 1 < o.log.length; ++i) oneLine(x, 642 + i * 32, cw, 30, oBrief(o.log[o.log.length - 2 - i]), 'button');
+  // The last two, under the grid, in a box that opens the log.
+  if (o.log.length > 1) { stroke(x, 638, cw, 72, '#000', 2, 10); hit(x, 638, cw, 72, () => go('oracleLog')); }
+  for (let i = 0; i < 2 && i + 1 < o.log.length; ++i) oneLine(x + 12, 643 + i * 30, cw - 24, 30, oBrief(o.log[o.log.length - 2 - i]), 'button');
   bottomBar('LOG', () => go('oracleLog'), 'AGAIN', act(() => consult(o.log[o.log.length - 1].kind)), o.log.length > 0);
 }
 function drawOracleLog() {
