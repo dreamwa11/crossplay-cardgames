@@ -2,11 +2,13 @@
 
 // Tabletop on screen: freestanding builders over the plain Table model.
 //
-// Four screens. The menu is three doors. Cards and Tarot share a shape: one
+// Six screens. The menu is four doors. Cards and Tarot share a shape: one
 // big card in the middle (or three for a tarot spread), the earlier draws in a
 // strip under it, then back, shuffle and draw. Dice is a row of die kinds to
 // add, the total, the tray of rolled dice (tap one to take it away), the
-// earlier totals, then back, clear and roll.
+// earlier totals, then back, clear and roll. The oracle is the newest reading
+// in a card, a row of odds to ask at, a grid of tables to roll on, the last two
+// readings, then back, log and again; its log lists the readings newest first.
 
 #include "../ui/ToyboxScreen.h"
 #include "TabletopCore.h"
@@ -28,9 +30,13 @@ enum : fui::ActionId {
   ActionRoll = 10,
   ActionClear = 11,
   ActionArcana = 12,  // the tarot deck: all, the majors, the minors, in turn
+  ActionAsk = 13,      // value = Odds
+  ActionConsult = 14,  // value = Kind
+  ActionAgain = 15,    // the last kind again, at the same odds
+  ActionLog = 16,
 };
 
-enum class Screen : uint8_t { Menu = 0, Cards, Tarot, Dice };
+enum class Screen : uint8_t { Menu = 0, Cards, Tarot, Dice, Oracle, OracleLog };
 
 // The six Rubik cuts, smallest first.
 enum class Face : uint8_t { Tile = 0, Button, Ui, Display, Large, Huge };
@@ -45,5 +51,7 @@ void buildMenu(toybox::Screen& screen, const tabletop::Table& table);
 void buildCards(toybox::Screen& screen, const tabletop::Table& table);
 void buildTarot(toybox::Screen& screen, const tabletop::Table& table);
 void buildDice(toybox::Screen& screen, const tabletop::Table& table);
+void buildOracle(toybox::Screen& screen, const tabletop::Table& table);
+void buildOracleLog(toybox::Screen& screen, const tabletop::Table& table);
 
 }  // namespace tabletopui

@@ -13,6 +13,8 @@
 
 #include <cstdint>
 
+#include "TabletopOracle.h"
+
 namespace tabletop {
 
 constexpr int kPlayingCards = 52;
@@ -84,6 +86,7 @@ struct Table {
   bool reversals = true;
   bool spread = false;  // tarot draws three at a time
   Arcana arcana = Arcana::All;  // which part of the tarot deck is shuffled in
+  Oracle oracle;
 };
 
 // A fresh table: both decks full and shuffled, two six-sided dice.

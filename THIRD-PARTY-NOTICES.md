@@ -66,6 +66,15 @@ joker are by Lorc, Skoll and Delapouite from game-icons.net, CC BY 3.0, in
 `src/apps_local/tabletop/TabletopArt.h`; details in
 `src/apps_local/tabletop/art/ATTRIBUTION.md`.
 
+**Tabletop's oracle tables** are from *Ironsworn*, *Ironsworn: Delve* and
+*Ironsworn: Starforged* by Shawn Tomkin (ironswornrpg.com), used under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), taken from the
+Datasworn JSON (github.com/rsek/datasworn) by
+`tools_local/tabletop/gen_oracle.py` into
+`src/apps_local/tabletop/OracleTables.h` and the web Tabletop. Rows that point
+at other tables are dropped and the text is folded to ASCII; the sentences
+around them are this app's.
+
 **"celtic" chess pieces**, MIT, Copyright (c) Maurizio Monge, from
 [maurimo/chess-art](https://github.com/maurimo/chess-art). Chess's board art is
 rasterised from them into `src/apps_local/chess/ChessPieces.h` at authoring

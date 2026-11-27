@@ -1,6 +1,6 @@
 #pragma once
 
-// Tabletop on the device: playing cards, tarot and dice. The thin layer:
+// Tabletop on the device: playing cards, tarot, dice and the oracle. The thin layer:
 // renderer, storage, input, shelf. State lives in TabletopCore, pixels in
 // TabletopScreens.
 

@@ -221,12 +221,13 @@ void cardName(const uint8_t id, const bool tarot, char* out, const int size) {
   std::snprintf(out, size, "%s OF %s", kPlayingRanks[playingRank(id) - 1], playingSuitName(playingSuit(id)));
 }
 
-// T3 seed jokers reversals spread arcana (T2 has no arcana, T1 no card backs)
+// T4 seed jokers reversals spread arcana (T3 has no oracle, T2 no arcana, T1 no card backs)
 // <cards deck>
 // <tarot deck>
 // count picks... rolled values... totalsLen totals...
+// <oracle>
 int serialize(const Table& t, char* out, const int size) {
-  int used = std::snprintf(out, size, "T3 %lu %d %d %d %d\n", static_cast<unsigned long>(t.rng.s), t.jokers ? 1 : 0,
+  int used = std::snprintf(out, size, "T4 %lu %d %d %d %d\n", static_cast<unsigned long>(t.rng.s), t.jokers ? 1 : 0,
                            t.reversals ? 1 : 0, t.spread ? 1 : 0, static_cast<int>(t.arcana));
   if (used < 0 || used >= size) return -1;
   for (const Deck* d : {&t.cards, &t.tarot}) {
@@ -263,12 +264,16 @@ int serialize(const Table& t, char* out, const int size) {
   }
   n = std::snprintf(out + used, size - used, "\n");
   if (n < 0 || n >= size - used) return -1;
+  used += n;
+  n = serializeOracle(t.oracle, out + used, size - used);
+  if (n < 0) return -1;
   return used + n;
 }
 
 bool parse(const char* in, Table& out) {
-  // T2 is the same file without the arcana, T1 without the card backs too.
-  const bool hasArcana = std::strncmp(in, "T3 ", 3) == 0;
+  // T3 is the same file without the oracle, T2 without the arcana, T1 without the card backs too.
+  const bool hasOracle = std::strncmp(in, "T4 ", 3) == 0;
+  const bool hasArcana = hasOracle || std::strncmp(in, "T3 ", 3) == 0;
   const bool hasBack = hasArcana || std::strncmp(in, "T2 ", 3) == 0;
   if (!hasBack && std::strncmp(in, "T1 ", 3) != 0) return false;
   const char* p = in + 3;
@@ -318,6 +323,7 @@ bool parse(const char* in, Table& out) {
     if (!num(p, k) || k < 0 || k > 100 * kMaxDice) return false;
     t.dice.totals[i] = static_cast<uint16_t>(k);
   }
+  if (hasOracle && !parseOracle(p, t.oracle)) return false;
   out = t;
   return true;
 }

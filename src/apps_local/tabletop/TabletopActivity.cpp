@@ -4,6 +4,8 @@
 #include <Logging.h>
 #include <Memory.h>
 
+#include <cstring>
+
 #include "../Shelf.h"
 #include "../ui/Toybox.h"
 #include "../ui/ToyboxFonts.h"
@@ -17,8 +19,9 @@ namespace {
 #if defined(ARDUINO_ARCH_ESP32) || defined(SIMULATOR)
 constexpr char kSavePath[] = "/.crosspoint/tabletop.sav";
 #endif
-// Two decks of up to 78 cards at four bytes each, the dice and the settings.
-constexpr int kSaveBytes = 1024;
+// Two decks of up to 78 cards at four bytes each, the dice, the settings and
+// the oracle's log of twelve readings.
+constexpr int kSaveBytes = 2048;
 
 int faceId(const ui::Face face) {
   switch (face) {
@@ -66,10 +69,16 @@ void TabletopActivity::load() {
   tt::start(table, toybox::seed());
 #if defined(ARDUINO_ARCH_ESP32) || defined(SIMULATOR)
   if (!Storage.exists(kSavePath)) return;
-  char buffer[kSaveBytes] = {};
-  if (Storage.readFileToBuffer(kSavePath, buffer, sizeof(buffer) - 1) == 0) return;
+  // On the heap: 2 KB is too much for the loop task's stack.
+  auto buffer = makeUniqueNoThrow<char[]>(kSaveBytes);
+  if (!buffer) {
+    LOG_ERR("TABLETOP", "OOM: %d bytes for the save", kSaveBytes);
+    return;
+  }
+  std::memset(buffer.get(), 0, kSaveBytes);
+  if (Storage.readFileToBuffer(kSavePath, buffer.get(), kSaveBytes - 1) == 0) return;
   tt::Table saved;
-  if (tt::parse(buffer, saved)) {
+  if (tt::parse(buffer.get(), saved)) {
     table = saved;
     // A fresh seed each visit, so a saved table does not replay the same luck.
     table.rng.seed(table.rng.s ^ toybox::seed());
@@ -81,12 +90,16 @@ void TabletopActivity::load() {
 
 void TabletopActivity::save() {
 #if defined(ARDUINO_ARCH_ESP32) || defined(SIMULATOR)
-  char buffer[kSaveBytes];
-  if (tt::serialize(table, buffer, sizeof(buffer)) < 0) {
+  auto buffer = makeUniqueNoThrow<char[]>(kSaveBytes);
+  if (!buffer) {
+    LOG_ERR("TABLETOP", "OOM: %d bytes for the save", kSaveBytes);
+    return;
+  }
+  if (tt::serialize(table, buffer.get(), kSaveBytes) < 0) {
     LOG_ERR("TABLETOP", "Table did not fit %d bytes", kSaveBytes);
     return;
   }
-  Storage.writeFile(kSavePath, String(buffer));
+  Storage.writeFile(kSavePath, String(buffer.get()));
 #endif
 }
 
@@ -104,7 +117,7 @@ void TabletopActivity::loop() {
       shelf::leave(renderer, mappedInput);
     } else {
       save();
-      goTo(ui::Screen::Menu);
+      goTo(screen == ui::Screen::OracleLog ? ui::Screen::Oracle : ui::Screen::Menu);
     }
     return;
   }
@@ -120,11 +133,27 @@ void TabletopActivity::loop() {
   const fui::ActionEvent event = interactions.route(input);
   switch (event.action) {
     case ui::ActionOpen:
-      if (event.value >= 1 && event.value <= 3) goTo(static_cast<ui::Screen>(event.value));
+      if (event.value >= 1 && event.value <= 4) goTo(static_cast<ui::Screen>(event.value));
       return;
     case ui::ActionBack:
       save();
-      goTo(ui::Screen::Menu);
+      goTo(screen == ui::Screen::OracleLog ? ui::Screen::Oracle : ui::Screen::Menu);
+      return;
+    case ui::ActionAsk:
+      if (event.value < 0 || event.value >= tt::kOddsKinds) return;
+      table.oracle.odds = static_cast<tt::Odds>(event.value);
+      tt::consult(table.oracle, table.rng, tt::Kind::Ask);
+      break;
+    case ui::ActionConsult:
+      if (event.value < 0 || event.value >= tt::kKinds) return;
+      tt::consult(table.oracle, table.rng, static_cast<tt::Kind>(event.value));
+      break;
+    case ui::ActionAgain:
+      if (table.oracle.len == 0) return;
+      tt::consult(table.oracle, table.rng, static_cast<tt::Kind>(table.oracle.log[table.oracle.len - 1].kind));
+      break;
+    case ui::ActionLog:
+      goTo(ui::Screen::OracleLog);
       return;
     case ui::ActionDraw:
       if (screen == ui::Screen::Cards) {
@@ -163,7 +192,11 @@ void TabletopActivity::loop() {
       tt::removeDie(table.dice, event.value);
       break;
     case ui::ActionClear:
-      tt::clearDice(table.dice);
+      if (screen == ui::Screen::OracleLog) {
+        table.oracle.len = 0;
+      } else {
+        tt::clearDice(table.dice);
+      }
       break;
     case ui::ActionRoll:
       tt::roll(table);
@@ -200,6 +233,12 @@ void TabletopActivity::render(RenderLock&&) {
       break;
     case ui::Screen::Dice:
       ui::buildDice(surface, table);
+      break;
+    case ui::Screen::Oracle:
+      ui::buildOracle(surface, table);
+      break;
+    case ui::Screen::OracleLog:
+      ui::buildOracleLog(surface, table);
       break;
   }
 

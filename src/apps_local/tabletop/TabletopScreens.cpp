@@ -427,53 +427,59 @@ void useFonts(FontBinder* binder) { gFonts = binder; }
 void buildMenu(toybox::Screen& screen, const tt::Table& t) {
   header(screen, "TABLETOP", nullptr);
   const int16_t w = screen.device().width;
-  constexpr int kTileH = 196;
-  const int x = toybox::kMargin;
-  const int tw = w - 2 * toybox::kMargin;
+  constexpr int kGap = 12;
+  constexpr int kTileH = 300;
+  const int tw = (w - 2 * toybox::kMargin - kGap) / 2;
   char line[40];
-  for (int i = 0; i < 3; ++i) {
-    const fui::Rect r = rect(x, 100 + i * (kTileH + 12), tw, kTileH);
+  char sub[40];
+  for (int i = 0; i < 4; ++i) {
+    const fui::Rect r = rect(toybox::kMargin + (i % 2) * (tw + kGap), 100 + (i / 2) * (kTileH + kGap), tw, kTileH);
     hotspot(screen, r, ActionOpen, i + 1);
     screen.target().fill(r, kWhite, 14);
     screen.target().stroke(r, kBlack, 2, 14);
-    const int artW = 170;
-    const fui::Rect text = rect(r.x + artW, r.y, r.width - artW - 16, r.height);
-    const char* title = i == 0 ? "CARDS" : i == 1 ? "TAROT" : "DICE";
-    say(screen, rect(text.x, r.y + 48, text.width, 48), title, Face::Display, fui::TextAlign::Left);
+    const int cx = r.x + r.width / 2;
+    const char* title = i == 0 ? "CARDS" : i == 1 ? "TAROT" : i == 2 ? "DICE" : "ORACLE";
+    line[0] = sub[0] = '\0';
     if (i == 0) {
       // Two cards, one behind the other.
-      cardBack(screen, rect(r.x + 26, r.y + 28, 82, 116), t.cards.back);
-      cardFrame(screen, rect(r.x + 62, r.y + 52, 82, 116));
-      say(screen, rect(r.x + 68, r.y + 60, 30, 26), "A", Face::Ui);
-      iconAt(screen, r.x + 103, r.y + 100, icon_tt_spades_40);
+      cardBack(screen, rect(cx - 60, r.y + 26, 82, 116), t.cards.back);
+      cardFrame(screen, rect(cx - 22, r.y + 50, 82, 116));
+      say(screen, rect(cx - 16, r.y + 58, 30, 26), "A", Face::Ui);
+      iconAt(screen, cx + 19, r.y + 98, icon_tt_spades_40);
       std::snprintf(line, sizeof(line), "%d of %d left", t.cards.left, t.cards.size);
-      say(screen, rect(text.x, r.y + 100, text.width, 30), line, Face::Ui, fui::TextAlign::Left);
-      say(screen, rect(text.x, r.y + 132, text.width, 26), t.jokers ? "With jokers" : "No jokers", Face::Button,
-          fui::TextAlign::Left);
+      std::snprintf(sub, sizeof(sub), "%s", t.jokers ? "With jokers" : "No jokers");
     } else if (i == 1) {
-      const fui::Rect c = rect(r.x + 36, r.y + 18, 108, 160);
-      cardFrame(screen, c);
       const tabletopart::Packed& fool = tabletopart::kRws_menu[0];
+      const fui::Rect c = rect(cx - 54, r.y + 14, 108, 168);
+      cardFrame(screen, c);
       drawRws(screen, c.x + (c.width - fool.w) / 2, c.y + (c.height - fool.h) / 2, fool, false);
       std::snprintf(line, sizeof(line), "%d of %d left", t.tarot.left, t.tarot.size);
-      say(screen, rect(text.x, r.y + 100, text.width, 30), line, Face::Ui, fui::TextAlign::Left);
-      say(screen, rect(text.x, r.y + 132, text.width, 26), t.spread ? "Three-card spread" : "One card at a time",
-          Face::Button, fui::TextAlign::Left);
-    } else {
-      die(screen, r.x + 24, r.y + 24, 5, "20");
-      icon(screen, rect(r.x + 96, r.y + 120, 48, 48), icon_tt_d6_48);
-      say(screen, rect(r.x + 96, r.y + 120, 48, 48), "6", Face::Ui);
+      std::snprintf(sub, sizeof(sub), "%s", t.spread ? "Three-card spread" : "One at a time");
+    } else if (i == 2) {
+      die(screen, cx - 74, r.y + 30, 5, "20");
+      icon(screen, rect(cx + 22, r.y + 112, 48, 48), icon_tt_d6_48);
+      say(screen, rect(cx + 22, r.y + 112, 48, 48), "6", Face::Ui);
       const tt::Dice& d = t.dice;
-      char f[40];
-      formula(d, f, sizeof(f));
+      formula(d, sub, sizeof(sub));
       if (d.rolled) {
         std::snprintf(line, sizeof(line), "Last roll: %d", tt::total(d));
       } else {
         std::snprintf(line, sizeof(line), "%s", d.count ? "Ready to roll" : "No dice picked");
       }
-      say(screen, rect(text.x, r.y + 100, text.width, 30), line, Face::Ui, fui::TextAlign::Left);
-      say(screen, rect(text.x, r.y + 132, text.width, 26), f, Face::Button, fui::TextAlign::Left);
+    } else {
+      iconAt(screen, cx, r.y + 38, icon_tt_crystal_ball_120);
+      const tt::Oracle& o = t.oracle;
+      if (o.len) {
+        tt::title(o.log[o.len - 1], line, sizeof(line));
+        std::snprintf(sub, sizeof(sub), "%d in the log", o.len);
+      } else {
+        std::snprintf(line, sizeof(line), "Ask a question");
+        std::snprintf(sub, sizeof(sub), "Or roll a table");
+      }
     }
+    say(screen, rect(r.x + 8, r.y + 194, r.width - 16, 44), title, Face::Display);
+    say(screen, rect(r.x + 8, r.y + 238, r.width - 16, 28), line, fit(screen, line, r.width - 16, {Face::Ui, Face::Button, Face::Tile}));
+    say(screen, rect(r.x + 8, r.y + 266, r.width - 16, 24), sub, fit(screen, sub, r.width - 16, {Face::Button, Face::Tile}));
   }
 }
 
@@ -633,6 +639,160 @@ void buildDice(toybox::Screen& screen, const tt::Table& t) {
     say(screen, rect(m, 650, w - 2 * m, 30), line, Face::Button);
   }
   bottomBar(screen, "CLEAR", ActionClear, "ROLL", ActionRoll, d.count > 0);
+}
+
+// ---- oracle --------------------------------------------------------------------------
+
+namespace {
+
+constexpr tt::Kind kTables[] = {tt::Kind::Spark,  tt::Kind::Detail, tt::Kind::Twist,  tt::Kind::Person, tt::Kind::Place,
+                                tt::Kind::Clue,   tt::Kind::Danger, tt::Kind::Chance, tt::Kind::Fight};
+constexpr int kTableCount = sizeof(kTables) / sizeof(kTables[0]);
+
+// A button with its label shrunk to fit.
+void key(toybox::Screen& screen, const fui::Rect& r, const char* label, const bool on, const fui::ActionId action,
+         const int value) {
+  hotspot(screen, r, action, value);
+  screen.target().fill(r, on ? kBlack : kWhite, 10);
+  screen.target().stroke(r, kBlack, 2, 10);
+  say(screen, r, label, fit(screen, label, r.width - 10, {Face::Button, Face::Tile}), fui::TextAlign::Center, on);
+}
+
+// A section label with a rule running to the right edge.
+void label(toybox::Screen& screen, const int y, const char* text) {
+  const int16_t w = screen.device().width;
+  const int tw = widthOf(screen, text, Face::Tile);
+  say(screen, rect(toybox::kMargin, y, tw + 4, 22), text, Face::Tile, fui::TextAlign::Left);
+  screen.target().fill(rect(toybox::kMargin + tw + 12, y + 10, w - 2 * toybox::kMargin - tw - 12, 2), kBlack);
+}
+
+// The newest reading, large: its title, the sentence, the dice under it.
+void readingCard(toybox::Screen& screen, const fui::Rect& r, const tt::Oracle& o) {
+  screen.target().fill(r, kWhite, 14);
+  screen.target().stroke(r, kBlack, 2, 14);
+  const fui::Rect in = rect(r.x + 16, r.y, r.width - 32, r.height);
+  if (o.len == 0) {
+    prose(screen, rect(in.x, r.y + r.height / 2 - 40, in.width, 80), "Ask a question, or roll on a table.", Face::Ui,
+          2);
+    return;
+  }
+  const tt::Reading& last = o.log[o.len - 1];
+  char t[64];
+  char b[256];
+  char m[48];
+  tt::title(last, t, sizeof(t));
+  tt::body(last, b, sizeof(b));
+  tt::meta(last, m, sizeof(m));
+  if (tt::named(last)) {
+    const char* kind = tt::kindName(static_cast<tt::Kind>(last.kind));
+    sayGrey(screen, rect(in.x, r.y + 12, widthOf(screen, kind, Face::Tile) + 2, 22), kind, Face::Tile);
+  }
+  const Face tf = fit(screen, t, in.width, {Face::Large, Face::Display, Face::Ui});
+  say(screen, rect(in.x, r.y + 38, in.width, 56), t, tf, fui::TextAlign::Left);
+  constexpr int kLine = 27;
+  const int lines = (r.height - 104 - (m[0] ? 34 : 8)) / kLine;
+  fui::TextStyle st = face(Face::Button, fui::TextAlign::Left);
+  st.maxLines = static_cast<uint8_t>(lines > 0 ? lines : 1);
+  screen.target().text(rect(in.x, r.y + 100, in.width, lines * kLine), b, st);
+  if (m[0]) sayGrey(screen, rect(in.x, r.bottom() - 34, widthOf(screen, m, Face::Tile) + 2, 22), m, Face::Tile);
+}
+
+// One reading on one line: its brief.
+void logLine(toybox::Screen& screen, const fui::Rect& r, const tt::Reading& rd, const Face f) {
+  char line[128];
+  tt::brief(rd, line, sizeof(line));
+  fui::TextStyle st = face(f, fui::TextAlign::Left);
+  st.maxLines = 1;
+  screen.target().text(r, line, st);
+}
+
+void oddsRow(toybox::Screen& screen, const tt::Oracle& o, const int y, const int h) {
+  const int16_t w = screen.device().width;
+  constexpr int kGap = 8;
+  const int cw = (w - 2 * toybox::kMargin - (tt::kOddsKinds - 1) * kGap) / tt::kOddsKinds;
+  for (int i = 0; i < tt::kOddsKinds; ++i) {
+    const tt::Odds odds = static_cast<tt::Odds>(i);
+    const fui::Rect r = rect(toybox::kMargin + i * (cw + kGap), y, cw, h);
+    const bool on = o.odds == odds && o.len > 0;
+    hotspot(screen, r, ActionAsk, i);
+    screen.target().fill(r, on ? kBlack : kWhite, 10);
+    screen.target().stroke(r, kBlack, 2, 10);
+    char pct[8];
+    std::snprintf(pct, sizeof(pct), "%d%%", tt::chanceOf(odds));
+    say(screen, rect(r.x, r.y + 4, r.width, r.height / 2), tt::oddsShort(odds), Face::Tile, fui::TextAlign::Center, on);
+    say(screen, rect(r.x, r.y + r.height / 2 - 2, r.width, r.height / 2), pct, Face::Button, fui::TextAlign::Center, on);
+  }
+}
+
+void tableGrid(toybox::Screen& screen, const int y, const int cols, const int h) {
+  const int16_t w = screen.device().width;
+  constexpr int kGap = 8;
+  const int cw = (w - 2 * toybox::kMargin - (cols - 1) * kGap) / cols;
+  for (int i = 0; i < kTableCount; ++i) {
+    const fui::Rect r = rect(toybox::kMargin + (i % cols) * (cw + kGap), y + (i / cols) * (h + kGap), cw, h);
+    key(screen, r, tt::kindName(kTables[i]), false, ActionConsult, static_cast<int>(kTables[i]));
+  }
+}
+
+}  // namespace
+
+void buildOracle(toybox::Screen& screen, const tt::Table& t) {
+  const tt::Oracle& o = t.oracle;
+  header(screen, "ORACLE", nullptr);
+  const int16_t w = screen.device().width;
+  const int x = toybox::kMargin;
+  const int cw = w - 2 * x;
+  // The answer, then a row to ask and a grid to roll, then the last two.
+  readingCard(screen, rect(x, 96, cw, 244), o);
+  label(screen, 352, "ASK");
+  oddsRow(screen, o, 378, 52);
+  label(screen, 444, "ROLL");
+  tableGrid(screen, 470, 3, 46);
+  for (int i = 0; i < 2 && i + 1 < o.len; ++i) {
+    logLine(screen, rect(x, 642 + i * 32, cw, 30), o.log[o.len - 2 - i], Face::Button);
+  }
+  bottomBar(screen, "LOG", ActionLog, "AGAIN", ActionAgain, o.len > 0);
+}
+
+constexpr int kCreditY = kButtonsY - 32;
+
+void buildOracleLog(toybox::Screen& screen, const tt::Table& t) {
+  const tt::Oracle& o = t.oracle;
+  char right[16];
+  std::snprintf(right, sizeof(right), "%d", o.len);
+  header(screen, "ORACLE LOG", right);
+  const int16_t w = screen.device().width;
+  const int x = toybox::kMargin;
+  if (o.len == 0) {
+    prose(screen, rect(x, 300, w - 2 * x, 80), "Nothing asked yet.", Face::Ui, 2);
+  }
+  // Newest first, two lines each.
+  for (int i = 0; i < o.len && i < tt::kOracleLog; ++i) {
+    const tt::Reading& rd = o.log[o.len - 1 - i];
+    const int y = 96 + i * 52;
+    if (y + 50 > kCreditY - 4) break;
+    char t[64];
+    char b[256];
+    tt::title(rd, t, sizeof(t));
+    tt::body(rd, b, sizeof(b));
+    if (!b[0]) tt::meta(rd, b, sizeof(b));
+    char line[96];
+    if (tt::named(rd) || static_cast<tt::Kind>(rd.kind) == tt::Kind::Ask) {
+      std::snprintf(line, sizeof(line), "%s  %s", tt::kindName(static_cast<tt::Kind>(rd.kind)), t);
+    } else {
+      std::snprintf(line, sizeof(line), "%s", t);
+    }
+    say(screen, rect(x, y, w - 2 * x, 24), line, Face::Button, fui::TextAlign::Left);
+    if (b[0]) {
+      fui::TextStyle st = face(Face::Tile, fui::TextAlign::Left);
+      st.maxLines = 1;
+      screen.target().text(rect(x, y + 24, w - 2 * x, 22), b, st);
+    }
+    screen.target().fill(rect(x, y + 48, w - 2 * x, 1), kGrey);
+  }
+  // CC BY asks for the credit where the tables are used.
+  say(screen, rect(x, kCreditY, w - 2 * x, 22), "Oracle tables: Ironsworn by Shawn Tomkin, CC BY 4.0", Face::Tile);
+  bottomBar(screen, "CLEAR", ActionClear, "DONE", ActionBack, true);
 }
 
 }  // namespace tabletopui

@@ -8,6 +8,8 @@
 - **Tarot suits** (`wands`, `cups`, `swords`, `pentacles`), **playing suits**
   and the **joker**: game-icons.net, by Lorc, Skoll and Delapouite,
   CC BY 3.0.
+- **Crystal ball** (`crystal_ball`, the oracle's menu tile): game-icons.net,
+  by Lorc, CC BY 3.0.
 - **App icon** (`shelf`, `shelf_small`): a card and dice drawn for this app,
   with the spade from game-icons.net (Skoll, CC BY 3.0).
 - **Card backs** (`back0` .. `back2`): The Pale Motel's three backs

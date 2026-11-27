@@ -81,6 +81,7 @@ for s in ("spades", "clubs"):
 for s in ("hearts", "diamonds"):
     icon(s, (96, 40, 24), hollow=True)
 icon("joker", (220, 40))
+icon("crystal_ball", (120,))
 # The Pale Motel's three card backs (diamonds, chevrons, rays), its red as
 # paper. Each at the sizes a back is drawn, cropped to fill like CSS cover.
 def cover(name, w, h):
